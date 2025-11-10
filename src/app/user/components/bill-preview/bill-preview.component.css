@@ -1,0 +1,114 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Style the container div to use flexbox */
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* Center the h4 heading within its container */
+  .invoice-header h4 {
+    margin: 0; /* Remove default margin */
+    flex: 1; /* Allow the heading to take up available space */
+  }
+  
+  /* Style the "Print Invoice" button */
+  .invoice-header button {
+    margin: 3px 8px;
+    padding: 2px 5px;
+  }
+  
+  /* Hide the button when printing */
+  @media print {
+    .invoice-header button {
+      display: none;
+    }
+
+    .header, .sidebar{
+        display: none !important;
+      }
+  }
+  
+.details{
+    font-size:14px
+}
+.details td{
+    padding: 2px;
+}
+.pruchaserDetails{
+    font-size:14px
+}
+.pruchaserDetails td{
+    padding: 2px;
+}
+/* Apply a flexbox container to the row */
+.row {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Define the column styles */
+.col {
+    flex: 1; 
+    height: 30vh; 
+    border: 1px solid #ccc; 
+    padding: 10px; 
+    overflow: visible;
+}
+
+/* Adjust the width of the first column for the logo */
+.col:first-child {
+    flex: 0 0 15%; /* Width is 20%, but not resizable */
+}
+
+/* Style the tables */
+table {
+    width: 100%;
+}
+
+/* Style the table rows */
+table tr {
+    text-align: left;
+}
+
+/* table td{
+    padding: 2px;
+} */
+
+/* Style the image */
+img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block; /* Remove any default image spacing */
+    margin: 0 auto; /* Center the image horizontally */
+}
+
+.row:last-child .col:first-child {
+    flex: 0 0 80%;
+}
+
+.row:last-child .col:last-child {
+    flex: 0 0 20%;
+}
+
+.row:last-child .col:first-child p:first-child,
+.row:last-child .col:first-child p:nth-child(2) {
+    text-align: left;
+    vertical-align: top;
+}
+
+.row:last-child .col:first-child {
+    position: relative;
+}
+
+.row:last-child .col:first-child p:last-child {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+

@@ -1,0 +1,81 @@
+<form [formGroup]="detailsForm" class="details-form" (ngSubmit)="onSubmit()">
+    <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
+        {{ errorMessage }}
+    </div>
+    <div class="container">
+        <h3 class="text-center mb-4">Details</h3>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="name" class="form-label">Name:</label>
+                <input type="text" class="form-control" id="name" formControlName="name">
+            </div>
+            <div class="col-md-6">
+                <label for="addressLine1" class="form-label">Address Line 1:</label>
+                <input type="text" class="form-control" id="addressLine1" formControlName="addressLine1">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="addressLine2" class="form-label">Address Line 2:</label>
+                <input type="text" class="form-control" id="addressLine2" formControlName="addressLine2">
+            </div>
+            <div class="col-md-6">
+                <label for="city" class="form-label">City:</label>
+                <input type="text" class="form-control" id="city" formControlName="city">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="state" class="form-label">State:</label>
+                <input type="text" class="form-control" id="state" formControlName="state">
+            </div>
+            <div class="col-md-6">
+                <label for="pincode" class="form-label">Pincode:</label>
+                <input type="text" class="form-control" id="pincode" formControlName="pincode">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="phoneNumber" class="form-label">Phone No.:</label>
+                <input type="text" class="form-control" id="phoneNumber" formControlName="phoneNumber">
+            </div>
+            <div class="col-md-6">
+                <label for="dlNo1" class="form-label">DL No. 1:</label>
+                <input type="text" class="form-control" id="dlNo1" formControlName="dlNo1">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="dlNo2" class="form-label">DL No. 2:</label>
+                <input type="text" class="form-control" id="dlNo2" formControlName="dlNo2">
+            </div>
+            <div class="col-md-6">
+                <label for="fssaiReg" class="form-label">FSSAI Registration:</label>
+                <input type="text" class="form-control" id="fssaiReg" formControlName="fssaiReg">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="gstin" class="form-label">GSTIN:</label>
+                <input type="text" class="form-control" id="gstin" formControlName="gstin">
+            </div>
+            <div class="col-md-6">
+                <label for="bankName" class="form-label">Bank Name:</label>
+                <input type="text" class="form-control" id="bankName" formControlName="bankName">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="accountNumber" class="form-label">Account Number:</label>
+                <input type="text" class="form-control" id="accountNumber" formControlName="accountNumber">
+            </div>
+            <div class="col-md-6">
+                <label for="ifscCode" class="form-label">IFSC Code:</label>
+                <input type="text" class="form-control" id="ifscCode" formControlName="ifscCode">
+            </div>
+        </div>
+        <div class="text-center">
+            <button type="submit" style="background-color: #48e3cc; color: #000;" class="btn btn-primary">Submit</button>
+        </div>
+    </div>
+</form>

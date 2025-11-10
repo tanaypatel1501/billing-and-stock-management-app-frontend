@@ -1,0 +1,123 @@
+<div class="alert alert-danger" role="alert" *ngIf="showError">
+    Bill cannot be empty.
+</div>  
+<table class="table table-striped" *ngIf="itemAdded">
+	<thead>
+		<tr>
+			<th scope="col">#</th>
+			<th scope="col">Product Name</th>
+			<th scope="col">Batch No.</th>
+			<th scope="col">Expiry Date</th>
+			<th scope="col">Quantity</th>
+			<th scope="col">Free</th>
+			<th scope="col">Rate</th>
+			<th scope="col">Amount</th>
+			<th scope="col">Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+        <tr *ngFor="let item of step2Data; index as i">
+			<th scope="row">{{ i + 1 }}</th>
+			<td>{{ item.productName }}</td>
+			<td>{{ item.batchNo }}</td>
+			<td>{{ item.expiryDate | date }}</td>
+			<td>{{ item.quantity | number }}</td>
+			<td>{{ item.free | number }}</td>
+			<td>{{ '₹' }} {{ item.rate | number }}</td>
+			<td>{{ '₹' }} {{ item.amount | number }}</td>
+			<td>
+                <button class="delete-button" (click)="delete(i)"><fa-icon [icon]="faTrashCan">Delete</fa-icon></button>                
+            </td>
+		</tr>
+	</tbody>
+</table>
+<div class="form-container mx-auto">
+  <div class="step-indicator">Step {{currentStep}} of 2</div>
+  <div class="form-step" *ngIf="currentStep === 1">
+      <h3>To:</h3>
+      <form [formGroup]="billForm1">
+            <div class="form-group">
+                <label for="purchaserName">Name</label>
+                <input type="text" class="form-input" id="purchaserName" placeholder="Name" formControlName="purchaserName">
+                <div *ngIf="billForm1.get('purchaserName')?.hasError('required') && billForm1.get('purchaserName')?.touched" class="text-danger">Purchaser name is required.</div>
+            </div>
+            <div class="form-group">
+                <label for="dl1">DL No. 1</label>
+                <input type="text" class="form-input" id="dl1" placeholder="DL No. 1" formControlName="dl1">
+                <div *ngIf="billForm1.get('dl1')?.hasError('required') && billForm1.get('dl1')?.touched" class="text-danger">DL No. is required.</div>
+            </div>
+            <div class="form-group">
+                <label for="dl2">DL No. 2</label>
+                <input type="text" class="form-input" id="dl2" placeholder="DL No. 2" formControlName="dl2">
+                <div *ngIf="billForm1.get('dl2')?.hasError('required') && billForm1.get('dl2')?.touched" class="text-danger">DL No. is required.</div>
+            </div>
+            <div class="form-group">
+                <label for="gstin">GSTIN</label>
+                <input type="text" class="form-input" id="gstin" placeholder="GSTIN" formControlName="gstin">
+                <div *ngIf="billForm1.get('gstin')?.hasError('required') && billForm1.get('gstin')?.touched" class="text-danger">GSTIN is required.</div>
+            </div>
+            <div class="form-group">
+                <label for="invoiceDate">Invoice Date</label>
+                <input type="date" class="form-input" id="invoiceDate" placeholder="Invoice Date" formControlName="invoiceDate">
+                <div *ngIf="billForm1.get('invoiceDate')?.hasError('required') && billForm1.get('invoiceDate')?.touched" class="text-danger">Invoice Date is required.</div>
+            </div>
+            <button type="button" class="next-button" (click)="nextStep()">Next</button>
+      </form>
+  </div>
+  <div class="form-step" *ngIf="currentStep === 2">
+      <h3>Bill</h3>
+      <form [formGroup]="billForm2">
+        <div class="form-group">
+            <label for="productName">Product Name</label>
+            <select class="form-input" id="productName" formControlName="productName" (change)="updateQuantityPlaceholder()">
+                <option value="" disabled>Select a product</option>
+                <option *ngFor="let item of stock" [value]="item.product.name">{{ item.product.name }}</option>
+            </select>
+            <div *ngIf="billForm2.get('productName')?.hasError('required') && billForm2.get('productName')?.touched" class="text-danger">Product Name is required.</div>     
+        </div>
+        <div class="form-group">
+            <label for="productId">Product ID</label>
+            <input type="text" class="form-input" id="productId" placeholder="Product ID" formControlName="productId" [readonly]="true">
+        </div>  
+        <div class="form-group">
+            <label for="batchNo">Batch No.</label>
+            <select class="form-input" id="batchNo" formControlName="batchNo" (change)="updateQuantityPlaceholder()">
+                <option value="" disabled>Select a batch</option>
+                <option *ngFor="let item of filteredStock" [value]="item.batchNo">{{ item.batchNo }}</option>
+            </select>  
+            <div *ngIf="billForm2.get('batchNo')?.hasError('required') && billForm2.get('batchNo')?.touched" class="text-danger">Batch Number is required.</div>            
+        </div>
+        
+        <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input type="number" class="form-input" id="quantity" [placeholder]="quantityPlaceholder" formControlName="quantity">
+            <div *ngIf="billForm2.get('quantity')?.hasError('required') && billForm2.get('quantity')?.touched" class="text-danger">Quantity is required.</div>
+            <div *ngIf="billForm2.get('quantity')?.hasError('invalidQuantity') && billForm2.get('quantity')?.touched" class="text-danger">The sum of Quantity and Free cannot be greater than the available quantity.</div>
+        </div>
+        <div class="form-group">
+            <label for="free">Free</label>
+            <input type="number" class="form-input" id="free" [placeholder]="quantityPlaceholder" formControlName="free">
+            <div *ngIf="billForm2.get('free')?.hasError('required') && billForm2.get('free')?.touched" class="text-danger">Free Quantity is required.</div>
+            <div *ngIf="billForm2.get('free')?.hasError('invalidQuantity') && billForm2.get('free')?.touched" class="text-danger">The sum of Quantity and Free cannot be greater than the available quantity.</div>
+        </div>
+        <div class="form-group">
+            <label for="expiryDate">Expiry Date</label>
+            <input type="date" class="form-input" id="expiryDate" placeholder="Expiry Date" formControlName="expiryDate" [readonly]="true">
+        </div>
+        <div class="form-group">
+            <label for="rate">Rate</label>
+            <input type="number" class="form-input" id="rate" placeholder="Rate" formControlName="rate">
+            <div *ngIf="billForm2.get('rate')?.hasError('required') && billForm2.get('rate')?.touched" class="text-danger">Rate is required.</div>
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount</label>
+            <input type="number" class="form-input" id="amount" placeholder="Amount" formControlName="amount" [readonly]="true">
+        </div>
+        <div class="buttons">
+            <button type="button" class="next-button" (click)="prevStep()">Previous</button>
+            <button type="button" class="next-button" (click)="addItem()">Add</button>
+            <button type="submit" class="next-button" (click)="submitBill()">Submit</button>
+        </div>        
+      </form>
+  </div>
+</div>

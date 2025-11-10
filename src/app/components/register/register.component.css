@@ -1,0 +1,11 @@
+input,textarea,.card{
+    
+    border: 0.5px solid #48e3cc; 
+    outline: none; 
+}
+
+input:focus,textarea:focus {
+    
+    border: 2px solid #48e3cc; 
+    outline: none; 
+}

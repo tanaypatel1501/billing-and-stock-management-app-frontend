@@ -1,0 +1,13 @@
+<div>
+    <ul class="bills">
+      <li *ngFor="let bill of bills" class="bill-item">
+        <div class="bill-content">
+          <a (click)="openBill(bill.id)">
+            <p><b>To :</b> {{ bill.purchaserName }}</p>
+            <p><b>Invoice Date :</b> {{ bill.invoiceDate | date}}</p>
+          </a>
+        </div>
+      </li>
+    </ul>
+  </div>
+  

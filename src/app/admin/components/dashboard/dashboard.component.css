@@ -1,0 +1,10 @@
+button{
+    border: none;
+    background-color: transparent;
+}
+.edit-button{
+    margin-right: 10px;
+}
+.delete-button{
+    margin-left: 10px;
+}

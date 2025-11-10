@@ -1,0 +1,44 @@
+<ng-template #noProductsMessage>
+	<div class="message">
+		<h2>No Product in Stock</h2>
+		<p>Products available in stock will appear here</p>
+	</div>
+  </ng-template>
+<div *ngIf="stock.length > 0; else noProductsMessage">
+	<h4>Products in Stock</h4>
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">Product Name</th>
+				<th scope="col">Packing</th>
+				<th scope="col">HSN</th>
+				<th scope="col">Batch No.</th>
+				<th scope="col">Expiry Date</th>
+				<th scope="col">Quantity</th>
+				<th scope="col">MRP</th>
+				<th scope="col">CGST</th>
+				<th scope="col">SGST</th>
+				<!-- <th scope="col">Actions</th> -->
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let item of stock; index as i">
+				<th scope="row">{{ i + 1 }}</th>
+				<td>{{ item.product.name }}</td>
+				<td>{{ item.product.packing }}</td>
+				<td>{{ item.product.hsn }}</td>
+				<td>{{ item.batchNo }}</td>
+				<td>{{ item.expiryDate | date}}</td>
+				<td>{{ item.quantity | number }}</td>
+				<td>{{ '₹' }} {{ item.product.mrp | number }}</td>
+				<td>{{ item.product?.cgst | number }} %</td>
+				<td>{{ item.product?.sgst | number }} %</td>
+				<!-- <td>
+					<button class="edit-button" (click)="edit(item.product.id)"><fa-icon [icon]="faPencil">Edit</fa-icon></button>
+					<button class="delete-button" (click)="delete(item.product.id)"><fa-icon [icon]="faTrashCan">Delete</fa-icon></button>                
+				</td> -->
+			</tr>
+		</tbody>
+	</table>
+</div>

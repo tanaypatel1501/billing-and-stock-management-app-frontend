@@ -1,0 +1,96 @@
+<div id="print-section">
+    <div class="invoice-header">
+        <h4 align="center">INVOICE</h4>
+        <button class="btn btn-secondary" (click)="printInvoice()">Print</button>
+    </div>  
+    <div class="row">
+        <div class="col" style="width: 20%;">
+            <img src="../../../../assets/images/GST_Logo_1.jpg" alt="GST_Logo"/>
+        </div>
+        <div class="col" style="width: 50%;">
+            <table class="details">
+                <tr><td colspan="2"><h3>{{details.name}}</h3></td></tr>
+                <tr><td colspan="2">{{details.addressLine1}},{{details.addressLine2}},{{details.city}},{{details.state}},{{details.pincode}}</td></tr>
+                <tr>
+                    <td><b>Dl No. :</b> {{details.dlNo1}}</td>
+                    <td><b>FSSAI Reg. :</b> {{details.fssaiReg}}</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.dlNo2}}</td>
+                    <td><b>GSTIN :</b> {{details.gstin}}</td>
+                </tr>
+                <tr><td colspan="2" align="center"><b>BANK NAME : {{details.bankName}}</b></td></tr>
+                <tr>
+                    <td><b>A/C No. :</b> {{details.accountNumber}}</td>
+                    <td><b>IFSC Code :</b> {{details.ifscCode}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col" style="width: 30%;">
+            <table class="purchaserDetails">
+                <tr><b>To :</b> {{bill.purchaserName}}</tr>
+                <tr>
+                    <td><b>Dl No. :</b> {{bill.dl1}}</td>
+                    <td><b>GSTIN :</b> {{bill.gstin}}</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{bill.dl2}}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><b>Invoice No :</b> {{bill.id}}</td>
+                    <td><b>Invoice Date :</b> {{bill.invoiceDate | date}} </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Product Name</th>
+                <th scope="col">Packing</th>
+                <th scope="col">HSN</th>
+                <th scope="col">Batch No.</th>
+                <th scope="col">Expiry Date</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Free</th>
+                <th scope="col">MRP</th>
+                <th scope="col">Rate</th>
+                <th scope="col">CGST</th>
+                <th scope="col">SGST</th>
+                <th scope="col">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of bill.billItems; index as i">
+                <th scope="row">{{ i + 1 }}</th>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.product.packing }}</td>
+                <td>{{ item.product.hsn }}</td>
+                <td>{{ item.batchNo }}</td>
+                <td>{{ item.expiryDate | date }}</td>
+                <td>{{ item.quantity | number }}</td>
+                <td>{{ item.free | number }}</td>
+                <td>{{ '₹' }} {{ item.product.mrp | number }}</td>
+                <td>{{ '₹' }} {{ item.rate | number }}</td>
+                <td>{{ item.product.cgst | number }} %</td>
+                <td>{{ item.product.sgst | number }} %</td>
+                <td>{{ '₹' }} {{ item.amount | number }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="row">
+        <div class="col">
+            <p><b>Amount in words:</b> {{ totalAmountInWords }}</p>
+            <p>Subject to Jabalpur Juridiction only.</p>
+            <br>
+            <br>
+            <p>Authorized Signatory</p>
+        </div>
+        <div class="col">
+            <p><b>Total :</b> {{ '₹' }} {{bill.totalAmount | number}}</p>
+        </div>
+    </div>      
+</div>
+  

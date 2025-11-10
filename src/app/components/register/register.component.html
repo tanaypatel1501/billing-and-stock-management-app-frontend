@@ -1,0 +1,49 @@
+<div class="container">
+    <div class="card mx-auto mt-3" style="max-width: 400px;">
+      <div class="card-body">
+        <form [formGroup]="validateForm">
+          <div class="alert alert-success" role="alert" *ngIf="successMessage" (click)="successMessage = null">
+            {{ successMessage }}
+          </div>
+          <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
+            {{ errorMessage }}
+          </div>
+          <h1 class="card-title">Register User</h1>
+          <div class="mb-1">
+            <label for="inputFirstname" class="form-label">First Name:</label>
+            <input type="text" class="form-control" id="inputFirstname" formControlName="firstname">
+            <div *ngIf="validateForm.get('firstname')?.hasError('required') && validateForm.get('firstname')?.touched" class="text-danger">First name is required.</div>
+          </div>
+          <div class="mb-1">
+            <label for="inputLastname" class="form-label">Last Name:</label>
+            <input type="text" class="form-control" id="inputLastname" formControlName="lastname">
+            <div *ngIf="validateForm.get('lastname')?.hasError('required') && validateForm.get('lastname')?.touched" class="text-danger">Last name is required.</div>
+          </div>
+          <div class="mb-1">
+            <label for="inputEmail" class="form-label">Email:</label>
+            <input type="email" class="form-control" id="inputEmail" formControlName="email">
+            <div *ngIf="validateForm.get('email')?.hasError('required') && validateForm.get('email')?.touched" class="text-danger">Email is required.</div>
+            <div *ngIf="validateForm.get('email')?.hasError('email') && validateForm.get('email')?.touched" class="text-danger">Invalid email format.</div>
+          </div>
+          <div class="mb-1">
+            <label for="inputPassword" class="form-label">Password:</label>
+            <input type="password" class="form-control" id="inputPassword" formControlName="password">
+            <div *ngIf="validateForm.get('password')?.hasError('required') && validateForm.get('password')?.touched" class="text-danger">Password is required.</div>
+            <div *ngIf="validateForm.get('password')?.hasError('invalidPassword') && validateForm.get('password')?.touched" class="text-danger">
+              Password must be at least 8 characters long and contain at least one special character, one capital letter, and one digit.
+            </div>
+          </div>
+          <div class="mb-2">
+            <label for="inputConfirm" class="form-label">Confirm Password:</label>
+            <input type="password" class="form-control" id="inputConfirm" formControlName="confirm">
+            <div *ngIf="validateForm.get('confirm')?.hasError('required') && validateForm.get('confirm')?.touched" class="text-danger">Confirm password is required.</div>
+            <div *ngIf="validateForm.get('confirm')?.hasError('confirm') && validateForm.get('confirm')?.touched" class="text-danger">Passwords do not match.</div>
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-block" style="background-color: #48e3cc; color: #000;" (click)="register(this.validateForm.value)">Register</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  

@@ -1,0 +1,34 @@
+.bills {
+    list-style: none;
+    padding: 10px;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .bill-item {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    padding: 20px;
+    max-width: 800px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between; /* Pushes the delete button to the right */
+    align-items: flex-start; /* Aligns note content to the top */
+    margin-bottom: 10px;
+  }
+  
+  .bill-content {
+    flex-grow: 1; /* Allows note content to take available space */
+  }
+  
+  .bills li p {
+    font-size: 18px;
+    margin: 0;
+    padding-right: 10px; /* Add some spacing between note and lastEdited */
+  }
+  
+  

@@ -1,0 +1,8 @@
+{
+    "name": "billing-and-stock-management-app",
+    "productName": "Billing and Stock Management App",
+    "version": "1.0.0",
+    "description": "Angular CLI + Electron",
+    "main": "electron.prod.js",
+    "license": "MIT"
+}

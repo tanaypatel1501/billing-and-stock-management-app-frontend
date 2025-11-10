@@ -1,0 +1,18 @@
+.note-title {
+    font-size: 24px; 
+    font-weight: bold; 
+    color: #333; 
+    text-align: center;
+    margin-top: 15%; 
+  }
+  
+  .note-text {
+    font-size: 36px; 
+    font-weight: 700;
+    color: #48e3cc; 
+    text-transform: uppercase; 
+    letter-spacing: 2px;
+    margin-top: 10px; 
+    text-align: center; 
+  }
+  

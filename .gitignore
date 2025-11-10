@@ -1,51 +1,75 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
+# ===========================================
+# Angular & Node.js Project Git Ignore
+# ===========================================
 
-# Compiled output
-/dist
-/build
-packages/**/*.exe
-/tmp
-/out-tsc
-/bazel-out
+# Build and output folders
+dist/
+build/
+tmp/
+out-tsc/
+bazel-out/
+.angular/
+.angular/cache/
+packages/
+!packages/**/*.json   # keep package metadata if any
 
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json
 
-# IDEs and editors
+# ===========================================
+# IDE / Editor files
+# ===========================================
 .idea/
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .project
 .classpath
 .c9/
 *.launch
 .settings/
 *.sublime-workspace
+.history/
 
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history/*
-
-# Miscellaneous
-/.angular/cache
+# ===========================================
+# Test, Coverage, and Temp Files
+# ===========================================
 .sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
+connect.lock
+coverage/
+libpeerconnection.log
 testem.log
-/typings
+typings/
 
-# System files
+# ===========================================
+# System / OS Files
+# ===========================================
 .DS_Store
 Thumbs.db
 
-# Environment files
-src/environments/environment*.ts    
+# ===========================================
+# Environment Files
+# ===========================================
+src/environments/environment*.ts
 
-# Logs
-npm-debug.log
-yarn-error.log
+# ===========================================
+# Binaries and Large Artifacts
+# ===========================================
+*.exe
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+*.log
+
+# ===========================================
+# Miscellaneous
+# ===========================================
+/.env

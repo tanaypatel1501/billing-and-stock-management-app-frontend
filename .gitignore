@@ -2,6 +2,8 @@
 
 # Compiled output
 /dist
+/build
+packages/**/*.exe
 /tmp
 /out-tsc
 /bazel-out

@@ -24,6 +24,7 @@
               "src/favicon.ico",
               "src/assets",
               "src/package.json",
+              "src/_redirects",
               "src/electron.prod.js"
             ],
             "styles": [

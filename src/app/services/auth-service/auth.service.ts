@@ -2,11 +2,12 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable, EventEmitter } from '@angular/core';
 import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { UserStorageService } from '../storage/user-storage.service';
-import { environment } from 'src/environments/environment';
+// import { environment } from 'src/environments/environment';
 import { AppComponent } from 'src/app/app.component';
 import jwt_decode from 'jwt-decode';
 
-const BASIC_URL = environment["BASIC_URL"];
+// const BASIC_URL = environment["BASIC_URL"]; --Old environment.ts way
+const BASIC_URL = (window as any).runtimeConfig?.BASIC_URL || '';   // Updated to runtime config.json
 const AUTH_HEADER = "authorization";
 
 @Injectable({

@@ -31,7 +31,7 @@ export class AddStockComponent implements OnInit {
     });
 
     // Fetch and populate the product list on component initialization
-    this.authService.getProducts(this.userId).subscribe(
+    this.authService.getProducts().subscribe(
       (response: any) => {
         this.products = response; // Store the list of products
       },

@@ -28,7 +28,7 @@ export class DashboardComponent implements OnInit{
   }
 
   getProducts(userId:any) {
-    this.authService.getProducts(userId).subscribe((data) => {
+    this.authService.getProducts().subscribe((data) => {
       this.products = data;
       console.log(data);
     });

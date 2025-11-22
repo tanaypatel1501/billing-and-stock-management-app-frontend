@@ -8,7 +8,7 @@ fetch('/assets/config.json')
   .then(response => response.json())
   .then(config => {
     // Store config globally so you can access it anywhere
-    (window as any).__env = config;
+    (window as any).runtimeConfig  = config;
 
     return platformBrowserDynamic().bootstrapModule(AppModule);
   })

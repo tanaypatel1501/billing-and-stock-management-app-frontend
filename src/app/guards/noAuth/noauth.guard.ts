@@ -4,29 +4,24 @@ import { Observable } from 'rxjs';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root'
 })
 export class NoauthGuard implements CanActivate {
 
-  constructor(private router: Router) { }
+  constructor(private router: Router) { }
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): boolean {
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): boolean | UrlTree { // Updated return type
 
-    if (UserStorageService.hasToken() && UserStorageService.isUserLoggedIn()) {
-      this.router.navigateByUrl("/user/dashboard")
-      return false;
-    } else if (UserStorageService.hasToken() && UserStorageService.isAdminLoggedIn()) {
-      this.router.navigateByUrl("/admin/dashboard");
-      return false;
-    }
-    return true;
-  }
-
-
+    if (UserStorageService.hasToken() && UserStorageService.isUserLoggedIn()) {
+      // Redirect to user dashboard if logged in
+      return this.router.parseUrl("/user/dashboard");
+    } else if (UserStorageService.hasToken() && UserStorageService.isAdminLoggedIn()) {
+      // Redirect to admin dashboard if logged in
+      return this.router.parseUrl("/admin/dashboard");
+    }
+    return true;
+  }
 }
-
-
-

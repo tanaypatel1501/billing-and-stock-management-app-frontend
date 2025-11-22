@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER,NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -13,6 +13,8 @@ import { LoadingInterceptor } from './interceptors/loading.interceptor';
 import { LoadingComponent } from './loading/loading.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { AuthService } from './services/auth-service/auth.service';
+import { initializeApp } from './app-init';
 
 @NgModule({
   declarations: [
@@ -37,6 +39,12 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
       provide: HTTP_INTERCEPTORS,
       useClass: LoadingInterceptor,
       multi: true, 
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeApp, // The factory function to call
+      deps: [AuthService], // List of dependencies (AuthService)
+      multi: true, // Required for APP_INITIALIZER
     },
   ],
   bootstrap: [AppComponent]

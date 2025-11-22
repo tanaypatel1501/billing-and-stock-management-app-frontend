@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AuthService } from 'src/app/services/auth-service/auth.service';
+import { AuthService } from '../auth-service/auth.service';
 import { UserStorageService } from '../storage/user-storage.service';
 import jwt_decode from 'jwt-decode';
 import { Router } from '@angular/router';

@@ -1,14 +1,11 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable, EventEmitter } from '@angular/core';
-import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, map, tap } from 'rxjs';
 import { UserStorageService } from '../storage/user-storage.service';
-// import { environment } from 'src/environments/environment';
-import { AppComponent } from 'src/app/app.component';
+import { ConfigService } from '../config.service';
 import jwt_decode from 'jwt-decode';
 
-// const BASIC_URL = environment["BASIC_URL"]; --Old environment.ts way
-const BASIC_URL = (window as any).runtimeConfig?.BASIC_URL || '';   // Updated to runtime config.json
-const AUTH_HEADER = "authorization";
+const AUTH_HEADER = 'authorization';
 
 @Injectable({
   providedIn: 'root'
@@ -17,175 +14,170 @@ export class AuthService {
 
   tokenRefreshed = new EventEmitter<void>();
   static productId: any;
-  constructor(private http: HttpClient, private userStorageService: UserStorageService) { }
 
-  
+  constructor(
+    private http: HttpClient,
+    private userStorageService: UserStorageService,
+    private configService: ConfigService   // <-- Injected correctly
+  ) {}
+
+  /** Safe getter — always resolves latest config.json value */
+  private get baseUrl(): string {
+    const url = this.configService.apiBaseUrl;
+    if (!url) {
+      console.error('❌ BASE_URL missing — config.json not loaded yet.');
+    }
+    return url || '';
+  }
+
   login(username: string, password: string): any {
-    return this.http.post<[]>(BASIC_URL + 'authenticate', {
-      username,
-      password
-    }, { observe: 'response' })
+    return this.http
+      .post<[]>(`${this.baseUrl}authenticate`, { username, password }, { observe: 'response' })
       .pipe(
-        tap(_ => this.log('User Authentication')),
+        tap(() => console.log('User Authentication')),
         map((res: HttpResponse<any>) => {
-          console.log("res in service", res);
           this.userStorageService.saveUser(res.body);
-          console.log(res);
+
           const token = res.headers.get(AUTH_HEADER);
-          console.log(token)
-          const bearerToken = token ? token.substring(7) : '';
-          console.log(bearerToken)
-          this.userStorageService.saveToken(bearerToken);
-          const decodedToken : any = jwt_decode(bearerToken); 
-            if (decodedToken && decodedToken.exp) {
-              const expirationTime = (new Date(decodedToken.exp * 1000)).getTime(); 
-              this.userStorageService.saveTokenExpiration(expirationTime);
-              this.tokenRefreshed.emit(); // Emit the event
-            }
-          
+          const bearer = token ? token.substring(7) : '';
+
+          this.userStorageService.saveToken(bearer);
+
+          const decoded: any = jwt_decode(bearer);
+          if (decoded?.exp) {
+            const expirationTime = decoded.exp * 1000;
+            this.userStorageService.saveTokenExpiration(expirationTime);
+            this.tokenRefreshed.emit();
+          }
+
           return res;
-        }));
+        })
+      );
   }
 
   refreshToken(): any {
-    console.log('Refreshing token...'); // Add this log message
-    return this.http.post(BASIC_URL + 'refresh-token', null, {
-      headers: this.createAuthorizationHeader(),
-      observe: 'response' // Ensure you can access response headers
-    })
-    .pipe(
-      tap((res: HttpResponse<any>) => {
-        console.log('Token refresh response:', res); // Add this log message
-      }),
-      catchError((error: any) => {
-        console.error('Token refresh error:', error); // Add this log message
-        throw error;
+    return this.http
+      .post(`${this.baseUrl}refresh-token`, null, {
+        headers: this.createAuthorizationHeader(),
+        observe: 'response'
       })
-    );
+      .pipe(
+        tap(res => console.log('Token refresh response:', res)),
+        catchError(error => {
+          console.error('Token refresh error:', error);
+          throw error;
+        })
+      );
   }
-  
+
   register(data: any): Observable<any> {
-    console.log(data);
-    return this.http.post(BASIC_URL + "sign-up", data);
-  }  
+    return this.http.post(`${this.baseUrl}sign-up`, data);
+  }
 
   createAuthorizationHeader(): HttpHeaders {
-    let authHeaders: HttpHeaders = new HttpHeaders();
-    return authHeaders.set(
+    return new HttpHeaders().set(
       'Authorization',
       'Bearer ' + UserStorageService.getToken()
     );
   }
 
-  log(message: string): void {
-    console.log(`User Auth Service: ${message}`);
-  }
-
-  handleError<T>(operation = 'operation', result?: T): any {
-    return (error: any): Observable<T> => {
-      console.error(error);
-      this.log(`${operation} failed: ${error.message}`);
-      return of(result as T);
-    };
-  }
-
+  // ------ PRODUCT ------
   addProduct(data: any): Observable<any> {
-    return this.http.post(BASIC_URL + `api/product/add`, data, {
-      headers: this.createAuthorizationHeader()
-    })
+    return this.http.post(`${this.baseUrl}api/product/add`, data,
+      { headers: this.createAuthorizationHeader() }
+    );
   }
 
-  getProducts(userId: any): Observable<any> {
-    return this.http.get(BASIC_URL + `api/product/all`, {
-      headers: this.createAuthorizationHeader(),
-    })
+  getProducts(): Observable<any> {
+    return this.http.get(`${this.baseUrl}api/product/all`,
+      { headers: this.createAuthorizationHeader() }
+    );
   }
 
   getProductById(productId: any): Observable<any> {
-    return this.http.get(BASIC_URL + `api/product/${productId}`, {
-      headers: this.createAuthorizationHeader(),
-    })
-  }
-
-  editProduct(productId: number,data:any): Observable<any> {
-    return this.http.put(BASIC_URL + `api/product/edit/${productId}`, data,{
-      headers: this.createAuthorizationHeader(),
-    })
-  }
-
-  deleteProduct(productId:any): Observable<any>{
-    return this.http.delete(
-      BASIC_URL + `api/product/delete/${productId}`,
-      {
-        headers: this.createAuthorizationHeader(),
-      }
-    );
-  }
-  
-  addStock(data:any):Observable<any> {
-    return this.http.post(BASIC_URL + `api/stock/add`, data, {
-      headers: this.createAuthorizationHeader()
-    })
-  }
-
-  getStock(userId:any):Observable<any>{
-    return this.http.get(BASIC_URL + `api/stock/user/${userId}`,{
-      headers: this.createAuthorizationHeader()
-    })
-  }
-
-  updateStock(data:any):Observable<any> {
-    return this.http.post(BASIC_URL + `api/stock/update`, data, {
-      headers: this.createAuthorizationHeader()
-    })
-  }
-
-  addDetails(userId:number,data:any):Observable<any>{
-    return this.http.post(BASIC_URL + `api/details/create/${userId}`,data,{
-      headers:this.createAuthorizationHeader()
-    })
-  }
-  getDetailsByUserId(userId:any):Observable<any>{
-    return this.http.get(BASIC_URL + `api/details/${userId}`,{
-      headers:this.createAuthorizationHeader()
-    })
-  }
-  editDetails(userId: number,data:any): Observable<any> {
-    return this.http.put(BASIC_URL + `api/details/update/${userId}`, data,{
-      headers: this.createAuthorizationHeader(),
-    })
-  }
-  deleteDetails(userId:any): Observable<any>{
-    return this.http.delete(
-      BASIC_URL + `api/details/delete/${userId}`,
-      {
-        headers: this.createAuthorizationHeader(),
-      }
+    return this.http.get(`${this.baseUrl}api/product/${productId}`,
+      { headers: this.createAuthorizationHeader() }
     );
   }
 
-  createBill(data:any):Observable<any>{
-    return this.http.post(BASIC_URL + `api/bill/add`, data,{
-      headers: this.createAuthorizationHeader(),
-    })
-  }
-  addBillItem(data:any):Observable<any>{
-    return this.http.post(BASIC_URL + `api/bill_items/add`, data,{
-      headers: this.createAuthorizationHeader(),
-    })
+  editProduct(productId: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}api/product/edit/${productId}`, data,
+      { headers: this.createAuthorizationHeader() }
+    );
   }
 
-  getBillById(billId:any):Observable<any>{
-    return this.http.get(BASIC_URL + `api/bill/${billId}`,{
-      headers:this.createAuthorizationHeader()
-    })
+  deleteProduct(productId: any): Observable<any> {
+    return this.http.delete(`${this.baseUrl}api/product/delete/${productId}`,
+      { headers: this.createAuthorizationHeader() }
+    );
   }
 
-  getBills(userId:any):Observable<any>{
-    return this.http.get(BASIC_URL + `api/bill/user/${userId}`,{
-      headers:this.createAuthorizationHeader()
-    })
+  // ------ STOCK ------
+  addStock(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}api/stock/add`, data,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  getStock(userId: any): Observable<any> {
+    return this.http.get(`${this.baseUrl}api/stock/user/${userId}`,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  updateStock(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}api/stock/update`, data,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  // ------ DETAILS ------
+  addDetails(userId: number, data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}api/details/create/${userId}`, data,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  getDetailsByUserId(userId: any): Observable<any> {
+    return this.http.get(`${this.baseUrl}api/details/${userId}`,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  editDetails(userId: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}api/details/update/${userId}`, data,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  deleteDetails(userId: any): Observable<any> {
+    return this.http.delete(`${this.baseUrl}api/details/delete/${userId}`,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  // ------ BILLING ------
+  createBill(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}api/bill/add`, data,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  addBillItem(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}api/bill_items/add`, data,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  getBillById(billId: any): Observable<any> {
+    return this.http.get(`${this.baseUrl}api/bill/${billId}`,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  getBills(userId: any): Observable<any> {
+    return this.http.get(`${this.baseUrl}api/bill/user/${userId}`,
+      { headers: this.createAuthorizationHeader() }
+    );
   }
 }
-
-

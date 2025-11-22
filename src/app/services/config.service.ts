@@ -4,17 +4,11 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class ConfigService {
-  private config: any;
+  
+  constructor() { }
 
-  loadConfig() {
-    return fetch('/assets/config.json')
-      .then(res => res.json())
-      .then(json => {
-        this.config = json;
-      });
-  }
-
-  get apiBaseUrl() {
-    return this.config?.BASIC_URL;
+  get apiBaseUrl(): string {
+    // Read directly from the window object where main.ts saved it
+    return (window as any).runtimeConfig?.BASIC_URL;
   }
 }

@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable, EventEmitter } from '@angular/core';
-import { Observable, catchError, map, tap } from 'rxjs';
+import { Observable, catchError, map, tap,  BehaviorSubject } from 'rxjs';
 import { UserStorageService } from '../storage/user-storage.service';
 import { ConfigService } from '../config.service';
 import jwt_decode from 'jwt-decode';
@@ -14,6 +14,11 @@ export class AuthService {
 
   tokenRefreshed = new EventEmitter<void>();
   static productId: any;
+
+  // NEW: State for Navbar visibility
+  private isUserLoggedIn$ = new BehaviorSubject<boolean>(UserStorageService.hasToken());
+  // Expose the state as a public observable for the Navbar component to subscribe to
+  public isAuthenticated$: Observable<boolean> = this.isUserLoggedIn$.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -61,6 +66,7 @@ export class AuthService {
           const bearer = token ? token.substring(7) : '';
 
           this.userStorageService.saveToken(bearer);
+          this.updateNavBar();
 
           const decoded: any = jwt_decode(bearer);
           if (decoded?.exp) {
@@ -73,7 +79,18 @@ export class AuthService {
         })
       );
   }
+  // NEW: Helper method to update the navbar state (call this after login/logout)
+  updateNavBar(): void {
+    // Check if a token is present, which is the definition of "logged in"
+    this.isUserLoggedIn$.next(UserStorageService.hasToken());
+  }
 
+  // NEW: Overwrite the static signOut from UserStorageService to also emit state change
+  signOut(): void {
+    UserStorageService.signOut(); // Clear local storage
+    this.updateNavBar(); // Inform the Navbar that the state has changed
+  }
+  
   refreshToken(): any {
     return this.http
       .post(`${this.baseUrl}refresh-token`, null, {

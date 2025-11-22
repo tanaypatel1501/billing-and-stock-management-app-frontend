@@ -1,77 +1,89 @@
-<!-- Default Navbar -->
-<nav class="navbar navbar-expand-lg" data-bs-theme="dark" *ngIf="!isUserLoggedIn && !isAdminLoggedIn" style="background-color: #000;">
-    <div class="container-fluid">
-      <a class="navbar-brand" routerLink="home" style="color: #48e3cc;">GST Medicose</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScrollDefault"
-        aria-controls="navbarScrollDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarScrollDefault">
-        <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;"></ul>
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link active" routerLink="/register" routerLinkActive="active-link" style="color: #48e3cc;">Register</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" routerLink="/login" routerLinkActive="active-link" style="color: #48e3cc;">Login</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  
+<!-- 
+  CRITICAL FIX: Use 'isAuthenticated$ | async' to dynamically determine if the user 
+  is logged in. This observable updates immediately when AuthService.updateNavBar() is called 
+  (i.e., after login/logout).
+-->
+
+<!-- Public Nav Bar (Displayed when NOT authenticated) -->
+<ng-container *ngIf="!(isAuthenticated$ | async)">
+  <nav class="navbar navbar-expand-lg" data-bs-theme="dark" style="background-color: #000;">
+    <div class="container-fluid">
+      <a class="navbar-brand" routerLink="home" style="color: #48e3cc;">GST Medicose</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScrollDefault"
+        aria-controls="navbarScrollDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarScrollDefault">
+        <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;"></ul>
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/register" routerLinkActive="active-link" style="color: #48e3cc;">Register</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/login" routerLinkActive="active-link" style="color: #48e3cc;">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</ng-container>
+  
+<!-- Authenticated Nav Bars (Displayed when isAuthenticated$ is true) -->
+<ng-container *ngIf="(isAuthenticated$ | async)">
+
   <!-- User Nav Bar -->
-  <nav class="navbar navbar-expand-lg" data-bs-theme="dark" *ngIf="isUserLoggedIn && !isAdminLoggedIn" style="background-color: #000;">
-    <div class="container-fluid">
-      <a class="navbar-brand" routerLink="user/dashboard" style="color: #48e3cc;">GST Medicose</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScrollUser"
-        aria-controls="navbarScrollUser" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarScrollUser">
-        <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;"></ul>
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/user/add-stock" routerLinkActive="active-link" style="color: #48e3cc;">Add Stock</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/user/create-bill" routerLinkActive="active-link" style="color: #48e3cc;">Create Bill</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/user/bills" routerLinkActive="active-link" style="color: #48e3cc;">Show Bills</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/user/details" routerLinkActive="active-link" style="color: #48e3cc;">Details</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" (click)="logout()" routerLinkActive="active-link" style="color: #48e3cc;">Log out</a>
-          </li>
-        </ul>
-      </div>
-  </div>
+  <!-- Note: We use the synchronous getter 'isUserLoggedIn' here for role differentiation, 
+       but the overall visibility is controlled by the observable above. -->
+  <nav class="navbar navbar-expand-lg" data-bs-theme="dark" *ngIf="isUserLoggedIn" style="background-color: #000;">
+    <div class="container-fluid">
+      <a class="navbar-brand" routerLink="user/dashboard" style="color: #48e3cc;">GST Medicose</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScrollUser"
+        aria-controls="navbarScrollUser" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarScrollUser">
+        <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;"></ul>
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/user/add-stock" routerLinkActive="active-link" style="color: #48e3cc;">Add Stock</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/user/create-bill" routerLinkActive="active-link" style="color: #48e3cc;">Create Bill</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/user/bills" routerLinkActive="active-link" style="color: #48e3cc;">Show Bills</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/user/details" routerLinkActive="active-link" style="color: #48e3cc;">Details</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" (click)="logout()" style="color: #48e3cc;">Log out</a>
+          </li>
+        </ul>
+      </div>
+  </div>
+  </nav>
+
+  <!-- Admin Nav Bar -->
+  <nav class="navbar navbar-expand-lg" data-bs-theme="dark" *ngIf="isAdminLoggedIn" style="background-color: #000;">
+    <div class="container-fluid">
+      <a class="navbar-brand" routerLink="admin/dashboard" style="color: #48e3cc;">GST Medicose</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScrollAdmin"
+        aria-controls="navbarScrollAdmin" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarScrollAdmin">
+        <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;"></ul>
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/add-product" routerLinkActive="active-link" style="color: #48e3cc;">Add Product</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" (click)="logout()" style="color: #48e3cc;">Log out</a>
+          </li>
+        </ul>
+      </div>
+  </div>
 </nav>
 
-  <!-- Admin Nav Bar -->
-  <nav class="navbar navbar-expand-lg" data-bs-theme="dark" *ngIf="isAdminLoggedIn" style="background-color: #000;">
-    <div class="container-fluid">
-      <a class="navbar-brand" routerLink="admin/dashboard" style="color: #48e3cc;">GST Medicose</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScrollAdmin"
-        aria-controls="navbarScrollAdmin" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarScrollAdmin">
-        <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;"></ul>
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/admin/add-product" routerLinkActive="active-link" style="color: #48e3cc;">Add Product</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" (click)="logout()" routerLinkActive="active-link" style="color: #48e3cc;">Log out</a>
-          </li>
-        </ul>
-      </div>
-  </div>
-</nav>
-
-
-
+</ng-container>

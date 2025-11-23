@@ -216,4 +216,24 @@ export class AuthService {
       { headers: this.createAuthorizationHeader() }
     );
   }
+
+  getProfile(): Observable<any> {
+    // Assuming createAuthorizationHeader() method exists to add JWT
+    return this.http.get(`${this.baseUrl}api/user/profile`, {
+      headers: this.createAuthorizationHeader()
+    });
+  }
+
+  updateProfile(data: any): Observable<any> {
+    // *** Switched to HTTP PATCH verb as requested ***
+    return this.http.patch(`${this.baseUrl}api/user/profile`, data, { 
+      headers: this.createAuthorizationHeader()
+    });
+  }
+
+  changePassword(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}api/user/change-password`, data, {
+      headers: this.createAuthorizationHeader()
+    });
+  }
 }

@@ -6,12 +6,12 @@
         <a class="navbar-brand" 
            [routerLink]="(isAuthenticated$ | async) ? (isAdminLoggedIn ? 'admin/dashboard' : 'user/dashboard') : 'home'" 
            style="color: #48e3cc;">
-            GST Medicose
+             GST Medicose
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
           aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarContent">
@@ -30,33 +30,41 @@
             <!-- Link Group 2: Logged In (User/Admin) Links -->
             <ul class="navbar-nav ml-auto" *ngIf="(isAuthenticated$ | async)">
               
-              <!-- If Admin, show Admin Links -->
-              <ng-container *ngIf="isAdminLoggedIn">
-                <li class="nav-item">
-                    <a class="nav-link" routerLink="/admin/add-product" routerLinkActive="active-link" style="color: #48e3cc;">Add Product</a>
-                </li>
-              </ng-container>
+                <!-- If Admin, show Admin Links -->
+                <ng-container *ngIf="isAdminLoggedIn">
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/admin/add-product" routerLinkActive="active-link" style="color: #48e3cc;">Add Product</a>
+                    </li>
+                    <li class="nav-item">
+                        <!-- FIX: Changed from /admin/profile to /profile -->
+                        <a class="nav-link" routerLink="/profile" routerLinkActive="active-link" style="color: #48e3cc;">Profile</a>
+                    </li>
+                </ng-container>
 
-              <!-- If User (and not Admin), show User Links -->
-              <ng-container *ngIf="isUserLoggedIn && !isAdminLoggedIn">
-                <li class="nav-item">
-                    <a class="nav-link" routerLink="/user/add-stock" routerLinkActive="active-link" style="color: #48e3cc;">Add Stock</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" routerLink="/user/create-bill" routerLinkActive="active-link" style="color: #48e3cc;">Create Bill</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" routerLink="/user/bills" routerLinkActive="active-link" style="color: #48e3cc;">Show Bills</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" routerLink="/user/details" routerLinkActive="active-link" style="color: #48e3cc;">Details</a>
-                </li>
-              </ng-container>
+                <!-- If User (and not Admin), show User Links -->
+                <ng-container *ngIf="isUserLoggedIn && !isAdminLoggedIn">
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/user/add-stock" routerLinkActive="active-link" style="color: #48e3cc;">Add Stock</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/user/create-bill" routerLinkActive="active-link" style="color: #48e3cc;">Create Bill</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/user/bills" routerLinkActive="active-link" style="color: #48e3cc;">Show Bills</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/user/details" routerLinkActive="active-link" style="color: #48e3cc;">Details</a>
+                    </li>
+                    <li class="nav-item">
+                        <!-- FIX: Changed from /user/profile to /profile -->
+                        <a class="nav-link" routerLink="/profile" routerLinkActive="active-link" style="color: #48e3cc;">Profile</a>
+                    </li>
+                </ng-container>
               
-              <!-- Logout button (shared) -->
-              <li class="nav-item">
-                  <a class="nav-link" (click)="logout()" style="color: #48e3cc;">Log out</a>
-              </li>
+                <!-- Logout button (shared) -->
+                <li class="nav-item">
+                    <a class="nav-link" (click)="logout()" style="color: #48e3cc;">Log out</a>
+                </li>
             </ul>
 
         </div>

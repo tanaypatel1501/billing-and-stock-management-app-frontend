@@ -40,7 +40,7 @@
             <div *ngIf="validateForm.get('confirm')?.hasError('confirm') && validateForm.get('confirm')?.touched" class="text-danger">Passwords do not match.</div>
           </div>
           <div class="text-center">
-            <button type="submit" class="btn btn-primary btn-block" style="background-color: #48e3cc; color: #000;" (click)="register(this.validateForm.value)">Register</button>
+            <button type="submit" class="btn btn-primary btn-block" style="background-color: #48e3cc; color: #000;" (click)="register(this.validateForm.value)" [disabled]="validateForm.invalid">Register</button>
           </div>
         </form>
       </div>

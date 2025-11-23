@@ -1,0 +1,118 @@
+/* --- Global Styles from Login Reference --- */
+/* Apply custom border style to inputs and cards */
+.form-control, .profile-card, .modal-content-custom {
+    border: 0.5px solid #48e3cc;
+    outline: none;
+    border-radius: 0.25rem; /* Match Bootstrap default */
+}
+
+/* Custom focus effect for inputs */
+.form-control:focus {
+    border: 2px solid #48e3cc;
+    box-shadow: 0 0 0 0.25rem rgba(72, 227, 204, 0.5); /* Light shadow on focus */
+    outline: none;
+}
+
+/* Primary Accent Color Button */
+.btn-custom-primary {
+    background-color: #48e3cc;
+    color: #000; /* Black text on bright background */
+    border: none;
+    font-weight: 600;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-custom-primary:hover:not(:disabled) {
+    background-color: #38c8b2; /* Slightly darker shade on hover */
+    color: #000;
+}
+
+.btn-custom-primary:disabled {
+    background-color: #48e3cc80;
+    cursor: not-allowed;
+}
+
+
+/* --- Profile Specific Styles --- */
+
+.profile-card {
+    background-color: #ffffff; /* White background */
+    color: #343a40; /* Dark text for contrast */
+}
+
+.text-dark {
+    color: #212529 !important; /* Ensure main labels are dark */
+}
+
+/* Style for the inline edit icon */
+.btn-edit-icon {
+    padding: 0.25rem 0.5rem; 
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    background-color: transparent;
+}
+
+.btn-edit-icon:hover {
+    color: #38c8b2;
+    opacity: 1;
+}
+
+.btn-icon-action-link {
+    background-color: transparent;
+    border: none;
+    /* Minimal padding for a better clickable area */
+    padding: 0.25rem 0.5rem; 
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.btn-icon-action-link:hover {
+    opacity: 1;
+}
+/* Custom alert colors for better visibility */
+.alert-success {
+    background-color: #e6fffb;
+    border-color: #48e3cc;
+    color: #1a6f64;
+}
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+
+/* --- Modal Styles (Light Content) --- */
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Dark transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease;
+}
+
+/* Modal Content is now white/light-themed */
+.modal-content-custom {
+    background-color: #ffffff;
+    color: #212529;
+    width: 100%;
+    max-width: 400px;
+    /* Use custom border styling defined globally */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    border-radius: 8px; 
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}

@@ -16,10 +16,11 @@ export class UserGuard implements CanActivate {
     state: RouterStateSnapshot
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | (boolean | UrlTree) { 
 
-    if (UserStorageService.isAdminLoggedIn()) {
-      alert("ERROR: You don't have access to this page.");
-      return this.router.parseUrl('/admin/dashboard'); 
-    } else if (!UserStorageService.hasToken()) {
+//     if (UserStorageService.isAdminLoggedIn()) {
+//       alert("ERROR: You don't have access to this page.");
+//       return this.router.parseUrl('/admin/dashboard'); 
+//     } else 
+    if (!UserStorageService.hasToken()) {
       UserStorageService.signOut();
       alert("ERROR: You are not logged in. Please login first.");
       return this.router.parseUrl('/login'); 

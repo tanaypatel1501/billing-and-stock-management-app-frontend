@@ -7,7 +7,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { LoadingInterceptor } from './interceptors/loading.interceptor';
 import { LoadingComponent } from './loading/loading.component';
@@ -15,6 +15,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AuthService } from './services/auth-service/auth.service';
 import { initializeApp } from './app-init';
+import { ProfileComponent } from './components/profile/profile.component';
+
 
 @NgModule({
   declarations: [
@@ -24,12 +26,14 @@ import { initializeApp } from './app-init';
     LoginComponent,
     RegisterComponent,
     NavbarComponent,
-    NotFoundComponent
+    NotFoundComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    FormsModule,
     ReactiveFormsModule,
     NgbModule,
     FontAwesomeModule,

@@ -1,0 +1,131 @@
+<div class="container mt-5" style="max-width: 800px;">
+    <div *ngIf="feedbackMessage" class="alert mb-4 text-center"
+        [ngClass]="{'alert-success': !isError, 'alert-danger': isError}">
+        {{ feedbackMessage }}
+    </div>
+
+    <div class="card shadow-lg profile-card">
+        <h4 class="text-center mb-4 mt-4 text-dark">Profile Details</h4>
+        <div class="card-body" *ngIf="userProfile">
+            
+            <!-- ROW: First Name (Editable) -->
+            <div class="row mb-3 align-items-center border-bottom border-light-subtle pb-2">
+                <div class="col-md-3 fw-bold text-dark">First Name:</div>
+                <div class="col-md-7">
+                    <span *ngIf="!isEditing.firstname" class="fs-5 text-dark">{{ userProfile.firstname }}</span>
+                    <input *ngIf="isEditing.firstname" type="text" class="form-control" [(ngModel)]="editData.firstname">
+                </div>
+                <!-- Column size fixed to col-md-2 to prevent overflow -->
+                <div class="col-md-2 text-end">
+                    <!-- Edit Button (Pencil Icon) -->
+                    <button *ngIf="!isEditing.firstname" class="btn btn-sm btn-edit-icon" (click)="enableEdit('firstname')" title="Edit First Name">
+                        <fa-icon [icon]="faPencil"></fa-icon>
+                    </button>
+                    <!-- Save/Cancel Buttons (Check/Times Icons) -->
+                    <div *ngIf="isEditing.firstname" class="d-flex justify-content-end">
+                        <!-- Save: Uses transparent style + text-success for green icon -->
+                        <button class="btn btn-sm btn-icon-action-link text-success me-1" (click)="saveProfile('firstname')" title="Save">
+                            <fa-icon [icon]="faCheck"></fa-icon>
+                        </button>
+                        <!-- Cancel: Uses transparent style + text-danger for red icon -->
+                        <button class="btn btn-sm btn-icon-action-link text-danger" (click)="cancelEdit('firstname')" title="Cancel">
+                            <fa-icon [icon]="faTimes"></fa-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW: Last Name (Editable) -->
+            <div class="row mb-3 align-items-center border-bottom border-light-subtle pb-2">
+                <div class="col-md-3 fw-bold text-dark">Last Name:</div>
+                <div class="col-md-7">
+                    <span *ngIf="!isEditing.lastname" class="fs-5 text-dark">{{ userProfile.lastname }}</span>
+                    <input *ngIf="isEditing.lastname" type="text" class="form-control" [(ngModel)]="editData.lastname">
+                </div>
+                <div class="col-md-2 text-end">
+                    <!-- Edit Button (Pencil Icon) -->
+                    <button *ngIf="!isEditing.lastname" class="btn btn-sm btn-edit-icon" (click)="enableEdit('lastname')" title="Edit Last Name">
+                        <fa-icon [icon]="faPencil"></fa-icon>
+                    </button>
+                    <!-- Save/Cancel Buttons (Check/Times Icons) -->
+                    <div *ngIf="isEditing.lastname" class="d-flex justify-content-end">
+                        <button class="btn btn-sm btn-icon-action-link text-success me-1" (click)="saveProfile('lastname')" title="Save">
+                            <fa-icon [icon]="faCheck"></fa-icon>
+                        </button>
+                        <button class="btn btn-sm btn-icon-action-link text-danger" (click)="cancelEdit('lastname')" title="Cancel">
+                            <fa-icon [icon]="faTimes"></fa-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW: Email (Display Only) -->
+            <div class="row mb-3 align-items-center border-bottom border-light-subtle pb-2">
+                <div class="col-md-3 fw-bold text-dark">Email:</div>
+                <div class="col-md-7">
+                    <span class="fs-5 text-muted">{{ userProfile.email }}</span>
+                </div>
+                <div class="col-md-2 text-end">
+                    <!-- Email is read-only -->
+                </div>
+            </div>
+
+            <!-- ROW: Password (Change Button) -->
+            <div class="row mb-3 align-items-center pb-2">
+                <div class="col-md-3 fw-bold text-dark">Password:</div>
+                <div class="col-md-7">
+                    <span class="fs-5 text-muted">••••••••</span>
+                </div>
+                <div class="col-md-2 text-end">
+                    <!-- The "Change" text button fits comfortably in col-md-2 -->
+                    <button class="btn btn-sm btn-custom-primary" (click)="openChangePassword()" title="Change Password">Change</button>
+                </div>
+            </div>
+
+        </div>
+        <div class="card-body text-center" *ngIf="!userProfile">
+            <p class="text-dark">Loading profile...</p>
+        </div>
+    </div>
+</div>
+
+<!-- CUSTOM MODAL FOR PASSWORD CHANGE -->
+<div class="modal-backdrop" *ngIf="showPasswordModal">
+    <div class="modal-content-custom p-4 rounded shadow">
+        <h4 class="text-center mb-4 text-dark">Change Password</h4>
+        <form [formGroup]="passwordForm" (ngSubmit)="submitPasswordChange()">
+            
+            <div class="mb-3">
+                <label class="form-label text-dark">Current Password</label>
+                <input type="password" class="form-control" formControlName="currentPassword" placeholder="Enter current password">
+                
+                <!-- Client-side required validation -->
+                <div *ngIf="passwordForm.get('currentPassword')?.hasError('required') && passwordForm.get('currentPassword')?.touched" class="text-danger mt-1">
+                    Current password is required.
+                </div>
+                <!-- Server-side validation feedback (Correct/Incorrect check) -->
+                <div *ngIf="modalErrorMessage" class="text-danger mt-1">
+                    {{ modalErrorMessage }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-dark">New Password</label>
+                <input type="password" class="form-control" formControlName="newPassword" placeholder="Enter new password">
+                
+                <!-- New Password Client-side validation -->
+                <div *ngIf="passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched" class="text-danger mt-1">
+                    New password is required.
+                </div>
+                <div *ngIf="passwordForm.get('newPassword')?.hasError('invalidPassword') && passwordForm.get('newPassword')?.touched" class="text-danger mt-1">
+                    Password must be at least 8 characters long and contain at least one special character, one capital letter, and one digit.
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" class="btn btn-secondary" (click)="closeChangePassword()">Cancel</button>
+                <button type="submit" class="btn btn-custom-primary" [disabled]="passwordForm.invalid">Save</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,11 +1,17 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable, EventEmitter } from '@angular/core';
-import { Observable, catchError, map, tap,  BehaviorSubject } from 'rxjs';
+import { Observable, catchError, map, tap,  BehaviorSubject, of } from 'rxjs';
 import { UserStorageService } from '../storage/user-storage.service';
 import { ConfigService } from '../config.service';
 import jwt_decode from 'jwt-decode';
 
 const AUTH_HEADER = 'authorization';
+
+export interface AddressLookupDTO {
+  district: string;
+  state: string;
+  pincode: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +29,7 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private userStorageService: UserStorageService,
-    private configService: ConfigService   // <-- Injected correctly
+    private configService: ConfigService   
   ) {}
 
   /** Safe getter — always resolves latest config.json value */
@@ -116,6 +122,49 @@ export class AuthService {
       'Bearer ' + UserStorageService.getToken()
     );
   }
+
+  // 1. Pincode Lookup (GET /api/postal/{pincode})
+  lookupPincode(pincode: string): Observable<AddressLookupDTO | null> {
+    return this.http.get<AddressLookupDTO>(`${this.baseUrl}api/postal/${pincode}`, {
+      headers: this.createAuthorizationHeader()
+    }).pipe(
+      catchError(() => of(null)) // Handle 404/errors gracefully using 'of' imported from rxjs
+    );
+  }
+
+  // 2. Get All States (GET /api/postal/states)
+  getAllStates(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.baseUrl}api/postal/states`, {
+      headers: this.createAuthorizationHeader()
+    });
+  }
+
+  // 3. Get Cities by State (GET /api/postal/cities?state=...)
+  getCitiesByState(state: string): Observable<string[]> {
+    return this.http.get<string[]>(`${this.baseUrl}api/postal/cities?state=${state}`, {
+      headers: this.createAuthorizationHeader()
+    });
+  }
+
+  // 4. Get State by District (GET /api/postal/lookup-state?district=...)
+  // Note: This API seems redundant given API 1 and 3, but is implemented as requested.
+  findStateByDistrict(district: string): Observable<string | null> {
+    const encoded = encodeURIComponent(district || '');
+    const url = `${this.baseUrl}api/postal/lookup-state?district=${encoded}`;
+    console.log('Calling lookup-state with URL:', url);
+    return this.http.get<string>(url, {
+      headers: this.createAuthorizationHeader()
+    }).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  // 5. Get Addresses (for Pincodes/Offices) by City/State (GET /api/postal/addresses?district=...&state=...)
+  getAddressesByDistrictAndState(district: string, state: string): Observable<AddressLookupDTO[]> {
+    return this.http.get<AddressLookupDTO[]>(`${this.baseUrl}api/postal/addresses?district=${district}&state=${state}`, {
+      headers: this.createAuthorizationHeader()
+    });
+  }
 
   // ------ PRODUCT ------
   addProduct(data: any): Observable<any> {

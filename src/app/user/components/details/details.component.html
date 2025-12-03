@@ -2,80 +2,125 @@
     <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
         {{ errorMessage }}
     </div>
+    <div class="alert alert-success" role="alert" *ngIf="successMessage" (click)="successMessage = null">
+        {{ successMessage }}
+    </div>
     <div class="container">
-        <h3 class="text-center mb-4">Details</h3>
+        <h3 class="text-center mb-4 mt-4">Details</h3>
         <div class="row mb-3">
             <div class="col-md-6">
-                <label for="name" class="form-label">Name:</label>
+                <label for="name" class="form-label">Name: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="name" formControlName="name">
+                <div *ngIf="detailsForm.get('name')?.hasError('required') && detailsForm.get('name')?.touched" class="text-danger">Name is required.</div>
+                <div *ngIf="detailsForm.get('name')?.hasError('minlength') && detailsForm.get('name')?.touched" class="text-danger">Name must be at least 2 characters.</div>
             </div>
             <div class="col-md-6">
-                <label for="addressLine1" class="form-label">Address Line 1:</label>
+                <label for="addressLine1" class="form-label">Address Line 1: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="addressLine1" formControlName="addressLine1">
+                <div *ngIf="detailsForm.get('addressLine1')?.hasError('required') && detailsForm.get('addressLine1')?.touched" class="text-danger">Address Line 1 is required.</div>
+                <div *ngIf="detailsForm.get('addressLine1')?.hasError('minlength') && detailsForm.get('addressLine1')?.touched" class="text-danger">Address Line 1 must be at least 3 characters.</div>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
-                <label for="addressLine2" class="form-label">Address Line 2:</label>
+                <label for="addressLine2" class="form-label">Address Line 2: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="addressLine2" formControlName="addressLine2">
+                <div *ngIf="detailsForm.get('addressLine2')?.hasError('required') && detailsForm.get('addressLine2')?.touched" class="text-danger">Address Line 2 is required.</div>
+                <div *ngIf="detailsForm.get('addressLine2')?.hasError('minlength') && detailsForm.get('addressLine2')?.touched" class="text-danger">Address Line 2 must be at least 3 characters.</div>
             </div>
+            
+            <!-- State Dropdown (API 2) -->
             <div class="col-md-6">
-                <label for="city" class="form-label">City:</label>
-                <input type="text" class="form-control" id="city" formControlName="city">
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="state" class="form-label">State:</label>
-                <input type="text" class="form-control" id="state" formControlName="state">
-            </div>
-            <div class="col-md-6">
-                <label for="pincode" class="form-label">Pincode:</label>
-                <input type="text" class="form-control" id="pincode" formControlName="pincode">
+                <label for="state" class="form-label">State: <span class="text-danger">*</span></label>
+                <select id="state" formControlName="state" class="form-select">
+                    <option [ngValue]="null" disabled>Select a state</option>
+                    <option *ngFor="let state of states" [ngValue]="state">{{ state }}</option>
+                </select>
+                <div *ngIf="detailsForm.get('state')?.hasError('required') && detailsForm.get('state')?.touched" class="text-danger">State is required.</div>
             </div>
         </div>
         <div class="row mb-3">
+            <!-- City/District Dropdown (API 3) -->
             <div class="col-md-6">
-                <label for="phoneNumber" class="form-label">Phone No.:</label>
+                <label for="city" class="form-label">City/District: <span class="text-danger">*</span></label>
+                <select id="city" formControlName="city" class="form-select" [disabled]="!detailsForm.get('state')?.value">
+                    <option [ngValue]="null" disabled>Select a city/district</option>
+                    <option *ngFor="let city of cities" [ngValue]="city">{{ city }}</option>
+                </select>
+                <div *ngIf="detailsForm.get('city')?.hasError('required') && detailsForm.get('city')?.touched" class="text-danger">City/District is required.</div>
+            </div>
+
+            <!-- Pincode Dropdown/Input Hybrid (APIs 1 & 5) -->
+            <div class="col-md-6">
+                <label for="pincode" class="form-label">Pincode: <span class="text-danger">*</span></label>
+                <!-- Use datalist for searchable input experience -->
+                <input list="pincodeOptions" id="pincode" formControlName="pincode" class="form-control" placeholder="Type or select Pincode">
+                <datalist id="pincodeOptions">
+                    <option *ngFor="let address of pincodeAddresses" [value]="address.pincode">
+                        {{ address.pincode }}
+                    </option>
+                </datalist>
+                <div *ngIf="detailsForm.get('pincode')?.hasError('required') && detailsForm.get('pincode')?.touched" class="text-danger">Pincode is required.</div>
+                <div *ngIf="detailsForm.get('pincode')?.hasError('pattern') && detailsForm.get('pincode')?.touched" class="text-danger">Pincode must be 6 digits.</div>
+            </div>
+        </div>
+        <!-- Rest of your form fields follow -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="phoneNumber" class="form-label">Phone No.: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="phoneNumber" formControlName="phoneNumber">
+                <div *ngIf="detailsForm.get('phoneNumber')?.hasError('required') && detailsForm.get('phoneNumber')?.touched" class="text-danger">Phone number is required.</div>
+                <div *ngIf="detailsForm.get('phoneNumber')?.hasError('pattern') && detailsForm.get('phoneNumber')?.touched" class="text-danger">Enter a valid 10-digit phone number.</div>
             </div>
             <div class="col-md-6">
-                <label for="dlNo1" class="form-label">DL No. 1:</label>
+                <label for="dlNo1" class="form-label">DL No. 1: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="dlNo1" formControlName="dlNo1">
+                <div *ngIf="detailsForm.get('dlNo1')?.hasError('required') && detailsForm.get('dlNo1')?.touched" class="text-danger">DL No. 1 is required.</div>
+                <div *ngIf="detailsForm.get('dlNo1')?.hasError('pattern') && detailsForm.get('dlNo1')?.touched" class="text-danger">DL No. 1 must be 10–30 characters; letters, numbers, hyphen, slash, space allowed.</div>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
-                <label for="dlNo2" class="form-label">DL No. 2:</label>
+                <label for="dlNo2" class="form-label">DL No. 2: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="dlNo2" formControlName="dlNo2">
+                <div *ngIf="detailsForm.get('dlNo2')?.hasError('required') && detailsForm.get('dlNo2')?.touched" class="text-danger">DL No. 2 is required.</div>
+                <div *ngIf="detailsForm.get('dlNo2')?.hasError('pattern') && detailsForm.get('dlNo2')?.touched" class="text-danger">DL No. 2 must be 10–30 characters; letters, numbers, hyphen, slash, space allowed.</div>
             </div>
             <div class="col-md-6">
-                <label for="fssaiReg" class="form-label">FSSAI Registration:</label>
+                <label for="fssaiReg" class="form-label">FSSAI Registration: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="fssaiReg" formControlName="fssaiReg">
+                <div *ngIf="detailsForm.get('fssaiReg')?.hasError('required') && detailsForm.get('fssaiReg')?.touched" class="text-danger">FSSAI Registration is required.</div>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
-                <label for="gstin" class="form-label">GSTIN:</label>
+                <label for="gstin" class="form-label">GSTIN: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="gstin" formControlName="gstin">
+                <div *ngIf="detailsForm.get('gstin')?.hasError('required') && detailsForm.get('gstin')?.touched" class="text-danger">GSTIN is required.</div>
+                <div *ngIf="detailsForm.get('gstin')?.hasError('pattern') && detailsForm.get('gstin')?.touched" class="text-danger">GSTIN must be 15 characters and follow format: 2 digits, 5 letters, 4 digits, 1 letter, 1 alnum, 'Z', 1 alnum.</div>
             </div>
             <div class="col-md-6">
-                <label for="bankName" class="form-label">Bank Name:</label>
+                <label for="bankName" class="form-label">Bank Name: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="bankName" formControlName="bankName">
+                <div *ngIf="detailsForm.get('bankName')?.hasError('required') && detailsForm.get('bankName')?.touched" class="text-danger">Bank name is required.</div>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
-                <label for="accountNumber" class="form-label">Account Number:</label>
+                <label for="accountNumber" class="form-label">Account Number: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="accountNumber" formControlName="accountNumber">
+                <div *ngIf="detailsForm.get('accountNumber')?.hasError('required') && detailsForm.get('accountNumber')?.touched" class="text-danger">Account number is required.</div>
+                <div *ngIf="detailsForm.get('accountNumber')?.hasError('pattern') && detailsForm.get('accountNumber')?.touched" class="text-danger">Account number must be numeric and 9–18 digits long.</div>
             </div>
             <div class="col-md-6">
-                <label for="ifscCode" class="form-label">IFSC Code:</label>
+                <label for="ifscCode" class="form-label">IFSC Code: <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="ifscCode" formControlName="ifscCode">
+                <div *ngIf="detailsForm.get('ifscCode')?.hasError('required') && detailsForm.get('ifscCode')?.touched" class="text-danger">IFSC code is required.</div>
+                <div *ngIf="detailsForm.get('ifscCode')?.hasError('pattern') && detailsForm.get('ifscCode')?.touched" class="text-danger">IFSC must be 11 characters (AAAA0######).</div>
             </div>
         </div>
         <div class="text-center">
-            <button type="submit" style="background-color: #48e3cc; color: #000;" class="btn btn-primary">Submit</button>
+            <button type="submit" style="background-color: #48e3cc; color: #000;" class="btn btn-primary" [disabled]="detailsForm.invalid">Submit</button>
         </div>
     </div>
 </form>

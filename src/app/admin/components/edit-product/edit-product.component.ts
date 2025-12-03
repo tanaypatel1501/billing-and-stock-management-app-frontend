@@ -29,8 +29,9 @@ export class EditProductComponent implements OnInit {
       name: [null, Validators.required],
       hsn: [null, Validators.required],
       mrp: [null, [Validators.required, Validators.min(0)]],
-      cgst: [null, [Validators.required, Validators.min(0), Validators.max(100)]],
-      sgst: [null, [Validators.required, Validators.min(0), Validators.max(100)]],
+      // Default cgst/sgst to 0 so that empty inputs become 0; keep min/max validators
+      cgst: [0, [Validators.min(0), Validators.max(100)]],
+      sgst: [0, [Validators.min(0), Validators.max(100)]],
       packing: [null, Validators.required]
     });
 
@@ -48,8 +49,8 @@ export class EditProductComponent implements OnInit {
           name: productData.name,
           hsn: productData.hsn,
           mrp: productData.mrp,
-          cgst: productData.cgst,
-          sgst: productData.sgst,
+            cgst: productData.cgst != null ? productData.cgst : 0,
+            sgst: productData.sgst != null ? productData.sgst : 0,
           packing: productData.packing
         });
       },
@@ -65,8 +66,8 @@ export class EditProductComponent implements OnInit {
       name: this.productForm.get('name')?.value,
       hsn: this.productForm.get('hsn')?.value,
       mrp: this.productForm.get('mrp')?.value,
-      cgst: this.productForm.get('cgst')?.value,
-      sgst: this.productForm.get('sgst')?.value,
+      cgst: (() => { const v = this.productForm.get('cgst')?.value; const n = Number(v); return !isNaN(n) ? n : 0; })(),
+      sgst: (() => { const v = this.productForm.get('sgst')?.value; const n = Number(v); return !isNaN(n) ? n : 0; })(),
       packing: this.productForm.get('packing')?.value
     };
 

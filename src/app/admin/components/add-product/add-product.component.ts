@@ -26,8 +26,9 @@ export class AddProductComponent implements OnInit {
       name: [null, Validators.required],
       hsn: [null, Validators.required],
       mrp: [null, [Validators.required, Validators.min(0)]],
-      cgst: [null, [Validators.required, Validators.min(0), Validators.max(100)]],
-      sgst: [null, [Validators.required, Validators.min(0), Validators.max(100)]],
+      // Default CGST/SGST to 0 so the user can increase them; not strictly required.
+      cgst: [0, [Validators.min(0), Validators.max(100)]],
+      sgst: [0, [Validators.min(0), Validators.max(100)]],
       packing: [null, Validators.required]
     });
   }
@@ -37,8 +38,16 @@ export class AddProductComponent implements OnInit {
       name: this.productForm.get('name')?.value,
       hsn: this.productForm.get('hsn')?.value,
       mrp: this.productForm.get('mrp')?.value,
-      cgst: this.productForm.get('cgst')?.value,
-      sgst: this.productForm.get('sgst')?.value,
+      cgst: (() => {
+        const v = this.productForm.get('cgst')?.value;
+        const n = Number(v);
+        return !isNaN(n) ? n : 0;
+      })(),
+      sgst: (() => {
+        const v = this.productForm.get('sgst')?.value;
+        const n = Number(v);
+        return !isNaN(n) ? n : 0;
+      })(),
       packing: this.productForm.get('packing')?.value
     };
 

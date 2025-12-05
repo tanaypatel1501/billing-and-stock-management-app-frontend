@@ -44,17 +44,20 @@
             <div class="form-group">
                 <label for="dl1">DL No. 1</label>
                 <input type="text" class="form-input" id="dl1" placeholder="DL No. 1" formControlName="dl1">
-                <div *ngIf="billForm1.get('dl1')?.hasError('required') && billForm1.get('dl1')?.touched" class="text-danger">DL No. is required.</div>
+                <div *ngIf="billForm1.get('dl1')?.hasError('required') && billForm1.get('dl1')?.touched" class="text-danger">DL No. 1 is required.</div>
+                <div *ngIf="billForm1.get('dl1')?.hasError('pattern') && billForm1.get('dl1')?.touched" class="text-danger">DL No. 1 must be 10–30 characters; letters, numbers, hyphen, slash, space allowed.</div>
             </div>
             <div class="form-group">
                 <label for="dl2">DL No. 2</label>
                 <input type="text" class="form-input" id="dl2" placeholder="DL No. 2" formControlName="dl2">
-                <div *ngIf="billForm1.get('dl2')?.hasError('required') && billForm1.get('dl2')?.touched" class="text-danger">DL No. is required.</div>
+                <div *ngIf="billForm1.get('dl2')?.hasError('required') && billForm1.get('dl2')?.touched" class="text-danger">DL No. 2 is required.</div>
+                <div *ngIf="billForm1.get('dl2')?.hasError('pattern') && billForm1.get('dl2')?.touched" class="text-danger">DL No. 2 must be 10–30 characters; letters, numbers, hyphen, slash, space allowed.</div>
             </div>
             <div class="form-group">
                 <label for="gstin">GSTIN</label>
                 <input type="text" class="form-input" id="gstin" placeholder="GSTIN" formControlName="gstin">
                 <div *ngIf="billForm1.get('gstin')?.hasError('required') && billForm1.get('gstin')?.touched" class="text-danger">GSTIN is required.</div>
+                <div *ngIf="billForm1.get('gstin')?.hasError('pattern') && billForm1.get('gstin')?.touched" class="text-danger">GSTIN must be 15 characters and follow format: 2 digits, 5 letters, 4 digits, 1 letter, 1 alnum, 'Z', 1 alnum.</div>
             </div>
             <div class="form-group">
                 <label for="invoiceDate">Invoice Date</label>
@@ -75,10 +78,10 @@
             </select>
             <div *ngIf="billForm2.get('productName')?.hasError('required') && billForm2.get('productName')?.touched" class="text-danger">Product Name is required.</div>     
         </div>
-        <div class="form-group">
+        <!-- <div class="form-group">
             <label for="productId">Product ID</label>
             <input type="text" class="form-input" id="productId" placeholder="Product ID" formControlName="productId" [readonly]="true">
-        </div>  
+        </div>   -->
         <div class="form-group">
             <label for="batchNo">Batch No.</label>
             <select class="form-input" id="batchNo" formControlName="batchNo" (change)="updateQuantityPlaceholder()">

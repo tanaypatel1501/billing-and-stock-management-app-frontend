@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
+// bulk upload logic moved to reusable component
 
 @Component({
   selector: 'app-add-product',
@@ -13,6 +14,9 @@ export class AddProductComponent implements OnInit {
   productForm!: FormGroup;
   userId!: any;
   errorMessage: string | null = null;
+  successMessage: string | null = null;
+  // control display of bulk modal component
+  bulkModalOpen = false;
 
   constructor(
     private fb: FormBuilder,
@@ -31,6 +35,35 @@ export class AddProductComponent implements OnInit {
       sgst: [0, [Validators.min(0), Validators.max(100)]],
       packing: [null, Validators.required]
     });
+  }
+
+  
+  onBulkResult(event: { success: boolean; payload: any }) {
+    this.bulkModalOpen = false;
+    if (event.success) {
+      try {
+        const p = event.payload;
+        if (p && (p.processed !== undefined || p.created !== undefined || p.updated !== undefined || p.failed !== undefined)) {
+          const processed = p.processed ?? '-';
+          const created = p.created ?? '-';
+          const updated = p.updated ?? '-';
+          const failed = p.failed ?? '-';
+          this.successMessage = `Bulk Upload Summary: Processed: ${processed}, Created: ${created}, Updated: ${updated}, Failed: ${failed}.`;
+        } else {
+          this.successMessage = JSON.stringify(event.payload, null, 2);
+        }
+      } catch {
+        this.successMessage = String(event.payload);
+      }
+      this.clearSuccessAfterDelay();
+    } else {
+      // try to extract message
+      const payload = event.payload;
+      let msg = 'Bulk upload failed.';
+      try { msg = payload?.error || payload?.message || JSON.stringify(payload); } catch { msg = String(payload); }
+      this.errorMessage = msg;
+      this.clearMessageAfterDelay();
+    }
   }
 
   onSubmit() {
@@ -66,6 +99,12 @@ export class AddProductComponent implements OnInit {
   private clearMessageAfterDelay() {
     setTimeout(() => {
       this.errorMessage = null;
+    }, 5000);
+  }
+
+  private clearSuccessAfterDelay() {
+    setTimeout(() => {
+      this.successMessage = null;
     }, 5000);
   }
 }

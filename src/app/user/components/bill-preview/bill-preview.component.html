@@ -65,17 +65,17 @@
         <tbody>
             <tr *ngFor="let item of bill.billItems; index as i">
                 <th scope="row">{{ i + 1 }}</th>
-                <td>{{ item.product.name }}</td>
-                <td>{{ item.product.packing }}</td>
-                <td>{{ item.product.hsn }}</td>
+                <td>{{ item.snapshotProductName }}</td>
+                <td>{{ item.snapshotPacking }}</td>
+                <td>{{ item.snapshotHsn }}</td>
                 <td>{{ item.batchNo }}</td>
                 <td>{{ item.expiryDate | date }}</td>
                 <td>{{ item.quantity | number }}</td>
                 <td>{{ item.free | number }}</td>
-                <td>{{ '₹' }} {{ item.product.mrp | number }}</td>
+                <td>{{ '₹' }} {{ item.snapshotUnitPrice | number }}</td>
                 <td>{{ '₹' }} {{ item.rate | number }}</td>
-                <td>{{ item.product.cgst | number }} %</td>
-                <td>{{ item.product.sgst | number }} %</td>
+                <td>{{ item.snapshotCgst | number }} %</td>
+                <td>{{ item.snapshotSgst | number }} %</td>
                 <td>{{ '₹' }} {{ item.amount | number }}</td>
             </tr>
         </tbody>

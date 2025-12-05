@@ -1,0 +1,62 @@
+<div class="modal show d-block">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk Add/Update Products</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Choose file (.xlsx, .xls, .csv)</label>
+          <input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" (change)="onFileChange($event)" class="form-control" />
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="firstRowHeader" [(ngModel)]="firstRowIsHeader" (change)="toggleHeader()" />
+          <label class="form-check-label" for="firstRowHeader">First row is header</label>
+        </div>
+
+        <div *ngIf="previewHeaders && previewHeaders.length">
+          <div class="mb-3">
+            <h6>Column mapping</h6>
+            <div *ngFor="let field of internalFields" class="row mb-2 align-items-center">
+              <div class="col-4">
+                <label class="form-label">{{ field.label }}</label>
+              </div>
+              <div class="col-8">
+                <select class="form-select" [(ngModel)]="mapping[field.key]" (ngModelChange)="onMappingChange()">
+                  <option [ngValue]="null">-- Not mapped --</option>
+                  <option *ngFor="let h of previewHeaders" [value]="h" [disabled]="isHeaderSelected(h) && mapping[field.key] !== h">{{ h }}</option>
+                </select>
+                <div *ngIf="numericIssues[field.key]" class="small text-warning mt-1">
+                  Numeric issues: {{ numericIssues[field.key].invalidCount }} invalid values (examples: {{ numericIssues[field.key].samples.join(', ') }})
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+              <thead>
+                <tr>
+                  <th *ngFor="let h of previewHeaders">{{ h }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of previewRows">
+                  <td *ngFor="let cell of row">{{ cell }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div *ngIf="fileError" class="text-danger mt-2">{{ fileError }}</div>
+        <div *ngIf="!numericValidationPassed && (!fileError)" class="text-warning mt-2">Some mapped numeric columns contain invalid values. Please review highlighted fields or the source file.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!selectedFile || submitting || !isValidMapping()" (click)="submit()">{{ submitting ? 'Uploading...' : 'Submit' }}</button>
+      </div>
+    </div>
+  </div>
+</div>

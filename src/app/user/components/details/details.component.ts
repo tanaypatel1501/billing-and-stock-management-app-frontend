@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService, AddressLookupDTO } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { AppStateService } from 'src/app/services/app-state.service';
 // Make sure 'of' is not needed here as we use it in the service only
 
 @Component({
@@ -27,6 +28,8 @@ export class DetailsComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
+    ,
+    private appState: AppStateService
   ) {}
 
   ngOnInit(): void {
@@ -50,6 +53,8 @@ export class DetailsComponent implements OnInit {
 
     this.loadStates();
     this.setupListeners();
+    // initialize app state based on initial form validity
+    this.appState.setDetailsValid(!!this.detailsForm.valid);
     this.checkAndPopulateExistingDetails();
   }
 
@@ -119,6 +124,13 @@ export class DetailsComponent implements OnInit {
         if (pincode && pincode.length === 6) {
             this.lookupAddressByPincode(pincode);
         }
+      });
+
+    // Keep app-wide details validity updated as the form changes
+    this.detailsForm.statusChanges
+      .pipe(debounceTime(150))
+      .subscribe(() => {
+        this.appState.setDetailsValid(!!this.detailsForm.valid);
       });
   }
 
@@ -286,6 +298,8 @@ export class DetailsComponent implements OnInit {
       accountNumber: details.accountNumber,
       ifscCode: details.ifscCode
     }, { emitEvent: false });
+    // After populating, update app state
+    this.appState.setDetailsValid(!!this.detailsForm.valid);
     // Because we need the manual loads in checkAndPopulateExistingDetails() anyway,
     // using emitEvent: false here is safer to prevent double API calls, as done in the previous step.
   }

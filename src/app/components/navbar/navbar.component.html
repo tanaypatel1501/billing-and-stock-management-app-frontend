@@ -47,7 +47,7 @@
                         <a class="nav-link" routerLink="/user/add-stock" routerLinkActive="active-link" style="color: #48e3cc;">Add Stock</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" routerLink="/user/create-bill" routerLinkActive="active-link" style="color: #48e3cc;">Create Bill</a>
+                        <a class="nav-link" href="#" (click)="onCreateBill($event)" [class.text-muted]="!detailsValid" [attr.aria-disabled]="!detailsValid" routerLinkActive="active-link" style="color: #48e3cc; cursor: pointer;">Create Bill</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" routerLink="/user/bills" routerLinkActive="active-link" style="color: #48e3cc;">Show Bills</a>
@@ -70,3 +70,7 @@
         </div>
     </div>
 </nav>
+
+<div class="container">
+    <div class="alert alert-danger mt-2" *ngIf="errorMessage" (click)="errorMessage = null">{{ errorMessage }}</div>
+</div>

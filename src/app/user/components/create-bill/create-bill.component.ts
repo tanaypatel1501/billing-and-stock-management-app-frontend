@@ -40,9 +40,9 @@ export class CreateBillComponent implements OnInit,OnDestroy{
     this.userId = UserStorageService.getUserId();
     this.billForm1 = this.fb.group({
       purchaserName: [null, Validators.required],
-      dl1:[null, Validators.required],
-      dl2:[null, Validators.required],
-      gstin:[null, Validators.required],
+      dl1:[null, [Validators.required, Validators.pattern(/^[A-Z0-9\-\/\s]{10,30}$/i)]],
+      dl2:[null, [Validators.required, Validators.pattern(/^[A-Z0-9\-\/\s]{10,30}$/i)]],
+      gstin:[null, [Validators.required, Validators.pattern(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i)]],
       invoiceDate:[null, Validators.required],
     });
     this.billForm2 = this.fb.group({
@@ -50,7 +50,7 @@ export class CreateBillComponent implements OnInit,OnDestroy{
       productId: [null],
       batchNo:[null, Validators.required],
       quantity:[null, [Validators.required, this.validateQuantity.bind(this)]],
-      free:[null, [Validators.required, this.validateQuantity.bind(this)]],
+      free:[0, [Validators.required, this.validateQuantity.bind(this)]],
       expiryDate:[null, Validators.required],
       rate: [null, [Validators.required]],
       amount: [null, [Validators.required]],

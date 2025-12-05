@@ -166,6 +166,23 @@ export class AuthService {
     });
   }
 
+  // Upload products in bulk via multipart/form-data
+  uploadBulkProducts(file: File): Observable<any> {
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    // Don't set Content-Type header; let browser set multipart boundary
+    return this.http.post<any>(`${this.baseUrl}api/product/bulk`, fd, {
+      headers: this.createAuthorizationHeader()
+    });
+  }
+
+  // Accept a FormData to include mapping or additional fields
+  uploadBulkProductsForm(fd: FormData): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}api/product/bulk`, fd, {
+      headers: this.createAuthorizationHeader()
+    });
+  }
+
   // ------ PRODUCT ------
   addProduct(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}api/product/add`, data,

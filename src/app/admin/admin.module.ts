@@ -7,6 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AddProductComponent } from './components/add-product/add-product.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { EditProductComponent } from './components/edit-product/edit-product.component';
+import { BulkUploadModalComponent } from './components/bulk-upload-modal/bulk-upload-modal.component';
 
 
 
@@ -15,6 +16,7 @@ import { EditProductComponent } from './components/edit-product/edit-product.com
     DashboardComponent,
     AddProductComponent,
     EditProductComponent,
+    BulkUploadModalComponent,
   ],
   imports: [
     CommonModule,

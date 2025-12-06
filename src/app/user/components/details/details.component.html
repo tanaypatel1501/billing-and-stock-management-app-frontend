@@ -10,13 +10,13 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="name" class="form-label">Name: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="name" formControlName="name">
+                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Business / Medical Store Name">
                 <div *ngIf="detailsForm.get('name')?.hasError('required') && detailsForm.get('name')?.touched" class="text-danger">Name is required.</div>
                 <div *ngIf="detailsForm.get('name')?.hasError('minlength') && detailsForm.get('name')?.touched" class="text-danger">Name must be at least 2 characters.</div>
             </div>
             <div class="col-md-6">
                 <label for="addressLine1" class="form-label">Address Line 1: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="addressLine1" formControlName="addressLine1">
+                <input type="text" class="form-control" id="addressLine1" formControlName="addressLine1" placeholder="Shop No., Building Name">
                 <div *ngIf="detailsForm.get('addressLine1')?.hasError('required') && detailsForm.get('addressLine1')?.touched" class="text-danger">Address Line 1 is required.</div>
                 <div *ngIf="detailsForm.get('addressLine1')?.hasError('minlength') && detailsForm.get('addressLine1')?.touched" class="text-danger">Address Line 1 must be at least 3 characters.</div>
             </div>
@@ -24,7 +24,7 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="addressLine2" class="form-label">Address Line 2: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="addressLine2" formControlName="addressLine2">
+                <input type="text" class="form-control" id="addressLine2" formControlName="addressLine2" placeholder="Street Name / Locality">
                 <div *ngIf="detailsForm.get('addressLine2')?.hasError('required') && detailsForm.get('addressLine2')?.touched" class="text-danger">Address Line 2 is required.</div>
                 <div *ngIf="detailsForm.get('addressLine2')?.hasError('minlength') && detailsForm.get('addressLine2')?.touched" class="text-danger">Address Line 2 must be at least 3 characters.</div>
             </div>
@@ -68,13 +68,13 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="phoneNumber" class="form-label">Phone No.: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="phoneNumber" formControlName="phoneNumber">
+                <input type="text" class="form-control" id="phoneNumber" formControlName="phoneNumber" placeholder="Enter 10-digit Mobile Number">
                 <div *ngIf="detailsForm.get('phoneNumber')?.hasError('required') && detailsForm.get('phoneNumber')?.touched" class="text-danger">Phone number is required.</div>
                 <div *ngIf="detailsForm.get('phoneNumber')?.hasError('pattern') && detailsForm.get('phoneNumber')?.touched" class="text-danger">Enter a valid 10-digit phone number.</div>
             </div>
             <div class="col-md-6">
                 <label for="dlNo1" class="form-label">DL No. 1: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="dlNo1" formControlName="dlNo1">
+                <input type="text" class="form-control" id="dlNo1" formControlName="dlNo1" placeholder="Enter Drug License No. 1">
                 <div *ngIf="detailsForm.get('dlNo1')?.hasError('required') && detailsForm.get('dlNo1')?.touched" class="text-danger">DL No. 1 is required.</div>
                 <div *ngIf="detailsForm.get('dlNo1')?.hasError('pattern') && detailsForm.get('dlNo1')?.touched" class="text-danger">DL No. 1 must be 10–30 characters; letters, numbers, hyphen, slash, space allowed.</div>
             </div>
@@ -82,39 +82,39 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="dlNo2" class="form-label">DL No. 2: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="dlNo2" formControlName="dlNo2">
+                <input type="text" class="form-control" id="dlNo2" formControlName="dlNo2" placeholder="Enter Drug License No. 2">
                 <div *ngIf="detailsForm.get('dlNo2')?.hasError('required') && detailsForm.get('dlNo2')?.touched" class="text-danger">DL No. 2 is required.</div>
                 <div *ngIf="detailsForm.get('dlNo2')?.hasError('pattern') && detailsForm.get('dlNo2')?.touched" class="text-danger">DL No. 2 must be 10–30 characters; letters, numbers, hyphen, slash, space allowed.</div>
             </div>
             <div class="col-md-6">
                 <label for="fssaiReg" class="form-label">FSSAI Registration: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="fssaiReg" formControlName="fssaiReg">
+                <input type="text" class="form-control" id="fssaiReg" formControlName="fssaiReg" placeholder="Enter FSSAI Registration Number">
                 <div *ngIf="detailsForm.get('fssaiReg')?.hasError('required') && detailsForm.get('fssaiReg')?.touched" class="text-danger">FSSAI Registration is required.</div>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="gstin" class="form-label">GSTIN: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="gstin" formControlName="gstin">
+                <input type="text" class="form-control" id="gstin" formControlName="gstin" placeholder="Enter 15-digit GSTIN (e.g., 22ABCDE1234F1Z5)">
                 <div *ngIf="detailsForm.get('gstin')?.hasError('required') && detailsForm.get('gstin')?.touched" class="text-danger">GSTIN is required.</div>
                 <div *ngIf="detailsForm.get('gstin')?.hasError('pattern') && detailsForm.get('gstin')?.touched" class="text-danger">GSTIN must be 15 characters and follow format: 2 digits, 5 letters, 4 digits, 1 letter, 1 alnum, 'Z', 1 alnum.</div>
             </div>
             <div class="col-md-6">
                 <label for="bankName" class="form-label">Bank Name: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="bankName" formControlName="bankName">
+                <input type="text" class="form-control" id="bankName" formControlName="bankName" placeholder="Enter Bank Name">
                 <div *ngIf="detailsForm.get('bankName')?.hasError('required') && detailsForm.get('bankName')?.touched" class="text-danger">Bank name is required.</div>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="accountNumber" class="form-label">Account Number: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="accountNumber" formControlName="accountNumber">
+                <input type="text" class="form-control" id="accountNumber" formControlName="accountNumber" placeholder="Enter Bank Account Number">
                 <div *ngIf="detailsForm.get('accountNumber')?.hasError('required') && detailsForm.get('accountNumber')?.touched" class="text-danger">Account number is required.</div>
                 <div *ngIf="detailsForm.get('accountNumber')?.hasError('pattern') && detailsForm.get('accountNumber')?.touched" class="text-danger">Account number must be numeric and 9–18 digits long.</div>
             </div>
             <div class="col-md-6">
                 <label for="ifscCode" class="form-label">IFSC Code: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="ifscCode" formControlName="ifscCode">
+                <input type="text" class="form-control" id="ifscCode" formControlName="ifscCode" placeholder="Enter IFSC Code (e.g., SBIN0001234)">
                 <div *ngIf="detailsForm.get('ifscCode')?.hasError('required') && detailsForm.get('ifscCode')?.touched" class="text-danger">IFSC code is required.</div>
                 <div *ngIf="detailsForm.get('ifscCode')?.hasError('pattern') && detailsForm.get('ifscCode')?.touched" class="text-danger">IFSC must be 11 characters (AAAA0######).</div>
             </div>

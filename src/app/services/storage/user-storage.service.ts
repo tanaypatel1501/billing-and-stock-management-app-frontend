@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 const TOKEN = 'I_token';
 const USER = 'I_user';
 const EXP_TIME = 'I_exp_time';
+const BILL = 'I_bill';
 
 @Injectable({
   providedIn: 'root'
@@ -91,9 +92,22 @@ export class UserStorageService {
 
   public saveBillId(billId :any){
     this.billId = billId;
+    try{
+      window.localStorage.setItem(BILL, JSON.stringify(billId));
+    }catch(e){
+      // ignore storage errors
+    }
   }
 
   public getBillId(){
-    return this.billId;
+    if (this.billId) {
+      return this.billId;
+    }
+    try{
+      const stored = window.localStorage.getItem(BILL);
+      return stored ? JSON.parse(stored) : null;
+    }catch(e){
+      return this.billId;
+    }
   }
 }

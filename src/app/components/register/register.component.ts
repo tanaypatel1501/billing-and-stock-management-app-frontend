@@ -31,7 +31,7 @@ export class RegisterComponent {
     this.validateForm = this.fb.group({
       firstname: [null, [Validators.required]],
       lastname: [null, [Validators.required]],
-      email: [null, [Validators.required, Validators.email]],
+      email: [null, [Validators.required, Validators.pattern(this.emailPattern)]],
       password: [null, [Validators.required, Validators.minLength(8), this.passwordValidator]],
       confirm: [null, [Validators.required, this.confirmPassword]]
     })
@@ -58,6 +58,9 @@ export class RegisterComponent {
       this.errorMessage = null;
     }, 3000); // 3 seconds delay
   }
+
+  // Custom email pattern (regex)
+  emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
   // Custom password validator
   passwordValidator(control: AbstractControl): { [key: string]: boolean } | null {

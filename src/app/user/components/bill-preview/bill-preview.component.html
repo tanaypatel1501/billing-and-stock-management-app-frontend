@@ -1,10 +1,10 @@
 <div id="print-section">
     <div class="invoice-header">
         <h4 align="center">INVOICE</h4>
-        <button class="btn btn-secondary" (click)="printInvoice()">Print</button>
+        <button style="background-color: #48e3cc; color: #000;" class="btn btn-primary" (click)="printInvoice()">Print</button>
     </div>  
     <div class="row">
-        <div class="col" style="width: 20%;">
+        <div class="col logo-col">
             <img src="../../../../assets/images/GST_Logo_1.jpg" alt="GST_Logo"/>
         </div>
         <div class="col" style="width: 50%;">
@@ -16,7 +16,7 @@
                     <td><b>FSSAI Reg. :</b> {{details.fssaiReg}}</td>
                 </tr>
                 <tr>
-                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.dlNo2}}</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.dlNo2}}</td>
                     <td><b>GSTIN :</b> {{details.gstin}}</td>
                 </tr>
                 <tr><td colspan="2" align="center"><b>BANK NAME : {{details.bankName}}</b></td></tr>
@@ -34,7 +34,7 @@
                     <td><b>GSTIN :</b> {{bill.gstin}}</td>
                 </tr>
                 <tr>
-                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{bill.dl2}}</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{bill.dl2}}</td>
                     <td></td>
                 </tr>
                 <tr>
@@ -44,7 +44,7 @@
             </table>
         </div>
     </div>
-    <table class="table table-striped">
+    <table class="table">
         <thead>
             <tr>
                 <th scope="col">#</th>
@@ -80,17 +80,18 @@
             </tr>
         </tbody>
     </table>
-    <div class="row">
-        <div class="col">
+    <div class="row footer-row">
+        <div class="col footer-left">
             <p><b>Amount in words:</b> {{ totalAmountInWords }}</p>
-            <p>Subject to Jabalpur Juridiction only.</p>
-            <br>
-            <br>
-            <p>Authorized Signatory</p>
+
+            <p class="subject-bottom">Subject to {{details.city}} Juridiction only.</p>
+
+            <p class="authorized-sign">Authorized Signatory</p>
         </div>
-        <div class="col">
-            <p><b>Total :</b> {{ '₹' }} {{bill.totalAmount | number}}</p>
+
+        <div class="col total-col">
+            <p><b>Total :</b> ₹ {{bill.totalAmount}}</p>
         </div>
-    </div>      
+    </div>
 </div>
   

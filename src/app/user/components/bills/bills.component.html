@@ -1,4 +1,10 @@
-<div>
+<ng-template #noBillsMessage>
+	<div class="message">
+		<h2>No Bills created yet</h2>
+		<p>Click on Create Bill in order to create your first bill.</p>
+	</div>
+</ng-template>
+<div *ngIf="bills.length > 0; else noBillsMessage">
     <ul class="bills">
       <li *ngFor="let bill of bills" class="bill-item">
         <div class="bill-content">

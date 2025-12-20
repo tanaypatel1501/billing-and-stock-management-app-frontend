@@ -1,0 +1,16 @@
+/* Override Bootstrap's default min-width of 10rem to allow w-100 to work */
+.dropdown-menu {
+  min-width: 0; 
+  box-sizing: border-box; /* Ensures borders/padding are included in the width calculation */
+}
+
+/* Existing styles for highlighting */
+.dropdown-item.active, .dropdown-item:active {
+  background-color: #48e3cc; 
+  text-decoration: none;
+  color: #000;
+}
+
+.dropdown-item:hover {
+    background-color: #e9ecef;
+}

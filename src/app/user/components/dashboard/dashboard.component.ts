@@ -29,7 +29,7 @@ export class DashboardComponent implements OnInit{
 
   getStock(userId:any) {
     this.authService.getStock(userId).subscribe((data) => {
-      this.stock = data;
+      this.stock = data.content;
       console.log(data);
     });
   }

@@ -1,51 +1,84 @@
 <form [formGroup]="productForm" class="product-form" (ngSubmit)="onSubmit()">
-    <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
-        {{ errorMessage }}
-    </div>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-5">
-                <h3 class="text-center mb-4">Add Stock</h3>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="name" class="form-label">Product Name:</label>
-                    </div>
-                    <div class="col">
-                        <select class="form-control" id="name" formControlName="name">
-                            <option value="" disabled>Select a product</option>
-                            <option *ngFor="let product of products" [value]="product.id">{{ product.name }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="batchNo" class="form-label">Batch No:</label>
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="batchNo" formControlName="batchNo">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="expiryDate" class="form-label">Expiry Date:</label>
-                    </div>
-                    <div class="col">
-                        <input type="date" class="form-control" id="expiryDate" formControlName="expiryDate">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="quantity" class="form-label">Quantity:</label>
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="quantity" formControlName="quantity">
-                    </div>
-                </div>
-                
-                <div class="text-center">
-                    <button type="submit" style="background-color: #48e3cc; color: #000;" class="btn btn-primary">Add</button>
-                </div>
+  <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
+    {{ errorMessage }}
+  </div>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-5">
+        <h3 class="text-center mb-4">Add Stock</h3>
+
+        <!-- PRODUCT SEARCH + SELECT (searchable input + dropdown) -->
+        <!-- Added position-relative to the row wrapper -->
+        <div class="row mb-3 position-relative">
+          <div class="col">
+            <label class="form-label">Product Name:</label>
+          </div>
+
+          <!-- Added position-relative to the inner col for correct dropdown positioning/width -->
+          <div class="col position-relative"> 
+            <!-- Input is part of reactive form (formControlName="name") -->
+            <input type="text"
+                   class="form-control"
+                   placeholder="Start typing product name..."
+                   formControlName="name"
+                   (input)="onProductSearch()"
+                   (focus)="openDropdown()"
+                   (blur)="onInputBlur()"
+                   autocomplete="off" />
+
+            <!-- Dropdown results - The 'w-100' class ensures it takes the width of its parent 'col' -->
+            <div class="dropdown-menu show w-100" *ngIf="showDropdown">
+              <button type="button"
+                      class="dropdown-item"
+                      *ngFor="let p of products; let i = index"
+                      [class.active]="highlightedIndex === i"
+                      (mousedown)="selectProduct(p)">
+                {{ p.name }}
+              </button>
+
+              <div *ngIf="products.length === 0" class="dropdown-item disabled">
+                No products found
+              </div>
             </div>
+          </div>
         </div>
+
+        <!-- BATCH NO -->
+        <div class="row mb-3">
+          <div class="col">
+            <label for="batchNo" class="form-label">Batch No:</label>
+          </div>
+          <div class="col">
+            <input type="text" class="form-control" id="batchNo" formControlName="batchNo">
+          </div>
+        </div>
+
+        <!-- EXPIRY -->
+        <div class="row mb-3">
+          <div class="col">
+            <label for="expiryDate" class="form-label">Expiry Date:</label>
+          </div>
+          <div class="col">
+            <input type="date" class="form-control" id="expiryDate" formControlName="expiryDate">
+          </div>
+        </div>
+
+        <!-- QUANTITY -->
+        <div class="row mb-3">
+          <div class="col">
+            <label for="quantity" class="form-label">Quantity:</label>
+          </div>
+          <div class="col">
+            <input type="number" class="form-control" id="quantity" formControlName="quantity" min="0">
+          </div>
+        </div>
+
+        <div class="text-center">
+          <button type="submit" style="background-color: #48e3cc; color: #000;" class="btn btn-primary">Add</button>
+        </div>
+
+      </div>
     </div>
+  </div>
 </form>

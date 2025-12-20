@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
@@ -11,9 +11,21 @@ import { UserStorageService } from 'src/app/services/storage/user-storage.servic
 })
 export class AddStockComponent implements OnInit {
   productForm!: FormGroup;
-  userId!: any;
   errorMessage: string | null = null;
-  products: any[] = []; // Property to store the list of products
+
+  products: any[] = [];
+  selectedProductId: number | null = null;
+
+  showDropdown: boolean = false;
+
+  // For keyboard navigation
+  highlightedIndex: number = -1;
+
+  page: number = 0;
+  size: number = 10;
+
+  private searchTimeout: any;
+  private SEARCH_DEBOUNCE_MS = 200;
 
   constructor(
     private fb: FormBuilder,
@@ -22,51 +34,157 @@ export class AddStockComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.userId = UserStorageService.getUserId();
     this.productForm = this.fb.group({
-      name: [null, Validators.required],
-      batchNo: [null, Validators.required],
-      expiryDate: [null, Validators.required],
+      name: ['', Validators.required],
+      batchNo: ['', Validators.required],
+      expiryDate: ['', Validators.required],
       quantity: [null, [Validators.required, Validators.min(0), Validators.max(100)]],
     });
+  }
 
-    // Fetch and populate the product list on component initialization
-    this.authService.getProducts().subscribe(
-      (response: any) => {
-        this.products = response; // Store the list of products
+  // TRIGGER SEARCH
+  onProductSearch() {
+    this.selectedProductId = null;
+    this.highlightedIndex = -1;
+
+    const text = this.productForm.get('name')?.value || "";
+
+    if (!text.trim()) {
+      this.products = [];
+      this.showDropdown = false;
+      return;
+    }
+
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+
+    this.searchTimeout = setTimeout(() => {
+      this.callProductSearchApi(text.trim());
+    }, this.SEARCH_DEBOUNCE_MS);
+  }
+
+  // API CALL
+  private callProductSearchApi(text: string) {
+    const body = {
+      searchText: text,
+      page: this.page,
+      size: this.size
+    };
+
+    this.authService.searchProducts(body).subscribe(
+      (res: any) => {
+        this.products = res.content || [];
+        this.showDropdown = true;
       },
-      (error) => {
-        console.log(error);
-        // Handle error if necessary
+      () => {
+        this.products = [];
+        this.showDropdown = false;
       }
     );
   }
 
+  // SELECT PRODUCT
+  selectProduct(p: any) {
+    this.productForm.patchValue({ name: p.name });
+    this.selectedProductId = p.id;
+
+    this.showDropdown = false;
+    this.highlightedIndex = -1;
+  }
+
+  // OPEN DROPDOWN
+  openDropdown() {
+    if (this.products.length > 0) {
+      this.showDropdown = true;
+    }
+  }
+
+  // BLUR HANDLING
+  onInputBlur() {
+    setTimeout(() => {
+      this.showDropdown = false;
+    }, 150);
+  }
+
+  // ----------------------------------------
+  // 🔥 KEYBOARD NAVIGATION + ESCAPE HANDLING
+  // ----------------------------------------
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboard(event: KeyboardEvent) {
+
+    if (!this.showDropdown || this.products.length === 0) return;
+
+    switch (event.key) {
+
+      case "ArrowDown":
+        event.preventDefault();
+        this.highlightedIndex =
+          (this.highlightedIndex + 1) % this.products.length;
+        break;
+
+      case "ArrowUp":
+        event.preventDefault();
+        this.highlightedIndex =
+          (this.highlightedIndex - 1 + this.products.length) % this.products.length;
+        break;
+
+      case "Enter":
+        if (this.highlightedIndex >= 0) {
+          event.preventDefault();
+          this.selectProduct(this.products[this.highlightedIndex]);
+        }
+        break;
+
+      case "Escape":
+        this.showDropdown = false;
+        this.highlightedIndex = -1;
+        break;
+    }
+  }
+
+  // ----------------------------------------
+  // 🔥 CLOSE DROPDOWN ON OUTSIDE CLICK
+  // ----------------------------------------
+  @HostListener('document:click', ['$event'])
+  handleOutsideClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+
+    if (!target.closest('.product-search-container')) {
+      this.showDropdown = false;
+    }
+  }
+
+  // SUBMIT
   onSubmit() {
+    if (!this.selectedProductId) {
+      this.errorMessage = "Please select a product from dropdown.";
+      this.clearMessageAfterDelay();
+      return;
+    }
+
+    if (this.productForm.invalid) {
+      this.errorMessage = "Please fill all required fields.";
+      this.clearMessageAfterDelay();
+      return;
+    }
+
     const stockData = {
-      userId : UserStorageService.getUserId(),
-      productId: this.productForm.get('name')?.value,
+      userId: UserStorageService.getUserId(),
+      productId: this.selectedProductId,
       batchNo: this.productForm.get('batchNo')?.value,
       expiryDate: this.productForm.get('expiryDate')?.value,
       quantity: this.productForm.get('quantity')?.value,
     };
-    console.log('Stock Data:', stockData);
 
     this.authService.addStock(stockData).subscribe(
+      () => this.router.navigate(['user/dashboard']),
       () => {
-        this.router.navigate(['user/dashboard']);
-      },
-      (error) => {
-        console.log(error);
-        this.errorMessage = 'Adding stock failed.';
+        this.errorMessage = "Adding stock failed.";
         this.clearMessageAfterDelay();
       }
     );
   }
 
   private clearMessageAfterDelay() {
-    setTimeout(() => {
-      this.errorMessage = null;
-    }, 5000);
+    setTimeout(() => this.errorMessage = null, 4000);
   }
 }

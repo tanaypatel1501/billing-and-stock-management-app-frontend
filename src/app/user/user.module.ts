@@ -14,7 +14,6 @@ import { BillsComponent } from './components/bills/bills.component';
 
 @NgModule({
   declarations: [
-    DashboardComponent,
     AddStockComponent,
     CreateBillComponent,
     DetailsComponent,
@@ -23,6 +22,7 @@ import { BillsComponent } from './components/bills/bills.component';
   ],
   imports: [
     CommonModule,
+    DashboardComponent,
     UserRoutingModule,
     FormsModule,
     ReactiveFormsModule,

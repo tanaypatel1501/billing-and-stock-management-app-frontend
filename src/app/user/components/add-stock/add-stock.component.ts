@@ -38,7 +38,7 @@ export class AddStockComponent implements OnInit {
       name: ['', Validators.required],
       batchNo: ['', Validators.required],
       expiryDate: ['', Validators.required],
-      quantity: [null, [Validators.required, Validators.min(0), Validators.max(100)]],
+      quantity: [null, [Validators.required, Validators.min(1)]],
     });
   }
 
@@ -105,9 +105,6 @@ export class AddStockComponent implements OnInit {
     }, 150);
   }
 
-  // ----------------------------------------
-  // 🔥 KEYBOARD NAVIGATION + ESCAPE HANDLING
-  // ----------------------------------------
   @HostListener('document:keydown', ['$event'])
   handleKeyboard(event: KeyboardEvent) {
 
@@ -141,9 +138,6 @@ export class AddStockComponent implements OnInit {
     }
   }
 
-  // ----------------------------------------
-  // 🔥 CLOSE DROPDOWN ON OUTSIDE CLICK
-  // ----------------------------------------
   @HostListener('document:click', ['$event'])
   handleOutsideClick(event: MouseEvent) {
     const target = event.target as HTMLElement;

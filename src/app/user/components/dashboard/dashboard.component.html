@@ -3,42 +3,91 @@
 		<h2>No Product in Stock</h2>
 		<p>Products available in stock will appear here</p>
 	</div>
-  </ng-template>
-<div *ngIf="stock.length > 0; else noProductsMessage">
-	<h4>Products in Stock</h4>
-	<table class="table table-striped">
-		<thead>
-			<tr>
-				<th scope="col">#</th>
-				<th scope="col">Product Name</th>
-				<th scope="col">Packing</th>
-				<th scope="col">HSN</th>
-				<th scope="col">Batch No.</th>
-				<th scope="col">Expiry Date</th>
-				<th scope="col">Quantity</th>
-				<th scope="col">MRP</th>
-				<th scope="col">CGST</th>
-				<th scope="col">SGST</th>
-				<!-- <th scope="col">Actions</th> -->
-			</tr>
-		</thead>
-		<tbody>
-			<tr *ngFor="let item of stock; index as i">
-				<th scope="row">{{ i + 1 }}</th>
-				<td>{{ item.product.name }}</td>
-				<td>{{ item.product.packing }}</td>
-				<td>{{ item.product.hsn }}</td>
-				<td>{{ item.batchNo }}</td>
-				<td>{{ item.expiryDate | date}}</td>
-				<td>{{ item.quantity | number }}</td>
-				<td>{{ '₹' }} {{ item.product.mrp | number }}</td>
-				<td>{{ item.product?.cgst | number }} %</td>
-				<td>{{ item.product?.sgst | number }} %</td>
-				<!-- <td>
-					<button class="edit-button" (click)="edit(item.product.id)"><fa-icon [icon]="faPencil">Edit</fa-icon></button>
-					<button class="delete-button" (click)="delete(item.product.id)"><fa-icon [icon]="faTrashCan">Delete</fa-icon></button>                
-				</td> -->
-			</tr>
-		</tbody>
-	</table>
+</ng-template>
+
+<div *ngIf="stock.length > 0; else noProductsMessage" class="dashboard-wrapper">
+	<div class="main-content">
+	<!-- Header -->
+	<div class="header-container d-flex align-items-center">
+		<div class="flex-1"></div>
+
+		<h4 class="header-title flex-grow-1">
+			Products in Stock
+		</h4>
+
+		<div class="flex-1 d-flex justify-content-end header-search">
+			<app-search-bar></app-search-bar>
+		</div>
+	</div>
+
+	<!-- Table -->
+	<div class="table-wrapper" (click)="collapseAll()">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th scope="col">#</th>
+					<th scope="col">Product Name</th>
+					<th scope="col">Packing</th>
+					<th scope="col">HSN</th>
+					<th scope="col">Batch No.</th>
+					<th scope="col">Expiry Date</th>
+					<th scope="col">Quantity</th>
+					<th scope="col">MRP</th>
+					<th scope="col">CGST</th>
+					<th scope="col">SGST</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let item of stock; index as i" class="mobile-card" [class.expanded]="expandedIndex === i"
+					(click)="toggleCard(i); $event.stopPropagation()">
+					<td class="expandable" data-label="#" scope="row">{{ i + 1 }}</td>
+					<td data-label="Product Name">{{ item.product.name }}</td>
+					<td class="expandable" data-label="Packing">{{ item.product.packing }}</td>
+					<td class="expandable" data-label="HSN">{{ item.product.hsn }}</td>
+					<td class="expandable" data-label="Batch No.">{{ item.batchNo }}</td>
+					<td data-label="Expiry Date">{{ item.expiryDate | date }}</td>
+					<td data-label="Quantity">{{ item.quantity | number }}</td>
+					<td data-label="MRP">₹ {{ item.product.mrp | number }}</td>
+					<td class="expandable" data-label="CGST">{{ item.product?.cgst | number }} %</td>
+					<td class="expandable" data-label="SGST">{{ item.product?.sgst | number }} %</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	</div>
+	<!-- Pagination Controls (Visible on Desktop only) -->
+	<div class="pagination-container d-none d-md-flex justify-content-center mt-4 mb-5">
+		<nav aria-label="Page navigation">
+			<ul class="pagination">
+				<!-- First Page -->
+				<li class="page-item" [class.disabled]="currentPage === 0">
+					<a class="page-link" (click)="goToPage(0)">«</a>
+				</li>
+				<!-- Previous -->
+				<li class="page-item" [class.disabled]="currentPage === 0">
+					<a class="page-link" (click)="goToPage(currentPage - 1)">‹</a>
+				</li>
+
+				<!-- Dynamic Page Numbers -->
+				<li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+					<a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
+				</li>
+
+				<!-- Next -->
+				<li class="page-item" [class.disabled]="isLastPage">
+					<a class="page-link" (click)="goToPage(currentPage + 1)">›</a>
+				</li>
+				<!-- Last Page -->
+				<li class="page-item" [class.disabled]="isLastPage">
+					<a class="page-link" (click)="goToPage(totalPages - 1)">»</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+
+	<!-- Loading Spinner for Mobile Scroll -->
+	<div *ngIf="isLoading && stock.length > 0" class="text-center p-3 d-md-none">
+		<div class="spinner-border text-primary" role="status"></div>
+	</div>
+	
 </div>

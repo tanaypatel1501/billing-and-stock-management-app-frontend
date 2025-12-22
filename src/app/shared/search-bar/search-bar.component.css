@@ -1,0 +1,37 @@
+.search-container {
+  display: flex;
+  align-items: center;
+  width: 40px; /* Initially just the width of the icon button */
+  overflow: hidden;
+  transition: width 0.3s ease;
+  border-radius: 20px;
+  background: #f1f1f1;
+}
+
+/* Expand the container when active */
+.search-container.active {
+  width: 200px;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 5px 10px;
+  display: none; /* Hide input initially */
+}
+
+.search-container.active .search-input {
+  display: block; /* Show input when active */
+}
+
+.search-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+}
+.search-button:hover fa-icon {
+  color: #48e3cc;
+}

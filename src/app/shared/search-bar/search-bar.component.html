@@ -1,0 +1,6 @@
+<div class="search-container" [ngClass]="{'active': isExpanded}">
+  <input type="text" class="search-input" placeholder="Search...">
+  <button class="search-button" (click)="toggleSearch()">
+    <fa-icon [icon]="faSearch"></fa-icon>
+  </button>
+</div>

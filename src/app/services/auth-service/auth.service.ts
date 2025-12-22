@@ -240,8 +240,8 @@ export class AuthService {
     );
   }
 
-  getStock(userId: any): Observable<any> {
-    return this.http.get(`${this.baseUrl}api/stock/user/${userId}`,
+  getStock(userId: any, page: number=0, size: number=20): Observable<any> {
+    return this.http.get(`${this.baseUrl}api/stock/user/${userId}?page=${page}&size=${size}`,
       { headers: this.createAuthorizationHeader() }
     );
   }

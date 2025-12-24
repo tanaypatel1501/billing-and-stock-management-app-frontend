@@ -10,12 +10,20 @@
   font-weight: 500;
   margin: 0;             
 }
-
+.title-icon {
+  display: none;
+}
 /* Right-side search spacing */
 .header-search {
   padding-right: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Adjust this value (10px to 20px) to get the perfect distance */
 }
-
+.sortable-header{
+  cursor: pointer;
+  user-select: none;
+}
 /* Utility */
 .flex-1 {
   flex: 1;
@@ -78,6 +86,48 @@ button {
   cursor: not-allowed;
   color: #ccc;
 }
+.empty-state-cell {
+  padding: 0;              
+  border-bottom: none;
+}
+.empty-state-content {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6c757d;
+}
+.back-btn-container {
+  padding-left: 6px;
+}
+.back-btn {
+  background: #f1f1f1;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: background 0.3s ease;
+}
+
+.back-btn:hover {
+  color: #48e3cc;
+  background: #e4e4e4;
+}
+
+table:has(tbody.empty-state) thead {
+  display: none;
+}
 
 @media (max-width: 768px) {
     .table-striped {
@@ -120,7 +170,7 @@ button {
     color: #666;
     flex: 1 1 auto;
   }
-  /* Hide expandable rows by default */
+
   .mobile-card .expandable {
     display: none;
     opacity: 0;
@@ -128,7 +178,7 @@ button {
     transition: all 0.3s ease;
     overflow: hidden;
   }
-  /* Show when expanded */
+
   .mobile-card.expanded .expandable {
     display: flex;
     opacity: 1;
@@ -136,5 +186,37 @@ button {
   }
   .pagination-container {
     display: none !important;
+  }
+  tbody.empty-state tr {
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  tbody.empty-state td.empty-state-cell {
+    display: block !important;
+    padding: 0 !important;
+  }
+
+  tbody.empty-state td.empty-state-cell::before {
+    content: none !important;
+  }
+
+  .empty-state-content {
+    min-height: 40vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .header-container:has(.search-container.active) .title-text {
+    display: none;
+  }
+
+  .header-container:has(.search-container.active) .title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }

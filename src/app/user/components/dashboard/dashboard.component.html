@@ -5,18 +5,44 @@
 	</div>
 </ng-template>
 
-<div *ngIf="stock.length > 0; else noProductsMessage" class="dashboard-wrapper">
+<div *ngIf="stock.length > 0 || isSearchActive noProductsMessage" class="dashboard-wrapper">
 	<div class="main-content">
 	<!-- Header -->
 	<div class="header-container d-flex align-items-center">
+		<div class="back-btn-container">
+		<button
+			class="back-btn me-2"
+			(click)="resetView()"
+			title="Reset Filters & Search"
+			*ngIf="searchText.length > 0">
+			<fa-icon [icon]="faArrowLeft"></fa-icon>
+		</button>
+		</div>
 		<div class="flex-1"></div>
 
 		<h4 class="header-title flex-grow-1">
-			Products in Stock
+			<span class="title-text">Products in Stock</span>
+			<fa-icon
+				[icon]="faCartFlatbed"
+				class="title-icon">
+			</fa-icon>
 		</h4>
 
 		<div class="flex-1 d-flex justify-content-end header-search">
-			<app-search-bar></app-search-bar>
+			<app-search-bar
+				[suggestions]="suggestions"
+				[labelKey]="'product.name'" 
+				[subLabelKey]="'product.packing'"
+				(onType)="handleTyping($event)"
+				(onSelect)="handleSearch($event)"
+				(onSearch)="handleSearch($event)">
+			</app-search-bar>
+			<app-filter-button 
+				[columns]="filterColumns" 
+				[currentSortBy]="sortColumn"
+    			[currentDirection]="sortDirection"
+				(onApplySort)="handleFilterSort($any($event))">
+			</app-filter-button>
 		</div>
 	</div>
 
@@ -26,15 +52,85 @@
 			<thead>
 				<tr>
 					<th scope="col">#</th>
-					<th scope="col">Product Name</th>
-					<th scope="col">Packing</th>
-					<th scope="col">HSN</th>
-					<th scope="col">Batch No.</th>
-					<th scope="col">Expiry Date</th>
-					<th scope="col">Quantity</th>
-					<th scope="col">MRP</th>
-					<th scope="col">CGST</th>
-					<th scope="col">SGST</th>
+					
+					<!-- Product Name -->
+					<th scope="col" (dblclick)="onDoubleClickSort('product.name')" class="sortable-header">
+					Product Name 
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'product.name'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'product.name'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- Packing -->
+					<th scope="col" (dblclick)="onDoubleClickSort('product.packing')" class="sortable-header">
+					Packing
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'product.packing'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'product.packing'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- HSN -->
+					<th scope="col" (dblclick)="onDoubleClickSort('product.HSN')" class="sortable-header">
+					HSN
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'product.HSN'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'product.HSN'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- Batch No. -->
+					<th scope="col" (dblclick)="onDoubleClickSort('batchNo')" class="sortable-header">
+					Batch No.
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'batchNo'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'batchNo'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- Expiry Date -->
+					<th scope="col" (dblclick)="onDoubleClickSort('expiryDate')" class="sortable-header">
+					Expiry Date
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'expiryDate'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'expiryDate'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- Quantity -->
+					<th scope="col" (dblclick)="onDoubleClickSort('quantity')" class="sortable-header">
+					Quantity
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'quantity'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'quantity'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- MRP -->
+					<th scope="col" (dblclick)="onDoubleClickSort('product.MRP')" class="sortable-header">
+					MRP
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'product.MRP'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'product.MRP'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- GST Columns (Usually fixed rates, but can be sorted) -->
+					<th scope="col" (dblclick)="onDoubleClickSort('product.CGST')" class="sortable-header">
+					CGST
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'product.CGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'product.CGST'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+					<th scope="col" (dblclick)="onDoubleClickSort('product.SGST')" class="sortable-header">
+					SGST
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'product.SGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'product.SGST'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -50,6 +146,15 @@
 					<td data-label="MRP">₹ {{ item.product.mrp | number }}</td>
 					<td class="expandable" data-label="CGST">{{ item.product?.cgst | number }} %</td>
 					<td class="expandable" data-label="SGST">{{ item.product?.sgst | number }} %</td>
+				</tr>
+			</tbody>
+			<tbody *ngIf="stock.length === 0 && !isLoading" class="empty-state">
+				<tr>
+					<td colspan="10" class="empty-state-cell">
+						<div class="empty-state-content">
+							No products found matching your criteria.
+						</div>
+					</td>
 				</tr>
 			</tbody>
 		</table>

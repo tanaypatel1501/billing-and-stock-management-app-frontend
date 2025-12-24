@@ -1,7 +1,7 @@
 <div class="alert alert-danger" role="alert" *ngIf="showError">
     Bill cannot be empty.
 </div>  
-<table class="table table-striped" *ngIf="itemAdded">
+<table class="table table-striped" *ngIf="step2Data.length > 0" (click)="collapseAll()">
 	<thead>
 		<tr>
 			<th scope="col">#</th>
@@ -16,17 +16,22 @@
 		</tr>
 	</thead>
 	<tbody>
-        <tr *ngFor="let item of step2Data; index as i">
-			<th scope="row">{{ i + 1 }}</th>
-			<td>{{ item.productName }}</td>
-			<td>{{ item.batchNo }}</td>
-			<td>{{ item.expiryDate | date }}</td>
-			<td>{{ item.quantity | number }}</td>
-			<td>{{ item.free | number }}</td>
-			<td>{{ '₹' }} {{ item.rate | number }}</td>
-			<td>{{ '₹' }} {{ item.amount | number }}</td>
-			<td>
-                <button class="delete-button" (click)="delete(i)"><fa-icon [icon]="faTrashCan">Delete</fa-icon></button>                
+        <tr *ngFor="let item of step2Data; index as i" 
+            class="mobile-card" 
+            [class.expanded]="expandedIndex === i"
+            (click)="toggleCard(i); $event.stopPropagation()">
+			<th class="expandable" data-label="#" scope="row">{{ i + 1 }}</th>
+			<td data-label="Product Name">{{ item.productName }}</td>
+			<td class="expandable" data-label="Batch No.">{{ item.batchNo }}</td>
+			<td data-label="Expiry Date">{{ item.expiryDate | date }}</td>
+			<td data-label="Quantity">{{ item.quantity | number }}</td>
+			<td class="expandable" data-label="Free">{{ item.free | number }}</td>
+			<td class="expandable" data-label="Rate">{{ '₹' }} {{ item.rate | number }}</td>
+			<td data-label="Amount">{{ '₹' }} {{ item.amount | number }}</td>
+			<td data-label="Actions">
+                <button class="delete-button" (click)="delete(i); $event.stopPropagation()">
+                    <fa-icon [icon]="faTrashCan">Delete</fa-icon>
+                </button>                
             </td>
 		</tr>
 	</tbody>
@@ -72,16 +77,37 @@
       <form [formGroup]="billForm2">
         <div class="form-group">
             <label for="productName">Product Name</label>
-            <select class="form-input" id="productName" formControlName="productName" (change)="updateQuantityPlaceholder()">
-                <option value="" disabled>Select a product</option>
-                <option *ngFor="let item of stock" [value]="item.product.name">{{ item.product.name }}</option>
-            </select>
+            <div class="custom-dropdown-container">
+                <input
+                    type="text"
+                    class="form-input"
+                    placeholder="Start typing product name..."
+                    formControlName="productName"
+                    (input)="onProductSearch()"
+                    (focus)="openDropdown()"
+                    (blur)="onInputBlur()"
+                    autocomplete="off"
+                />
+
+                <ul class="suggestion-dropdown"
+                    *ngIf="showDropdown && products.length > 0">
+                    <li *ngFor="let p of products; let i = index"
+                        [class.active]="highlightedIndex === i"
+                        (mousedown)="selectProduct(p)">
+                    {{ p.name }}
+                    <span class="sub-label" *ngIf="p.packing">
+                        | {{ p.packing }}
+                    </span>
+                    </li>
+                </ul>
+
+                <ul class="suggestion-dropdown"
+                    *ngIf="showDropdown && products.length === 0">
+                    <li class="no-results">No product found</li>
+                </ul>
+            </div>
             <div *ngIf="billForm2.get('productName')?.hasError('required') && billForm2.get('productName')?.touched" class="text-danger">Product Name is required.</div>     
         </div>
-        <!-- <div class="form-group">
-            <label for="productId">Product ID</label>
-            <input type="text" class="form-input" id="productId" placeholder="Product ID" formControlName="productId" [readonly]="true">
-        </div>   -->
         <div class="form-group">
             <label for="batchNo">Batch No.</label>
             <select class="form-input" id="batchNo" formControlName="batchNo" (change)="updateQuantityPlaceholder()">

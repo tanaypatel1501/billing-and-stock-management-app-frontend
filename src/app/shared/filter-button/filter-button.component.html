@@ -1,0 +1,48 @@
+<div class="filter-wrapper">
+  <!-- Rounded Button matching search bar style -->
+  <button class="filter-toggle-btn" (click)="toggleModal()" title="Sort & Filter">
+    <fa-icon [icon]="faFilter"></fa-icon>
+  </button>
+
+  <!-- Modal Overlay - now fixed to screen -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="toggleModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h5 class="modal-title">Sort Settings</h5>
+        <button type="button" class="close-btn" (click)="toggleModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field-group">
+          <label>Sort By Column</label>
+          <select class="custom-select" [(ngModel)]="selectedColumn">
+            <option value="" disabled>Select Column</option>
+            <option *ngFor="let col of columns" [value]="col.value">{{ col.label }}</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>Direction</label>
+          <div class="direction-toggle">
+            <button 
+              type="button" 
+              [class.active]="selectedDirection === 'asc'" 
+              (click)="selectedDirection = 'asc'">Ascending</button>
+            <button 
+              type="button" 
+              [class.active]="selectedDirection === 'desc'" 
+              (click)="selectedDirection = 'desc'">Descending</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-clear" (click)="clearFilters()">Clear All</button>
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="toggleModal()">Cancel</button>
+            <button type="button" class="btn-apply" (click)="apply()" [disabled]="!selectedColumn">Apply Sort</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

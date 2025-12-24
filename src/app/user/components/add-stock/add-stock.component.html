@@ -8,16 +8,13 @@
       <div class="col-md-5">
         <h3 class="text-center mb-4">Add Stock</h3>
 
-        <!-- PRODUCT SEARCH + SELECT (searchable input + dropdown) -->
-        <!-- Added position-relative to the row wrapper -->
-        <div class="row mb-3 position-relative">
+        <div class="row mb-3">
           <div class="col">
             <label class="form-label">Product Name:</label>
           </div>
-
-          <!-- Added position-relative to the inner col for correct dropdown positioning/width -->
-          <div class="col position-relative"> 
-            <!-- Input is part of reactive form (formControlName="name") -->
+        
+          <div class="col">
+          <div class="custom-dropdown-container">
             <input type="text"
                    class="form-control"
                    placeholder="Start typing product name..."
@@ -27,19 +24,20 @@
                    (blur)="onInputBlur()"
                    autocomplete="off" />
 
-            <!-- Dropdown results - The 'w-100' class ensures it takes the width of its parent 'col' -->
-            <div class="dropdown-menu show w-100" *ngIf="showDropdown">
-              <button type="button"
-                      class="dropdown-item"
-                      *ngFor="let p of products; let i = index"
-                      [class.active]="highlightedIndex === i"
-                      (mousedown)="selectProduct(p)">
-                {{ p.name }}
-              </button>
+            <ul class="suggestion-dropdown" *ngIf="showDropdown && products.length > 0">
+              <li *ngFor="let p of products; let i = index" 
+                  [class.active]="highlightedIndex === i"
+                  (mousedown)="selectProduct(p)">
+                {{ p.name }} 
+                <!-- Showing packing label like search bar -->
+                <span class="sub-label" *ngIf="p.packing"> | {{ p.packing }}</span>
+              </li>
+            </ul>
 
-              <div *ngIf="products.length === 0" class="dropdown-item disabled">
-                No products found
-              </div>
+            <!-- No results state -->
+            <ul class="suggestion-dropdown" *ngIf="showDropdown && products.length === 0 && productForm.get('name')?.value.length > 1">
+              <li class="no-results">No product found</li>
+            </ul>
             </div>
           </div>
         </div>

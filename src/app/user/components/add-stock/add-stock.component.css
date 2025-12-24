@@ -1,16 +1,51 @@
-/* Override Bootstrap's default min-width of 10rem to allow w-100 to work */
-.dropdown-menu {
-  min-width: 0; 
-  box-sizing: border-box; /* Ensures borders/padding are included in the width calculation */
+/* 1. The wrapper ensures the dropdown anchors strictly to the input's width */
+.custom-dropdown-container {
+  position: relative;
+  width: 100%;
+}
+/* 2. Style the dropdown to match your search-bar EXACTLY */
+.suggestion-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+   min-width: 200px; 
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 5px 0;
+  z-index: 1000;
+  margin-top: 5px;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #eee; /* Optional: adds definition */
 }
 
-/* Existing styles for highlighting */
-.dropdown-item.active, .dropdown-item:active {
-  background-color: #48e3cc; 
-  text-decoration: none;
+/* 3. List Item Styles */
+.suggestion-dropdown li {
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+/* 4. Match the teal highlight from your dashboard */
+.suggestion-dropdown li.active, 
+.suggestion-dropdown li:hover {
+  background-color: #efefef;
   color: #000;
 }
 
-.dropdown-item:hover {
-    background-color: #e9ecef;
+/* 5. Sub-label for packing */
+.sub-label {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.no-results {
+  padding: 10px 15px;
+  color: #999;
+  font-size: 13px;
 }

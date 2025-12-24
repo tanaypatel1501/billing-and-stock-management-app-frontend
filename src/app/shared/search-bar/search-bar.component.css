@@ -1,16 +1,22 @@
 .search-container {
   display: flex;
   align-items: center;
-  width: 40px; /* Initially just the width of the icon button */
-  overflow: hidden;
+  width: 40px;
+  /* overflow: hidden; */
   transition: width 0.3s ease;
   border-radius: 20px;
   background: #f1f1f1;
+  position: relative;
+  z-index: 20;
 }
 
 /* Expand the container when active */
 .search-container.active {
   width: 200px;
+
+  .search-button {
+    display: none;
+  }
 }
 
 .search-input {
@@ -19,11 +25,15 @@
   background: transparent;
   outline: none;
   padding: 5px 10px;
-  display: none; /* Hide input initially */
+  display: none;
+}
+
+.search-container:not(.active):hover {
+  background: #e4e4e4;
 }
 
 .search-container.active .search-input {
-  display: block; /* Show input when active */
+  display: block;
 }
 
 .search-button {
@@ -32,6 +42,28 @@
   cursor: pointer;
   padding: 10px;
 }
-.search-button:hover fa-icon {
+
+.search-button:hover {
   color: #48e3cc;
+  background: #e4e4e4;
+}
+
+.suggestion-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 5px 0;
+  z-index: 1000;
+  margin-top: 5px;
+}
+
+.suggestion-dropdown li {
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
 }

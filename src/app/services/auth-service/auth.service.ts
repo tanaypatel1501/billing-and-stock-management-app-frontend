@@ -246,14 +246,6 @@ export class AuthService {
     );
   }
 
-  /* NEW: Paginated Stock GET */
-  getStockPaginated(page = 0, size = 20): Observable<PageResponse<any>> {
-    return this.http.get<PageResponse<any>>(
-      `${this.baseUrl}api/stock/get?page=${page}&size=${size}`,
-      { headers: this.createAuthorizationHeader() }
-    );
-  }
-
   /* NEW: Search Stock */
   searchStock(params: SearchRequest): Observable<PageResponse<any>> {
     return this.http.post<PageResponse<any>>(
@@ -264,7 +256,7 @@ export class AuthService {
   }
 
   updateStock(data: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}api/stock/update`, data,
+    return this.http.put(`${this.baseUrl}api/stock/update`, data,
       { headers: this.createAuthorizationHeader() }
     );
   }

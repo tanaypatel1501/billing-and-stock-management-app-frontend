@@ -4,8 +4,11 @@
 		<p>Products available in stock will appear here</p>
 	</div>
 </ng-template>
+<ng-container *ngIf="initialLoadComplete">
+<ng-container *ngIf="stock.length > 0 || isSearchActive; else noProductsMessage">
 
-<div *ngIf="!isInitialEmpty; else noProductsMessage" class="dashboard-wrapper">
+    <!-- KEEP the div for CSS -->
+    <div class="dashboard-wrapper">
 	<div class="main-content">
 	<!-- Header -->
 	<div class="header-container d-flex align-items-center">
@@ -197,3 +200,5 @@
 	</div>
 	
 </div>
+</ng-container>
+</ng-container>

@@ -4,8 +4,9 @@
 		<p>Add products to see them listed here.</p>
 	</div>
 </ng-template>
-
-<div *ngIf="!isInitialEmpty; else noProductsMessage" class="dashboard-wrapper">
+<ng-container *ngIf="initialLoadComplete">
+	<ng-container *ngIf="!isInitialEmpty; else noProductsMessage">
+<div  class="dashboard-wrapper">
 	<div class="main-content">
 	<!-- Header -->
 	<div class="header-container d-flex align-items-center">
@@ -174,3 +175,5 @@
 	</div>
 	
 </div>
+</ng-container>
+</ng-container>

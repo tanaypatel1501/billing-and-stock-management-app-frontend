@@ -31,6 +31,7 @@ export class DashboardComponent implements OnInit{
   currentPage: number = 0;
   totalPages: number = 0;
   pageSize: number = 20;
+  initialLoadComplete = false;
   isLoading: boolean = false;
   isLastPage: boolean = false;
   userId!: any;
@@ -94,11 +95,13 @@ export class DashboardComponent implements OnInit{
       this.isLastPage = data.last;
       this.currentPage = data.number;
       this.stock = append ? [...this.stock, ...data.content] : data.content;
+      this.initialLoadComplete = true;
       this.isLoading = false;
       this.suggestions = []; 
     },
     error: (err) => {
       console.error(err);
+      this.initialLoadComplete = true;
       this.isLoading = false;
     }
   });

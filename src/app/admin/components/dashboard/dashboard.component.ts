@@ -60,6 +60,10 @@ export class DashboardComponent implements OnInit{
     this.loadInitialData();
   }
 
+  get isInitialEmpty(): boolean {
+    return !this.isLoading && this.productList.length === 0 && !this.isSearchActive;
+  }
+
   toggleCard(index: number): void {
     this.expandedIndex = this.expandedIndex === index ? null : index;
   }
@@ -70,6 +74,10 @@ export class DashboardComponent implements OnInit{
   loadData(page: number = 0, append: boolean = false) {
     if (this.isLoading) return;
     this.isLoading = true;
+
+    if (!append && page === 0) {
+      this.productList = [];
+    }
 
     const searchRequest = {
       page: page,
@@ -131,7 +139,7 @@ export class DashboardComponent implements OnInit{
   handleFilterSort(event: { sortBy: string | null, direction: 'asc' | 'desc' }) {
     this.sortColumn = event.sortBy;
     this.sortDirection = event.direction;
-    this.isSearchActive = true;
+    // this.isSearchActive = true;
     this.loadInitialData(); 
   }
 
@@ -196,7 +204,7 @@ export class DashboardComponent implements OnInit{
     this.authService.deleteProduct(productId).subscribe(() => {
       console.log("Deleted Product Successfully");
       // Remove the deleted product from the 'products' array
-      this.products = this.products.filter((product: any) => product.id !== productId);
+      this.productList = this.productList.filter((product: any) => product.id !== productId);
     });
   }
 

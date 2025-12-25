@@ -50,6 +50,7 @@ export class DashboardComponent implements OnInit{
   ];
   searchText: string = '';
   suggestions: any[] = [];
+  
 
   constructor(
     private authService: AuthService,
@@ -61,7 +62,9 @@ export class DashboardComponent implements OnInit{
     this.userId = UserStorageService.getUserId();
     this.loadInitialData();
   }
-
+  get isInitialEmpty(): boolean {
+    return !this.isLoading && this.stock.length === 0 && !this.isSearchActive;
+  }
   toggleCard(index: number): void {
     this.expandedIndex = this.expandedIndex === index ? null : index;
   }
@@ -73,13 +76,15 @@ export class DashboardComponent implements OnInit{
   loadData(page: number = 0, append: boolean = false) {
   if (this.isLoading) return;
   this.isLoading = true;
-
+    if (!append && page === 0) {
+      this.stock = [];
+    }
   const searchRequest = {
     page: page,
     size: this.pageSize,
-    sortBy: this.sortColumn || 'id', // Default to ID if no sort selected
+    sortBy: this.sortColumn || 'id', 
     direction: this.sortDirection,
-    searchText: this.searchText,    // Unified search text
+    searchText: this.searchText,   
     filters: { "user.id": this.userId.toString() }
   };
 
@@ -137,7 +142,7 @@ loadInitialData() {
 handleFilterSort(event: { sortBy: string | null, direction: 'asc' | 'desc' }) {
   this.sortColumn = event.sortBy;
   this.sortDirection = event.direction;
-  this.isSearchActive = true;
+  // this.isSearchActive = true;
   this.loadInitialData(); 
 }
 

@@ -5,7 +5,7 @@
 	</div>
 </ng-template>
 
-<div *ngIf="stock.length > 0 || isSearchActive noProductsMessage" class="dashboard-wrapper">
+<div *ngIf="!isInitialEmpty; else noProductsMessage" class="dashboard-wrapper">
 	<div class="main-content">
 	<!-- Header -->
 	<div class="header-container d-flex align-items-center">

@@ -55,6 +55,17 @@ export class BillsComponent implements OnInit {
     this.userId = UserStorageService.getUserId();
     this.loadInitialData();
   }
+
+  get isInitialEmpty(): boolean {
+    return (
+      this.initialLoadComplete &&
+      !this.isLoading &&
+      this.bills.length === 0 &&
+      !this.isSearchActive &&
+      !this.sortColumn
+    );
+  }
+
   private buildSuggestions(source: any[]): void {
     this.suggestions = source.map(bill => ({
       ...bill,
@@ -68,6 +79,10 @@ export class BillsComponent implements OnInit {
   loadData(page: number = 0, append: boolean = false) {
     if (this.isLoading) return;
     this.isLoading = true;
+
+    if (!append && page === 0) {
+      this.bills = [];
+    }
 
     const searchRequest = {
       page: page,
@@ -130,7 +145,7 @@ export class BillsComponent implements OnInit {
   handleFilterSort(event: { sortBy: string | null, direction: 'asc' | 'desc' }) {
     this.sortColumn = event.sortBy;
     this.sortDirection = event.direction;
-    this.isSearchActive = true;
+    // this.isSearchActive = true;
     this.loadInitialData(); 
   }
 

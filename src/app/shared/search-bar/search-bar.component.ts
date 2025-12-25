@@ -15,6 +15,7 @@ export class SearchBarComponent {
   @Input() suggestions: any[] = [];
   @Input() labelKey: string = '';
   @Input() subLabelKey: string = '';
+  @Input() notFoundText: string = 'results';
   
   @Output() onType = new EventEmitter<string>();
   @Output() onSelect = new EventEmitter<any>();

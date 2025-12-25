@@ -170,7 +170,13 @@ table:has(tbody.empty-state) thead {
     color: #666;
     flex: 1 1 auto;
   }
-
+  .mobile-card{
+    cursor: pointer; 
+  }
+  .mobile-card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
   .mobile-card .expandable {
     display: none;
     opacity: 0;

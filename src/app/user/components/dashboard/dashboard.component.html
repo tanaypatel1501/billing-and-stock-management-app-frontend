@@ -35,7 +35,8 @@
 				[subLabelKey]="'product.packing'"
 				(onType)="handleTyping($event)"
 				(onSelect)="handleSearch($event)"
-				(onSearch)="handleSearch($event)">
+				(onSearch)="handleSearch($event)"
+				notFoundText="products">
 			</app-search-bar>
 			<app-filter-button 
 				[columns]="filterColumns" 

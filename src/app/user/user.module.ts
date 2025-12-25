@@ -18,7 +18,6 @@ import { BillsComponent } from './components/bills/bills.component';
     CreateBillComponent,
     DetailsComponent,
     BillPreviewComponent,
-    BillsComponent
   ],
   imports: [
     CommonModule,
@@ -27,6 +26,7 @@ import { BillsComponent } from './components/bills/bills.component';
     FormsModule,
     ReactiveFormsModule,
     FontAwesomeModule,
+    BillsComponent
     
   ]
 })

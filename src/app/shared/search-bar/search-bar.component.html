@@ -13,7 +13,7 @@
   </ul>
   
   <ul class="suggestion-dropdown" *ngIf="searchText.length > 1 && suggestions.length === 0 && isExpanded">
-    <li class="no-results">No product found</li>
+    <li class="no-results">No {{ notFoundText }} found</li>
   </ul>
 
   <button class="search-button" (click)="toggleSearch()">

@@ -1,19 +1,101 @@
 <ng-template #noBillsMessage>
-	<div class="message">
-		<h2>No Bills created yet</h2>
-		<p>Click on Create Bill in order to create your first bill.</p>
-	</div>
-</ng-template>
-<div *ngIf="bills.length > 0; else noBillsMessage">
-    <ul class="bills">
-      <li *ngFor="let bill of bills" class="bill-item">
-        <div class="bill-content">
-          <a (click)="openBill(bill.id)">
-            <p><b>To :</b> {{ bill.purchaserName }}</p>
-            <p><b>Invoice Date :</b> {{ bill.invoiceDate | date}}</p>
-          </a>
-        </div>
-      </li>
-    </ul>
+  <div class="message">
+    <h2>No Bills created yet</h2>
+    <p>Click on Create Bill in order to create your first bill.</p>
   </div>
-  
+</ng-template>
+
+<!-- Initial Loading State -->
+<div *ngIf="isLoading && !initialLoadComplete" class="text-center p-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p class="mt-3">Loading bills...</p>
+</div>
+
+<div *ngIf="(bills.length > 0 || isSearchActive || sortColumn) && !(isLoading && !initialLoadComplete); else noBillsMessage">
+  <div class="main-content"></div>
+  <div class="header-container d-flex align-items-center">
+    <div class="back-btn-container">
+      <button class="back-btn me-2" (click)="resetView()" title="Reset Filters & Search" 
+              *ngIf="isSearchActive || sortColumn">
+        <fa-icon [icon]="faArrowLeft"></fa-icon>
+      </button>
+    </div>
+    <div class="flex-1"></div>
+    <h4 class="header-title flex-grow-1">
+      <span class="title-text">Bills</span>
+      <fa-icon [icon]="faMoneyBillTrendUp" class="title-icon"></fa-icon>
+    </h4>
+    <div class="flex-1 d-flex justify-content-end header-search">
+      <app-search-bar 
+        [suggestions]="suggestions" 
+        [labelKey]="'purchaserName'" 
+        [subLabelKey]="'invoiceDateFormatted'"
+        (onType)="handleTyping($event)" 
+        (onSelect)="handleSearch($event)" 
+        (onSearch)="handleSearch($event)"
+        notFoundText="bills">
+      </app-search-bar>
+      <app-filter-button 
+        [columns]="filterColumns" 
+        [currentSortBy]="sortColumn" 
+        [currentDirection]="sortDirection"
+        (onApplySort)="handleFilterSort($any($event))">
+      </app-filter-button>
+    </div>
+  </div>
+
+  <ul class="bills">
+    <li *ngFor="let bill of bills" class="bill-item">
+      <div class="bill-content">
+        <a (click)="openBill(bill.id)">
+          <p><b>To:</b> {{ bill.purchaserName }}</p>
+          <p><b>Invoice Date:</b> {{ bill.invoiceDate | date:'dd-MM-yyyy' }}</p>
+        </a>
+      </div>
+    </li>
+    <li *ngIf="bills.length === 0 && !isLoading && initialLoadComplete" class="empty-state">
+      <div class="empty-state-cell">
+        <div class="empty-state-content">
+          No bill found matching your criteria.
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <!-- Desktop Pagination -->
+  <div *ngIf="bills.length > 0" class="pagination-container d-none d-md-flex justify-content-center mt-4 mb-5">
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        <!-- First Page -->
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" (click)="goToPage(0)">«</a>
+        </li>
+        <!-- Previous -->
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" (click)="goToPage(currentPage - 1)">‹</a>
+        </li>
+        <!-- Dynamic Page Numbers -->
+        <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+          <a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
+        </li>
+        <!-- Next -->
+        <li class="page-item" [class.disabled]="isLastPage">
+          <a class="page-link" (click)="goToPage(currentPage + 1)">›</a>
+        </li>
+        <!-- Last Page -->
+        <li class="page-item" [class.disabled]="isLastPage">
+          <a class="page-link" (click)="goToPage(totalPages - 1)">»</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Mobile Loading Spinner -->
+  <div *ngIf="isLoading && bills.length > 0" class="text-center p-3 d-md-none">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading more...</span>
+    </div>
+  </div>
+</div>

@@ -13,13 +13,13 @@ import { BulkUploadModalComponent } from './components/bulk-upload-modal/bulk-up
 
 @NgModule({
   declarations: [
-    DashboardComponent,
     AddProductComponent,
     EditProductComponent,
     BulkUploadModalComponent,
   ],
   imports: [
     CommonModule,
+    DashboardComponent,
     AdminRoutingModule,
     ReactiveFormsModule,
     FormsModule,

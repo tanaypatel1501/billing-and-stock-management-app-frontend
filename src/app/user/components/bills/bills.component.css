@@ -1,51 +1,292 @@
-.message{
-    text-align: center;
-    margin-top: 150px;
+/* Header layout */
+.header-container {
+  width: 100%;
+  margin-top: 6px;    
+  margin-bottom: 6px;   
 }
 
-.message p{
-    font-size: 18px;
-    color: #666;
-    margin-bottom: 30px;
+.header-title {
+  text-align: center;
+  font-weight: 500;
+  margin: 0;             
+}
+
+.title-icon {
+  display: none;
+}
+
+/* Right-side search spacing */
+.header-search {
+  padding-right: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Utility */
+.flex-1 {
+  flex: 1;
+}
+
+/* Empty state message */
+.message {
+  text-align: center;
+  margin-top: 150px;
+}
+
+.message p {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
 }
 
 .message h2 {
-    font-size: 30px;
-    color: #888;
-    margin-bottom: 20px;
+  font-size: 30px;
+  color: #888;
+  margin-bottom: 20px;
 }
 
+/* Buttons */
+button {
+  border: none;
+  background-color: transparent;
+}
+
+.edit-button {
+  margin-right: 10px;
+}
+
+.delete-button {
+  margin-left: 10px;
+}
+
+.edit-button:hover,
+.delete-button:hover {
+  color: #48e3cc;
+}
+
+.dashboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; 
+}
+
+.main-content {
+  flex: 1 0 auto; 
+} 
+
+/* Bills List */
 .bills {
-    list-style: none;
-    padding: 10px;
-    margin: 10px;
+  list-style: none;
+  padding: 10px;
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bill-item {
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  padding: 20px;
+  max-width: 800px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bill-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.bill-content {
+  flex-grow: 1;
+}
+
+.bill-content a {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.bills li p {
+  font-size: 18px;
+  margin: 0;
+  padding-right: 10px;
+}
+
+/* Pagination */
+.page-link {
+  cursor: pointer;
+  color: #333;
+  border: 1px solid #dee2e6;
+  padding: 8px 16px;
+}
+
+.page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.page-item.disabled .page-link {
+  cursor: not-allowed;
+  color: #ccc;
+}
+
+/* Empty State */
+.empty-state {
+  width: 100%;
+  max-width: 800px;
+  padding: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.empty-state-cell {
+  padding: 0;              
+  border-bottom: none;
+}
+
+.empty-state-content {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6c757d;
+}
+
+/* Back Button */
+.back-btn-container {
+  padding-left: 6px;
+}
+
+.back-btn {
+  background: #f1f1f1;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.back-btn:hover {
+  color: #48e3cc;
+  background: #e4e4e4;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .table-striped {
+    --bs-table-striped-bg: transparent !important;
+    --bs-table-accent-bg: transparent !important;
+  }
+
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 6px;
+    background: #fff;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  tbody td {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px 20px;
+    flex-wrap: wrap;
+  }
+
+  tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #666;
+    flex: 1 1 auto;
+  }
+
+  .mobile-card .expandable {
+    display: none;
+    opacity: 0;
+    max-height: 0;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  .mobile-card.expanded .expandable {
+    display: flex;
+    opacity: 1;
+    max-height: 100px;
+  }
+
+  .pagination-container {
+    display: none !important;
+  }
+
+  tbody.empty-state tr {
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  tbody.empty-state td.empty-state-cell {
+    display: block !important;
+    padding: 0 !important;
+  }
+
+  tbody.empty-state td.empty-state-cell::before {
+    content: none !important;
+  }
+
+  .empty-state-content {
+    min-height: 40vh;
+    display: flex;
     align-items: center;
+    justify-content: center;
+    text-align: center;
   }
-  
-  .bill-item {
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-    padding: 20px;
-    max-width: 800px;
-    width: 100%;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: space-between; /* Pushes the delete button to the right */
-    align-items: flex-start; /* Aligns note content to the top */
-    margin-bottom: 10px;
+
+  .header-container:has(.search-container.active) .title-text {
+    display: none;
   }
-  
-  .bill-content {
-    flex-grow: 1; /* Allows note content to take available space */
+
+  .header-container:has(.search-container.active) .title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  
-  .bills li p {
-    font-size: 18px;
-    margin: 0;
-    padding-right: 10px; /* Add some spacing between note and lastEdited */
-  }
-  
-  
+}

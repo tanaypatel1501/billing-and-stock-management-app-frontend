@@ -1,0 +1,22 @@
+<div class="search-container" [ngClass]="{'active': isExpanded}">
+  <input type="text" class="search-input" 
+         [(ngModel)]="searchText" 
+         (input)="onInput()" 
+         (keyup.enter)="onEnter()"
+         placeholder="Search...">
+  
+  <ul class="suggestion-dropdown" *ngIf="suggestions.length > 0 && isExpanded">
+    <li *ngFor="let item of suggestions" (click)="selectItem(item)">
+      {{ resolveField(item, labelKey) }} 
+      <span class="sub-label" *ngIf="subLabelKey"> | {{ resolveField(item, subLabelKey) }}</span>
+    </li>
+  </ul>
+  
+  <ul class="suggestion-dropdown" *ngIf="searchText.length > 1 && suggestions.length === 0 && isExpanded">
+    <li class="no-results">No {{ notFoundText }} found</li>
+  </ul>
+
+  <button class="search-button" (click)="toggleSearch()">
+    <fa-icon [icon]="faSearch"></fa-icon>
+  </button>
+</div>

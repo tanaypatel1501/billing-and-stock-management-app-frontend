@@ -1,29 +1,176 @@
-<table class="table table-striped">
-	<thead>
-		<tr>
-			<th scope="col">#</th>
-			<th scope="col">Product Name</th>
-			<th scope="col">Packing</th>
-			<th scope="col">HSN</th>
-			<th scope="col">MRP</th>
-			<th scope="col">CGST</th>
-			<th scope="col">SGST</th>
-			<th scope="col">Actions</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr *ngFor="let product of products; index as i">
-			<th scope="row">{{ i + 1 }}</th>
-			<td>{{ product.name }}</td>
-			<td>{{ product.packing }}</td>
-			<td>{{ product.hsn }}</td>
-			<td>{{ product.mrp | number }}</td>
-			<td>{{ product.cgst | number }} %</td>
-			<td>{{ product.sgst | number }} %</td>
-			<td>
-                <button class="edit-button" (click)="edit(product.id)"><fa-icon [icon]="faPencil">Edit</fa-icon></button>
-                <button class="delete-button" (click)="delete(product.id)"><fa-icon [icon]="faTrashCan">Delete</fa-icon></button>                
-            </td>
-		</tr>
-	</tbody>
-</table>
+<ng-template #noProductsMessage>
+	<div class="message">
+		<h2>No Products to Display</h2>
+		<p>Add products to see them listed here.</p>
+	</div>
+</ng-template>
+
+<div *ngIf="productList.length > 0 || isSearchActive noProductsMessage" class="dashboard-wrapper">
+	<div class="main-content">
+	<!-- Header -->
+	<div class="header-container d-flex align-items-center">
+		<div class="back-btn-container">
+		<button
+			class="back-btn me-2"
+			(click)="resetView()"
+			title="Reset Filters & Search"
+			*ngIf="searchText.length > 0">
+			<fa-icon [icon]="faArrowLeft"></fa-icon>
+		</button>
+		</div>
+		<div class="flex-1"></div>
+
+		<h4 class="header-title flex-grow-1">
+			<span class="title-text">Product List</span>
+			<fa-icon
+				[icon]="faCapsules"
+				class="title-icon">
+			</fa-icon>
+		</h4>
+
+		<div class="flex-1 d-flex justify-content-end header-search">
+			<app-search-bar
+				[suggestions]="suggestions"
+				[labelKey]="'name'" 
+				[subLabelKey]="'packing'"
+				(onType)="handleTyping($event)"
+				(onSelect)="handleSearch($event)"
+				(onSearch)="handleSearch($event)"
+				notFoundText="products">
+			</app-search-bar>
+			<app-filter-button 
+				[columns]="filterColumns" 
+				[currentSortBy]="sortColumn"
+    			[currentDirection]="sortDirection"
+				(onApplySort)="handleFilterSort($any($event))">
+			</app-filter-button>
+		</div>
+	</div>
+
+	<!-- Table -->
+	<div class="table-wrapper" (click)="collapseAll()">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th scope="col">#</th>
+					
+					<!-- Product Name -->
+					<th scope="col" (dblclick)="onDoubleClickSort('name')" class="sortable-header">
+					Product Name 
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'name'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'name'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- Packing -->
+					<th scope="col" (dblclick)="onDoubleClickSort('packing')" class="sortable-header">
+					Packing
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'packing'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'packing'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- HSN -->
+					<th scope="col" (dblclick)="onDoubleClickSort('HSN')" class="sortable-header">
+					HSN
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'HSN'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'HSN'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- MRP -->
+					<th scope="col" (dblclick)="onDoubleClickSort('MRP')" class="sortable-header">
+					MRP
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'MRP'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'MRP'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+
+					<!-- GST Columns (Usually fixed rates, but can be sorted) -->
+					<th scope="col" (dblclick)="onDoubleClickSort('CGST')" class="sortable-header">
+					CGST
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'CGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'CGST'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+					<th scope="col" (dblclick)="onDoubleClickSort('SGST')" class="sortable-header">
+					SGST
+					<span class="sort-icon">
+						<span *ngIf="sortColumn === 'SGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+						<span *ngIf="sortColumn !== 'SGST'" class="neutral-sort">⇅</span>
+					</span>
+					</th>
+					<th scope="col" (dblclick)="onDoubleClickSort('SGST')" class="sortable-header">
+					Actions
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let product of productList; index as i" class="mobile-card" [class.expanded]="expandedIndex === i"
+					(click)="toggleCard(i); $event.stopPropagation()">
+					<td class="expandable" data-label="#" scope="row">{{ i + 1 }}</td>
+					<td data-label="Product Name">{{ product.name }}</td>
+					<td class="expandable" data-label="Packing">{{ product.packing }}</td>
+					<td class="expandable" data-label="HSN">{{ product.hsn }}</td>
+					<td data-label="MRP">₹ {{ product.mrp | number }}</td>
+					<td class="expandable" data-label="CGST">{{ product?.cgst | number }} %</td>
+					<td class="expandable" data-label="SGST">{{ product?.sgst | number }} %</td>
+					<td data-label="Actions">
+						<button class="edit-button" (click)="edit(product.id)"><fa-icon [icon]="faPencil">Edit</fa-icon></button>
+						<button class="delete-button" (click)="delete(product.id)"><fa-icon [icon]="faTrashCan">Delete</fa-icon></button>                
+					</td>
+				</tr>
+			</tbody>
+			<tbody *ngIf="productList.length === 0 && !isLoading" class="empty-state">
+				<tr>
+					<td colspan="10" class="empty-state-cell">
+						<div class="empty-state-content">
+							No products found matching your criteria.
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	</div>
+	<!-- Pagination Controls (Visible on Desktop only) -->
+	<div class="pagination-container d-none d-md-flex justify-content-center mt-4 mb-5">
+		<nav aria-label="Page navigation">
+			<ul class="pagination">
+				<!-- First Page -->
+				<li class="page-item" [class.disabled]="currentPage === 0">
+					<a class="page-link" (click)="goToPage(0)">«</a>
+				</li>
+				<!-- Previous -->
+				<li class="page-item" [class.disabled]="currentPage === 0">
+					<a class="page-link" (click)="goToPage(currentPage - 1)">‹</a>
+				</li>
+
+				<!-- Dynamic Page Numbers -->
+				<li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+					<a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
+				</li>
+
+				<!-- Next -->
+				<li class="page-item" [class.disabled]="isLastPage">
+					<a class="page-link" (click)="goToPage(currentPage + 1)">›</a>
+				</li>
+				<!-- Last Page -->
+				<li class="page-item" [class.disabled]="isLastPage">
+					<a class="page-link" (click)="goToPage(totalPages - 1)">»</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+
+	<!-- Loading Spinner for Mobile Scroll -->
+	<div *ngIf="isLoading && productList.length > 0" class="text-center p-3 d-md-none">
+		<div class="spinner-border text-primary" role="status"></div>
+	</div>
+	
+</div>

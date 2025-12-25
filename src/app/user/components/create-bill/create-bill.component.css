@@ -52,4 +52,142 @@
     margin-left: 15px;
 }
  
-  
+.custom-dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+.suggestion-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 5px 0;
+  z-index: 1000;
+  margin-top: 5px;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+}
+
+.suggestion-dropdown li {
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.suggestion-dropdown li:hover,
+.suggestion-dropdown li.active {
+  background-color: #efefef;
+  color: #000;
+}
+
+.sub-label {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.no-results {
+  padding: 10px 15px;
+  color: #999;
+}
+@media (max-width: 768px) {
+  .table-striped {
+    --bs-table-striped-bg: transparent !important;
+    --bs-table-accent-bg: transparent !important;
+  }
+
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 6px;
+    background: #fff;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer; /* Add cursor pointer for clickable cards */
+  }
+
+  tbody td,
+  tbody th {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 20px;
+    flex-wrap: wrap;
+    border: none;
+  }
+
+  tbody td::before,
+  tbody th::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #666;
+    flex: 1 1 auto;
+  }
+  .mobile-card{
+    cursor: pointer; 
+  }
+  .mobile-card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
+  /* Hide expandable fields by default */
+  .mobile-card .expandable {
+    display: none;
+    opacity: 0;
+    max-height: 0;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  /* Show expandable fields when card is expanded */
+  .mobile-card.expanded .expandable {
+    display: flex;
+    opacity: 1;
+    max-height: 100px;
+  }
+
+  /* Special styling for the actions column */
+  tbody td:last-child {
+    justify-content: center;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+  }
+
+  tbody td:last-child::before {
+    display: none;
+  }
+
+  .form-container {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .buttons {
+    flex-direction: column;
+  }
+
+  .next-button {
+    width: 100%;
+    margin: 5px 0;
+  }
+}

@@ -18,16 +18,19 @@ export class CreateBillComponent implements OnInit,OnDestroy{
   billForm2!: FormGroup;
   userId!: any;
   stock : any[]= [];
-  selectedProduct: any;
+  products: any[] = [];
+  selectedProduct: any = null;
+  showDropdown = false;
+  highlightedIndex = -1;
   quantityPlaceholder = 'Quantity';
   currentStep = 1;
-  itemAdded: boolean = false;
   step1Data: any = {}; 
   billItem: any = {}; 
   stockData:any = {};
   step2Data: any[] = []; 
   subscriptions: Subscription[] = [];
   filteredStock: any[] = [];
+  expandedIndex: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -65,16 +68,7 @@ export class CreateBillComponent implements OnInit,OnDestroy{
       invoiceDate: null,
     };
 
-    // Fetch and populate the product list on component initialization
-    this.authService.getStock(this.userId).subscribe(
-      (response: any) => {
-        this.stock = response; // Store the list of products in stock and their quantity
-      },
-      (error) => {
-        console.log(error);
-        // Handle error if necessary
-      }
-    );
+    
 
     this.subscriptions.push(this.billForm2.get('productName')!.valueChanges.subscribe(() => {
       setTimeout(() => this.calculateAmount(), 0);
@@ -87,10 +81,87 @@ export class CreateBillComponent implements OnInit,OnDestroy{
     this.subscriptions.push(this.billForm2.get('rate')!.valueChanges.subscribe(() => {
       setTimeout(() => this.calculateAmount(), 0);
     }));
+}
+toggleCard(index: number): void {
+    this.expandedIndex = this.expandedIndex === index ? null : index;
+  }
 
-    this.subscriptions.push(this.billForm2.get('productName')!.valueChanges.subscribe((selectedProduct) => {
-      this.filteredStock = this.stock.filter(item => item.product.name === selectedProduct);
-    }));
+  collapseAll(): void {
+    this.expandedIndex = null;
+  }
+
+onProductSearch(): void {
+  const searchText = this.billForm2.get('productName')?.value;
+
+  if (!searchText || searchText.length < 2) {
+    this.products = [];
+    this.showDropdown = false;
+    return;
+  }
+
+  const body = {
+    searchText,
+    page: 0,
+    size: 10
+  };
+
+  this.authService.searchStock(body).subscribe({
+    next: (res: any) => {
+      const list = res.content ?? res ?? [];
+
+      this.stock = list;
+
+      const seen = new Set<string>();
+      this.products = list
+        .filter((item: any) => {
+          if (seen.has(item.product.name)) return false;
+          seen.add(item.product.name);
+          return true;
+        })
+        .map((item: any) => ({
+          name: item.product.name,
+          packing: item.product.packing
+        }));
+
+      this.showDropdown = true;
+    },
+    error: () => {
+      this.products = [];
+      this.stock = [];
+      this.showDropdown = false;
+    }
+  });
+}
+
+selectProduct(p: any): void {
+  const productName = p.name;
+
+  this.billForm2.patchValue({
+    productName: productName,
+    batchNo: null,
+    quantity: null,
+    free: 0,
+    expiryDate: null,
+    rate: null,
+    amount: null
+  });
+
+  this.filteredStock = this.stock.filter(
+    s => s.product.name === productName
+  );
+
+  this.showDropdown = false;
+}
+
+
+openDropdown(): void {
+  this.showDropdown = true;
+}
+
+onInputBlur(): void {
+  setTimeout(() => {
+    this.showDropdown = false;
+  }, 200);
 }
 
 ngOnDestroy() {
@@ -126,18 +197,27 @@ calculateAmount() {
 }
 
 updateQuantityPlaceholder() {
-  if (this.billForm2.contains('productName') && this.billForm2.contains('batchNo')) {
-    const selectedProduct = this.billForm2.get('productName')?.value;
-    const selectedBatchNo = this.billForm2.get('batchNo')?.value;
-    const item = this.stock.find(item => item.product.name === selectedProduct && item.batchNo === selectedBatchNo);
-      
-    this.quantityPlaceholder = item ? `Available quantity: ${item.quantity}` : 'Quantity';
+  const selectedProduct = this.billForm2.get('productName')?.value;
+  const selectedBatchNo = this.billForm2.get('batchNo')?.value;
 
-    this.billForm2.get('productId')?.setValue(item ? item.product.id : null);
-    this.billForm2.get('expiryDate')?.setValue(item ? this.formatDate(item.expiryDate) : null);  
+  if (!selectedProduct || !selectedBatchNo) {
+    this.quantityPlaceholder = 'Quantity';
+    return;
   }
-}
 
+  const item = this.stock.find(
+    s => s.product.name === selectedProduct && s.batchNo === selectedBatchNo
+  );
+
+  this.quantityPlaceholder = item
+    ? `Available quantity: ${item.quantity}`
+    : 'Quantity';
+
+  this.billForm2.patchValue({
+    productId: item ? item.product.id : null,
+    expiryDate: item ? this.formatDate(item.expiryDate) : null
+  });
+}
 
 validateQuantity(control: AbstractControl) {
   if (this.billForm2) {
@@ -175,14 +255,11 @@ nextStep() {
 
 addItem() {
   if (this.billForm2.valid) {
-    // If the form is valid, add the item
     const itemData = this.billForm2.value;
     this.step2Data.push(itemData);
     console.log(this.step2Data)
     this.billForm2.reset();
-    this.itemAdded = true;
   } else {
-    // If the form is invalid, mark all controls as touched to trigger the error messages
     this.billForm2.markAllAsTouched();
   }
 }
@@ -190,6 +267,11 @@ addItem() {
   delete(index: number) {
     if (index >= 0 && index < this.step2Data.length) {
       this.step2Data.splice(index, 1); 
+      if (this.expandedIndex === index) {
+        this.expandedIndex = null;
+      } else if (this.expandedIndex !== null && this.expandedIndex > index) {
+        this.expandedIndex--;
+      }
     }
   }
   
@@ -201,73 +283,84 @@ addItem() {
   }
 
   submitBill() {
-    if (this.step2Data.length > 0) {
-      // Call your AuthService method to create the bill
-      this.authService.createBill(this.step1Data).subscribe(
-        (response: any) => {
-          // Handle success 
-          let billId = response.id; // Assuming the response contains the billId
-          console.log('Created Bill with ID:', billId);
-    
-          for (let billItem of this.step2Data) {
-            // Add the billId to each billItem
-            billItem.billId = billId;
-            console.log('Adding Bill Item:', billItem);
-    
-            this.authService.addBillItem(billItem).subscribe(
-              (response: any) => {
-                // Handle success 
-                console.log('Added Bill Item:', response);
-              },
-              (error) => {
-                console.error('Error adding Bill Item:', error);
-                // Handle error if necessary
-              }
-            );
-    
-            const selectedProduct = this.stock.find(item => item.product.name === billItem.productName && item.batchNo === billItem.batchNo);
-            if (selectedProduct) {
-              const availableQuantity = selectedProduct.quantity;
-              const newQuantity = availableQuantity - (billItem.quantity + billItem.free); 
-              console.log("Selected Product: ", selectedProduct);
-              console.log("Available Quantity: ", availableQuantity);
-              console.log("New Quantity: ", newQuantity);
-              this.stockData = {
-                userId: this.userId = UserStorageService.getUserId(),
-                productId: billItem.productId,
-                quantity: newQuantity, // Update the quantity based on your calculation
-                batchNo : billItem.batchNo,
-                expiryDate : billItem.expiryDate,
-              };
-              console.log("Stock Data: ", this.stockData);
-              this.authService.updateStock(this.stockData).subscribe(
-                (response: any) => {
-                  // Handle success 
-                  console.log('Updated Stock:', response);
-                },
-                (error) => {
-                  console.error('Error updating Stock:', error);
-                  // Handle error if necessary
+  if (this.step2Data.length === 0) {
+    this.showError = true;
+    setTimeout(() => (this.showError = false), 3000);
+    return;
+  }
+
+  this.authService.createBill(this.step1Data).subscribe({
+    next: (billRes: any) => {
+      const billId = billRes.id;
+      this.userStorageService.saveBillId(billId);
+
+      let completedOperations = 0;
+      const totalOperations = this.step2Data.length;
+
+      this.step2Data.forEach((billItem) => {
+        const selectedStock = this.stock.find(
+          s =>
+            s.product.name === billItem.productName &&
+            s.batchNo === billItem.batchNo
+        );
+
+        if (!selectedStock) {
+          console.error('Stock not found:', billItem);
+          completedOperations++;
+          if (completedOperations === totalOperations) {
+            this.router.navigate(['user/bill-preview']);
+          }
+          return;
+        }
+
+        billItem.billId = billId;
+        billItem.productId = billItem.productId || selectedStock.product.id;
+        billItem.expiryDate = billItem.expiryDate || this.formatDate(selectedStock.expiryDate);
+
+        this.authService.addBillItem(billItem).subscribe({
+          next: () => {
+            const newQuantity =
+              selectedStock.quantity - (billItem.quantity + billItem.free);
+
+            const stockData = {
+              userId: UserStorageService.getUserId(),
+              productId: selectedStock.product.id,
+              batchNo: selectedStock.batchNo,
+              expiryDate: this.formatDate(selectedStock.expiryDate),
+              quantity: newQuantity
+            };
+
+            this.authService.updateStock(stockData).subscribe({
+              next: () => {
+                completedOperations++;
+                if (completedOperations === totalOperations) {
+                  this.router.navigate(['user/bill-preview']);
                 }
-              );
+              },
+              error: (err) => {
+                console.error('Stock update failed:', err);
+                completedOperations++;
+                if (completedOperations === totalOperations) {
+                  this.router.navigate(['user/bill-preview']);
+                }
+              }
+            });
+          },
+          error: (err) => {
+            console.error('Add bill item failed:', err);
+            completedOperations++;
+            if (completedOperations === totalOperations) {
+              this.router.navigate(['user/bill-preview']);
             }
           }
-    
-          this.userStorageService.saveBillId(billId);
-          console.log('Saved Bill ID:', billId);
-          this.router.navigate(['user/bill-preview']);
-        },
-        (error) => {
-          console.error('Error creating Bill:', error);
-          // Handle error if necessary
-        },
-      );
-    } else {
-      // If there are no items in the bill, display an error message
-      this.showError = true;
-      setTimeout(() => this.showError = false, 3000);
+        });
+      });
+    },
+    error: (err) => {
+      console.error('Bill creation failed:', err);
     }
-  }  
+  });
+}
 }
 
 

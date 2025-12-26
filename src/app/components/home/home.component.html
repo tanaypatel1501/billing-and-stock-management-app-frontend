@@ -1,2 +1,85 @@
-<p class="note-title">Easy Billing and Stock Management</p>
-<p class="note-text">GST MEDICOSE!!!</p>
+<div class="landing-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container grid">
+      <div class="hero-content">
+        <h1 class="headline">Billing & Stock Management <span class="accent">Made Easy.</span></h1>
+        <p class="sub-description">
+          Powered by <strong>GST Medicose</strong>, our platform provides a seamless 
+          pharma-focused ecosystem to manage inventory, generate bills, and scale your business efficiently.
+        </p>
+        <div class="cta-group">
+          <button class="btn-primary" routerLink="/register">Get Started Now</button>
+          <button class="btn-secondary" (click)="scrollToFeatures(features)">Learn More</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <!-- SVG Illustration representing a modern dashboard/medical tech -->
+        <img src="../../../assets/vectors/hero-illustration.svg" alt="Digital Pharma Management" class="vector-graphic">
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section #features class="features-section">
+    <div class="container">
+      <h2 class="section-title">Streamline Your Operations</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon-box">📋</div>
+          <h3>Smart Billing</h3>
+          <p>Generate professional invoices instantly with automated GST calculations and printable formats.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon-box">📦</div>
+          <h3>Stock Management</h3>
+          <p>Real-time inventory tracking with low-stock alerts and comprehensive medicine categorization.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon-box">🛡️</div>
+          <h3>Verified Products</h3>
+          <p>Request new products effortlessly. Our admin team verifies all entries to ensure catalog integrity.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Illustration / Aesthetic Section -->
+  <section class="aesthetic-section">
+    <div class="container grid align-center">
+      <div class="illustration-box">
+        <img src="../../../assets/vectors/workflow-visual.svg" alt="Workflow Illustration" class="vector-graphic">
+      </div>
+      <div class="text-box">
+        <h2>A Modern Workflow for Modern Pharma</h2>
+        <p>Gone are the days of manual ledgers. Register your business, access the GST Medicose global catalog, and start billing in minutes.</p>
+        <ul class="feature-list">
+          <li><span class="tick">✔</span> Multi-user accessibility</li>
+          <li><span class="tick">✔</span> Mobile & Desktop responsive design</li>
+          <li><span class="tick">✔</span> Secure data encryption</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- About GST Medicose -->
+  <section class="about-section">
+    <div class="container text-center">
+      <span class="label">The Backbone of the Platform</span>
+      <h2>About GST Medicose</h2>
+      <p class="about-text">
+        As a leader in medical drugs distribution, GST Medicose brings decades of industry credibility to this digital solution. 
+        We built this tool specifically for the unique regulatory and operational needs of pharmaceutical businesses.
+      </p>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="cta-card">
+      <h2>Ready to modernize your pharmacy?</h2>
+      <p>Join hundreds of businesses managing their stock with GST Medicose.</p>
+      <button class="btn-primary-dark" routerLink="/register">Create Your Account</button>
+    </div>
+  </section>
+</div>

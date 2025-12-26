@@ -6,5 +6,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
-
+  scrollToFeatures(element: HTMLElement) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
 }

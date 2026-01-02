@@ -1,50 +1,74 @@
-<div class="container">
-    <div class="card mx-auto mt-3" style="max-width: 400px;">
-      <div class="card-body">
-        <form [formGroup]="validateForm">
-          <div class="alert alert-success" role="alert" *ngIf="successMessage" (click)="successMessage = null">
-            {{ successMessage }}
-          </div>
-          <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
-            {{ errorMessage }}
-          </div>
-          <h1 class="card-title">Register User</h1>
-          <div class="mb-1">
-            <label for="inputFirstname" class="form-label">First Name:</label>
-            <input type="text" class="form-control" id="inputFirstname" formControlName="firstname">
-            <div *ngIf="validateForm.get('firstname')?.hasError('required') && validateForm.get('firstname')?.touched" class="text-danger">First name is required.</div>
-          </div>
-          <div class="mb-1">
-            <label for="inputLastname" class="form-label">Last Name:</label>
-            <input type="text" class="form-control" id="inputLastname" formControlName="lastname">
-            <div *ngIf="validateForm.get('lastname')?.hasError('required') && validateForm.get('lastname')?.touched" class="text-danger">Last name is required.</div>
-          </div>
-          <div class="mb-1">
-            <label for="inputEmail" class="form-label">Email:</label>
-            <input type="email" class="form-control" id="inputEmail" formControlName="email">
-            <div *ngIf="validateForm.get('email')?.hasError('required') && validateForm.get('email')?.touched" class="text-danger">Email is required.</div>
-            <div *ngIf="validateForm.get('email')?.hasError('pattern') && validateForm.get('email')?.touched"
-              class="text-danger">Invalid email format.</div>
-          </div>
-          <div class="mb-1">
-            <label for="inputPassword" class="form-label">Password:</label>
-            <input type="password" class="form-control" id="inputPassword" formControlName="password">
-            <div *ngIf="validateForm.get('password')?.hasError('required') && validateForm.get('password')?.touched" class="text-danger">Password is required.</div>
-            <div *ngIf="validateForm.get('password')?.hasError('invalidPassword') && validateForm.get('password')?.touched" class="text-danger">
-              Password must be at least 8 characters long and contain at least one special character, one capital letter, and one digit.
-            </div>
-          </div>
-          <div class="mb-2">
-            <label for="inputConfirm" class="form-label">Confirm Password:</label>
-            <input type="password" class="form-control" id="inputConfirm" formControlName="confirm">
-            <div *ngIf="validateForm.get('confirm')?.hasError('required') && validateForm.get('confirm')?.touched" class="text-danger">Confirm password is required.</div>
-            <div *ngIf="validateForm.get('confirm')?.hasError('confirm') && validateForm.get('confirm')?.touched" class="text-danger">Passwords do not match.</div>
-          </div>
-          <div class="text-center">
-            <button type="submit" class="btn btn-primary btn-block" style="background-color: #48e3cc; color: #000;" (click)="register(this.validateForm.value)" [disabled]="validateForm.invalid">Register</button>
-          </div>
-        </form>
+<div class="auth-wrapper">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>Create Account</h1>
+        <p>Join GST Medicose Management System</p>
       </div>
+
+      <!-- Professional Alert Boxes -->
+      <div class="alert alert-success" *ngIf="successMessage" (click)="successMessage = null">
+        <span class="alert-icon">✓</span> {{ successMessage }}
+      </div>
+      <div class="alert alert-danger" *ngIf="errorMessage" (click)="errorMessage = null">
+        <span class="alert-icon">⚠</span> {{ errorMessage }}
+      </div>
+
+      <form [formGroup]="validateForm">
+        <!-- Name Row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstname">First Name</label>
+            <input type="text" id="firstname" formControlName="firstname" placeholder="John"
+              [class.error]="validateForm.get('firstname')?.invalid && validateForm.get('firstname')?.touched">
+          </div>
+          <div class="form-group">
+            <label for="lastname">Last Name</label>
+            <input type="text" id="lastname" formControlName="lastname" placeholder="Doe"
+              [class.error]="validateForm.get('lastname')?.invalid && validateForm.get('lastname')?.touched">
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" formControlName="email" placeholder="john@example.com"
+            [class.error]="validateForm.get('email')?.invalid && validateForm.get('email')?.touched">
+          <div class="error-msg" *ngIf="validateForm.get('email')?.hasError('pattern') && validateForm.get('email')?.touched">
+            Invalid email format.
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" formControlName="password" placeholder="••••••••"
+            [class.error]="validateForm.get('password')?.invalid && validateForm.get('password')?.touched">
+          <div class="error-msg info" *ngIf="validateForm.get('password')?.hasError('invalidPassword') && validateForm.get('password')?.touched">
+            Must be 8+ chars, with 1 uppercase, 1 digit, & 1 special char.
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="form-group">
+          <label for="confirm">Confirm Password</label>
+          <input type="password" id="confirm" formControlName="confirm" placeholder="••••••••"
+            [class.error]="validateForm.get('confirm')?.invalid && validateForm.get('confirm')?.touched">
+          <div class="error-msg" *ngIf="validateForm.get('confirm')?.hasError('confirm') && validateForm.get('confirm')?.touched">
+            Passwords do not match.
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" 
+          (click)="register(this.validateForm.value)" 
+          [disabled]="validateForm.invalid">
+          Create Account
+        </button>
+
+        <p class="auth-footer">
+          Already have an account? <a routerLink="/login">Log In</a>
+        </p>
+      </form>
     </div>
   </div>
-  
+</div>

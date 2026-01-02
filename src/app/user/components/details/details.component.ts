@@ -5,12 +5,15 @@ import { AuthService, AddressLookupDTO } from 'src/app/services/auth-service/aut
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AppStateService } from 'src/app/services/app-state.service';
-// Make sure 'of' is not needed here as we use it in the service only
+import { ImageCroppedEvent } from 'ngx-image-cropper';
+import { ImageCropperComponent } from 'ngx-image-cropper';
+import { fas } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-details',
   templateUrl: './details.component.html',
-  styleUrls: ['./details.component.css']
+  styleUrls: ['./details.component.css'],
+  standalone: false,
 })
 export class DetailsComponent implements OnInit {
   detailsForm!: FormGroup;
@@ -23,12 +26,26 @@ export class DetailsComponent implements OnInit {
   states: string[] = [];
   cities: string[] = [];
   pincodeAddresses: AddressLookupDTO[] = [];
+  
+  // Logo properties
+  selectedLogoFile: File | null = null;
+  logoPreviewUrl: string | null = null;
+  defaultLogoUrl = 'assets/images/default-gst-medicose.png';
+  previewLogoUrl: string | null = null;
+  isUploadingLogo = false;
+
+  imageChangedEvent: any = '';
+  showCropModal = false;
+  croppedImageBase64: string | null = null;
+  croppedImageFile: File | null = null;
+  zoomScale = 1;
+  transform = { scale: 1 };
+  fileInputRef: HTMLInputElement | null = null;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
-    ,
+    private router: Router,
     private appState: AppStateService
   ) {}
 
@@ -53,9 +70,104 @@ export class DetailsComponent implements OnInit {
 
     this.loadStates();
     this.setupListeners();
-    // initialize app state based on initial form validity
     this.appState.setDetailsValid(!!this.detailsForm.valid);
     this.checkAndPopulateExistingDetails();
+  }
+
+  onLogoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+
+    if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+      this.errorMessage = 'Only PNG or JPG images are allowed.';
+      this.clearMessageAfterDelay();
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      this.errorMessage = 'Logo size must be under 2 MB.';
+      this.clearMessageAfterDelay();
+      input.value = '';
+      return;
+    }
+    this.fileInputRef = input;
+    this.imageChangedEvent = event;
+    this.showCropModal = true;
+  }
+
+  zoomIn() {
+    // Limit max zoom to 3x
+    if (this.zoomScale < 3) {
+      this.zoomScale += 0.1;
+      this.transform = {
+        ...this.transform,
+        scale: this.zoomScale
+      };
+    }
+  }
+
+  zoomOut() {
+    // Limit min zoom to 0.5x
+    if (this.zoomScale > 0.5) {
+      this.zoomScale -= 0.1;
+      this.transform = {
+        ...this.transform,
+        scale: this.zoomScale
+      };
+    }
+  }
+  imageCropped(event: ImageCroppedEvent) {
+    this.croppedImageBase64 = event.base64 || null;
+
+    if (event.base64) {
+      const blob = this.base64ToBlob(event.base64);
+      this.croppedImageFile = new File([blob], 'logo.png', { type: 'image/png' });
+    }
+  }
+
+  confirmCrop(): void {
+    if (!this.croppedImageBase64 || !this.croppedImageFile) {
+
+    this.logoPreviewUrl = this.croppedImageBase64;
+    this.previewLogoUrl = this.croppedImageBase64;
+    this.selectedLogoFile = this.croppedImageFile;
+    }
+    this.closeCropModal();
+  }
+
+  closeCropModal(): void {
+    this.showCropModal = false;
+    this.imageChangedEvent = null;
+    this.zoomScale = 1;
+    this.transform = { scale: 1 };
+
+    if (this.fileInputRef) {
+      this.fileInputRef.value = '';
+      this.fileInputRef = null;
+    }
+  }
+
+  private base64ToBlob(base64: string): Blob {
+    const byteString = atob(base64.split(',')[1]);
+    const array = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i++) {
+      array[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([array], { type: 'image/png' });
+  }
+
+  resetLogo(): void {
+    if (confirm('Are you sure you want to reset to the default logo?')) {
+      this.selectedLogoFile = null;
+      this.logoPreviewUrl = null;
+      this.previewLogoUrl = null;
+      this.successMessage = 'Logo will be reset to default on save.';
+      this.clearSuccessAfterDelay();
+    }
   }
 
   // --- Core Functionality ---
@@ -67,9 +179,15 @@ export class DetailsComponent implements OnInit {
           this.originalDetails = details;
           this.populateFormWithDetails(details);
           this.userHasDetails = true;
-          // After populating form with existing details, manually load the dependent lists
+          
+          // Load existing logo if available
+          if (details.logoUrl) {
+            this.logoPreviewUrl = details.logoUrl;
+            this.previewLogoUrl = details.logoUrl;
+          }
+          
+          // Populate dependent lists while preserving the saved selections
           if (details.state && details.city) {
-            // Populate dependent lists while preserving the saved selections
             this.loadCities(details.state, details.city);
             this.loadPincodes(details.city, details.state, details.pincode);
           }
@@ -91,7 +209,7 @@ export class DetailsComponent implements OnInit {
   }
   
   setupListeners(): void {
-    // State listener logic remains the same (triggers city load)
+    // State listener
     this.detailsForm.get('state')?.valueChanges.subscribe(state => {
       if (state) {
         this.loadCities(state);
@@ -103,7 +221,7 @@ export class DetailsComponent implements OnInit {
       }
     });
 
-    // City listener logic remains the same (triggers pincode load)
+    // City listener
     this.detailsForm.get('city')?.valueChanges.subscribe(city => {
       const state = this.detailsForm.get('state')?.value;
       if (city && state) {
@@ -114,7 +232,7 @@ export class DetailsComponent implements OnInit {
       }
     });
 
-    // Pincode listener (manual entry reverse lookup)
+    // Pincode listener
     this.detailsForm.get('pincode')?.valueChanges
       .pipe(
         debounceTime(400),
@@ -122,11 +240,11 @@ export class DetailsComponent implements OnInit {
       )
       .subscribe(pincode => {
         if (pincode && pincode.length === 6) {
-            this.lookupAddressByPincode(pincode);
+          this.lookupAddressByPincode(pincode);
         }
       });
 
-    // Keep app-wide details validity updated as the form changes
+    // Form validity listener
     this.detailsForm.statusChanges
       .pipe(debounceTime(150))
       .subscribe(() => {
@@ -170,31 +288,25 @@ export class DetailsComponent implements OnInit {
     });
   }
 
-  // FIX 1 APPLIED HERE:
   lookupAddressByPincode(pincode: string): void {
     this.authService.lookupPincode(pincode).subscribe(response => {
       console.log('Pincode lookup response:', response);
-        if (response) {
-          this.errorMessage = null;
+      if (response) {
+        this.errorMessage = null;
 
-          // Patch the values for city and pincode immediately.
-          this.detailsForm.patchValue({
-            city: response.district,
-            pincode: response.pincode
-          }, { emitEvent: false });
+        this.detailsForm.patchValue({
+          city: response.district,
+          pincode: response.pincode
+        }, { emitEvent: false });
 
-          // Some backends use different keys for state (e.g. 'statename').
-          // Accept common variants so we don't need an extra lookup.
-          const respAny: any = response as any;
-          const respState = respAny.state ?? respAny.statename ?? respAny.stateName ?? respAny.state_name;
+        const respAny: any = response as any;
+        const respState = respAny.state ?? respAny.statename ?? respAny.stateName ?? respAny.state_name;
 
-          if (respState) {
-            // If state is present under any recognized key, use it directly
-            this.detailsForm.patchValue({ state: respState }, { emitEvent: false });
-            this.loadCities(respState, response.district);
-            this.loadPincodes(response.district, respState, response.pincode);
-          } else if (response.district) {
-          // Some backends may return district but not state — resolve state by district
+        if (respState) {
+          this.detailsForm.patchValue({ state: respState }, { emitEvent: false });
+          this.loadCities(respState, response.district);
+          this.loadPincodes(response.district, respState, response.pincode);
+        } else if (response.district) {
           console.log('Resolving state for district:', response.district);
           this.authService.findStateByDistrict(response.district).subscribe(foundState => {
             if (foundState) {
@@ -204,84 +316,104 @@ export class DetailsComponent implements OnInit {
             } else {
               this.errorMessage = 'State not found for this pincode.';
               this.clearAddressFields();
+              this.clearMessageAfterDelay();
             }
           }, err => {
             console.error('Error finding state by district', err);
             this.errorMessage = 'State lookup failed.';
             this.clearAddressFields();
+            this.clearMessageAfterDelay();
           });
         } else {
           this.errorMessage = 'Pincode lookup returned insufficient address data.';
           this.clearAddressFields();
+          this.clearMessageAfterDelay();
         }
-
       } else {
         this.errorMessage = 'Pincode not found.';
         this.clearAddressFields();
+        this.clearMessageAfterDelay();
       }
     });
   }
 
   clearAddressFields(): void {
     this.detailsForm.patchValue({
-        city: null,
-        state: null
+      city: null,
+      state: null
     }, { emitEvent: false });
     this.cities = [];
     this.pincodeAddresses = [];
   }
 
-  // --- Form Submission and Helpers ---
+  // --- Form Submission ---
 
   onSubmit(): void {
     if (this.detailsForm.invalid) {
-        this.errorMessage = 'Please check all fields for errors.';
-        this.detailsForm.markAllAsTouched();
-        this.clearMessageAfterDelay();
-        return;
+      this.errorMessage = 'Please check all fields for errors.';
+      this.detailsForm.markAllAsTouched();
+      this.clearMessageAfterDelay();
+      return;
     }
 
+    this.isUploadingLogo = true;
     const formValues = this.detailsForm.value;
-    // If we already have original details, merge them with the form values
-    // so we always send a complete DTO to the backend (PUT expects full DTO).
-    const details = this.userHasDetails && this.originalDetails ? { ...this.originalDetails, ...formValues } : { ...formValues };
+    const details = this.userHasDetails && this.originalDetails 
+      ? { ...this.originalDetails, ...formValues } 
+      : { ...formValues };
     details.userId = this.userId;
 
-    // ... (rest of onSubmit logic for addDetails/editDetails) ...
     if (this.userHasDetails) {
-      this.authService.editDetails(this.userId, details).subscribe(
-        (updated) => {
-          this.successMessage = 'Details updated successfully.';
-          this.clearSuccessAfterDelay();
-          // Update originalDetails to latest returned DTO and refresh form
-          this.originalDetails = updated;
-          this.populateFormWithDetails(updated);
-        },
-        (error) => { this.errorMessage = 'Updating details failed.'; this.clearMessageAfterDelay(); }
-      );
+      this.authService.editDetails(this.userId, details, this.selectedLogoFile || undefined)
+        .subscribe(
+          (updated) => {
+            this.successMessage = 'Details updated successfully.';
+            this.clearSuccessAfterDelay();
+            this.originalDetails = updated;
+            this.populateFormWithDetails(updated);
+            this.selectedLogoFile = null;
+            this.isUploadingLogo = false;
+            
+            // Update logo preview if new logo URL is returned
+            if (updated.logoUrl) {
+              this.logoPreviewUrl = updated.logoUrl;
+              this.previewLogoUrl = updated.logoUrl;
+            }
+          },
+          (error) => {
+            this.errorMessage = 'Updating details failed.';
+            this.clearMessageAfterDelay();
+            this.isUploadingLogo = false;
+          }
+        );
     } else {
-      this.authService.addDetails(this.userId, details).subscribe(
-        (created) => {
-          this.successMessage = 'Details added successfully.';
-          this.userHasDetails = true;
-          this.clearSuccessAfterDelay();
-          this.originalDetails = created;
-          this.populateFormWithDetails(created);
-        },
-        (error) => { this.errorMessage = 'Adding details failed.'; this.clearMessageAfterDelay(); }
-      );
+      this.authService.addDetails(this.userId, details, this.selectedLogoFile || undefined)
+        .subscribe(
+          (created) => {
+            this.successMessage = 'Details added successfully.';
+            this.userHasDetails = true;
+            this.clearSuccessAfterDelay();
+            this.originalDetails = created;
+            this.populateFormWithDetails(created);
+            this.selectedLogoFile = null;
+            this.isUploadingLogo = false;
+            
+            // Update logo preview if new logo URL is returned
+            if (created.logoUrl) {
+              this.logoPreviewUrl = created.logoUrl;
+              this.previewLogoUrl = created.logoUrl;
+            }
+          },
+          (error) => {
+            this.errorMessage = 'Adding details failed.';
+            this.clearMessageAfterDelay();
+            this.isUploadingLogo = false;
+          }
+        );
     }
   }
 
-  private clearSuccessAfterDelay() {
-    setTimeout(() => {
-      this.successMessage = null;
-    }, 5000);
-  }
-
-  private populateFormWithDetails(details: any) {
-    // Use patchValue without {emitEvent: false} here IF you want the listeners to run automatically
-    // and load subsequent dropdowns upon initial form load.
+  private populateFormWithDetails(details: any): void {
     this.detailsForm.patchValue({
       name: details.name,
       addressLine1: details.addressLine1,
@@ -298,13 +430,19 @@ export class DetailsComponent implements OnInit {
       accountNumber: details.accountNumber,
       ifscCode: details.ifscCode
     }, { emitEvent: false });
-    // After populating, update app state
+    
     this.appState.setDetailsValid(!!this.detailsForm.valid);
-    // Because we need the manual loads in checkAndPopulateExistingDetails() anyway,
-    // using emitEvent: false here is safer to prevent double API calls, as done in the previous step.
   }
 
-  private clearMessageAfterDelay() {
+  // --- Helper Methods ---
+
+  private clearSuccessAfterDelay(): void {
+    setTimeout(() => {
+      this.successMessage = null;
+    }, 5000);
+  }
+
+  private clearMessageAfterDelay(): void {
     setTimeout(() => {
       this.errorMessage = null;
     }, 5000);

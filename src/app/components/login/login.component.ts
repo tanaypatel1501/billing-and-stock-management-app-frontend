@@ -11,6 +11,7 @@ import { UserStorageService } from 'src/app/services/storage/user-storage.servic
 })
 export class LoginComponent {
   validateForm!: FormGroup;
+  errorMessage: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -44,16 +45,23 @@ export class LoginComponent {
             console.log(error);
             if (error.status == 406) {
               // Handle account not active error
-              console.log('Account is not active. Please register first.');
-              alert('Account is not active. Please register first.');
+              this.errorMessage = 'Account is not active. Please register first.'; 
+              this.clearMessageAfterDelay();
             } else {
               // Handle bad credentials error
-              console.log('Bad Credentials');
-              alert('Bad Credentials');
+              this.errorMessage = 'Bad Credentials'; 
+              this.clearMessageAfterDelay();
             }
           }
         );
     }
+  }
+
+  private clearMessageAfterDelay() {
+    setTimeout(() => {
+      // this.successMessage = null;
+      this.errorMessage = null;
+    }, 3000); // 3 seconds delay
   }
 
   // Custom email pattern (regex)

@@ -1,126 +1,360 @@
-<form [formGroup]="detailsForm" class="details-form" (ngSubmit)="onSubmit()">
-    <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
-        {{ errorMessage }}
+<div class="details-wrapper">
+  <div class="details-container">
+    
+    <!-- Alerts -->
+    <div class="alert alert-success" *ngIf="successMessage" (click)="successMessage = null">
+      <span class="alert-icon">✓</span> {{ successMessage }}
     </div>
-    <div class="alert alert-success" role="alert" *ngIf="successMessage" (click)="successMessage = null">
-        {{ successMessage }}
+    <div class="alert alert-danger" *ngIf="errorMessage" (click)="errorMessage = null">
+      <span class="alert-icon">⚠</span> {{ errorMessage }}
     </div>
-    <div class="container">
-        <h3 class="text-center mb-4 mt-4">Details</h3>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="name" class="form-label">Name: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Business / Medical Store Name">
-                <div *ngIf="detailsForm.get('name')?.hasError('required') && detailsForm.get('name')?.touched" class="text-danger">Name is required.</div>
-                <div *ngIf="detailsForm.get('name')?.hasError('minlength') && detailsForm.get('name')?.touched" class="text-danger">Name must be at least 2 characters.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="addressLine1" class="form-label">Address Line 1: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="addressLine1" formControlName="addressLine1" placeholder="Shop No., Building Name">
-                <div *ngIf="detailsForm.get('addressLine1')?.hasError('required') && detailsForm.get('addressLine1')?.touched" class="text-danger">Address Line 1 is required.</div>
-                <div *ngIf="detailsForm.get('addressLine1')?.hasError('minlength') && detailsForm.get('addressLine1')?.touched" class="text-danger">Address Line 1 must be at least 3 characters.</div>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="addressLine2" class="form-label">Address Line 2: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="addressLine2" formControlName="addressLine2" placeholder="Street Name / Locality">
-                <div *ngIf="detailsForm.get('addressLine2')?.hasError('required') && detailsForm.get('addressLine2')?.touched" class="text-danger">Address Line 2 is required.</div>
-                <div *ngIf="detailsForm.get('addressLine2')?.hasError('minlength') && detailsForm.get('addressLine2')?.touched" class="text-danger">Address Line 2 must be at least 3 characters.</div>
+
+    <div class="details-card">
+      <div class="details-header">
+        <h1>Business Details</h1>
+        <p>Complete your business information</p>
+      </div>
+
+      <form [formGroup]="detailsForm" (ngSubmit)="onSubmit()">
+        <div class="details-body">
+          
+          <!-- Logo Upload Section -->
+          <div class="logo-section">
+            <div class="logo-label">
+              <label>Business Logo</label>
+              <span class="optional-badge">Optional</span>
             </div>
             
-            <!-- State Dropdown (API 2) -->
-            <div class="col-md-6">
-                <label for="state" class="form-label">State: <span class="text-danger">*</span></label>
-                <select id="state" formControlName="state" class="form-select">
-                    <option [ngValue]="null" disabled>Select a state</option>
-                    <option *ngFor="let state of states" [ngValue]="state">{{ state }}</option>
-                </select>
-                <div *ngIf="detailsForm.get('state')?.hasError('required') && detailsForm.get('state')?.touched" class="text-danger">State is required.</div>
+            <div class="logo-container">
+              <div class="logo-preview">
+                <img [src]="logoPreviewUrl || defaultLogoUrl" alt="Business Logo" class="logo-image">
+                <div class="logo-overlay" *ngIf="!isUploadingLogo">
+                  <button type="button" class="upload-trigger-btn" (click)="fileInput.click()">
+                    <span class="upload-icon">📷</span>
+                    <span>{{ logoPreviewUrl ? 'Change' : 'Upload' }} Logo</span>
+                  </button>
+                </div>
+                <div class="logo-overlay loading" *ngIf="isUploadingLogo">
+                  <div class="spinner-small"></div>
+                </div>
+              </div>
+              
+              <input 
+                #fileInput
+                type="file" 
+                accept="image/*" 
+                (change)="onLogoSelected($event)"
+                style="display: none">
+              
+              <div class="logo-info">
+                <p class="info-text">Recommended: Square image (1:1 ratio), max 2MB</p>
+                <button 
+                  type="button" 
+                  class="reset-logo-btn" 
+                  *ngIf="previewLogoUrl"
+                  (click)="resetLogo()">
+                  Reset to Default
+                </button>
+              </div>
             </div>
-        </div>
-        <div class="row mb-3">
-            <!-- City/District Dropdown (API 3) -->
-            <div class="col-md-6">
-                <label for="city" class="form-label">City/District: <span class="text-danger">*</span></label>
-                <select id="city" formControlName="city" class="form-select" [disabled]="!detailsForm.get('state')?.value">
-                    <option [ngValue]="null" disabled>Select a city/district</option>
-                    <option *ngFor="let city of cities" [ngValue]="city">{{ city }}</option>
-                </select>
-                <div *ngIf="detailsForm.get('city')?.hasError('required') && detailsForm.get('city')?.touched" class="text-danger">City/District is required.</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Business Information -->
+          <div class="section-title">Business Information</div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Business Name <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="name" 
+                formControlName="name" 
+                placeholder="Enter Business / Medical Store Name"
+                [class.error]="detailsForm.get('name')?.invalid && detailsForm.get('name')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('name')?.hasError('required') && detailsForm.get('name')?.touched">
+                Name is required.
+              </div>
+              <div class="error-msg" *ngIf="detailsForm.get('name')?.hasError('minlength') && detailsForm.get('name')?.touched">
+                Name must be at least 2 characters.
+              </div>
             </div>
 
-            <!-- Pincode Dropdown/Input Hybrid (APIs 1 & 5) -->
-            <div class="col-md-6">
-                <label for="pincode" class="form-label">Pincode: <span class="text-danger">*</span></label>
-                <!-- Use datalist for searchable input experience -->
-                <input list="pincodeOptions" id="pincode" formControlName="pincode" class="form-control" placeholder="Type or select Pincode">
-                <datalist id="pincodeOptions">
-                    <option *ngFor="let address of pincodeAddresses" [value]="address.pincode">
-                        {{ address.pincode }}
-                    </option>
-                </datalist>
-                <div *ngIf="detailsForm.get('pincode')?.hasError('required') && detailsForm.get('pincode')?.touched" class="text-danger">Pincode is required.</div>
-                <div *ngIf="detailsForm.get('pincode')?.hasError('pattern') && detailsForm.get('pincode')?.touched" class="text-danger">Pincode must be 6 digits.</div>
+            <div class="form-group">
+              <label for="phoneNumber">Phone Number <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="phoneNumber" 
+                formControlName="phoneNumber" 
+                placeholder="Enter 10-digit Mobile Number"
+                [class.error]="detailsForm.get('phoneNumber')?.invalid && detailsForm.get('phoneNumber')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('phoneNumber')?.hasError('required') && detailsForm.get('phoneNumber')?.touched">
+                Phone number is required.
+              </div>
+              <div class="error-msg" *ngIf="detailsForm.get('phoneNumber')?.hasError('pattern') && detailsForm.get('phoneNumber')?.touched">
+                Enter a valid 10-digit phone number.
+              </div>
             </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Address Section -->
+          <div class="section-title">Business Address</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="addressLine1">Address Line 1 <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="addressLine1" 
+                formControlName="addressLine1" 
+                placeholder="Shop No., Building Name"
+                [class.error]="detailsForm.get('addressLine1')?.invalid && detailsForm.get('addressLine1')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('addressLine1')?.hasError('required') && detailsForm.get('addressLine1')?.touched">
+                Address Line 1 is required.
+              </div>
+              <div class="error-msg" *ngIf="detailsForm.get('addressLine1')?.hasError('minlength') && detailsForm.get('addressLine1')?.touched">
+                Must be at least 3 characters.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="addressLine2">Address Line 2 <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="addressLine2" 
+                formControlName="addressLine2" 
+                placeholder="Street Name / Locality"
+                [class.error]="detailsForm.get('addressLine2')?.invalid && detailsForm.get('addressLine2')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('addressLine2')?.hasError('required') && detailsForm.get('addressLine2')?.touched">
+                Address Line 2 is required.
+              </div>
+              <div class="error-msg" *ngIf="detailsForm.get('addressLine2')?.hasError('minlength') && detailsForm.get('addressLine2')?.touched">
+                Must be at least 3 characters.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="state">State <span class="required">*</span></label>
+              <select 
+                id="state" 
+                formControlName="state"
+                [class.error]="detailsForm.get('state')?.invalid && detailsForm.get('state')?.touched">
+                <option [ngValue]="null" disabled>Select a state</option>
+                <option *ngFor="let state of states" [ngValue]="state">{{ state }}</option>
+              </select>
+              <div class="error-msg" *ngIf="detailsForm.get('state')?.hasError('required') && detailsForm.get('state')?.touched">
+                State is required.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="city">City/District <span class="required">*</span></label>
+              <select 
+                id="city" 
+                formControlName="city" 
+                [disabled]="!detailsForm.get('state')?.value"
+                [class.error]="detailsForm.get('city')?.invalid && detailsForm.get('city')?.touched">
+                <option [ngValue]="null" disabled>Select a city/district</option>
+                <option *ngFor="let city of cities" [ngValue]="city">{{ city }}</option>
+              </select>
+              <div class="error-msg" *ngIf="detailsForm.get('city')?.hasError('required') && detailsForm.get('city')?.touched">
+                City/District is required.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="pincode">Pincode <span class="required">*</span></label>
+            <input 
+              list="pincodeOptions" 
+              id="pincode" 
+              formControlName="pincode" 
+              placeholder="Type or select Pincode"
+              [class.error]="detailsForm.get('pincode')?.invalid && detailsForm.get('pincode')?.touched">
+            <datalist id="pincodeOptions">
+              <option *ngFor="let address of pincodeAddresses" [value]="address.pincode">
+                {{ address.pincode }}
+              </option>
+            </datalist>
+            <div class="error-msg" *ngIf="detailsForm.get('pincode')?.hasError('required') && detailsForm.get('pincode')?.touched">
+              Pincode is required.
+            </div>
+            <div class="error-msg" *ngIf="detailsForm.get('pincode')?.hasError('pattern') && detailsForm.get('pincode')?.touched">
+              Pincode must be 6 digits.
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Licenses Section -->
+          <div class="section-title">Licenses & Registration</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="dlNo1">DL No. 1 <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="dlNo1" 
+                formControlName="dlNo1" 
+                placeholder="Enter Drug License No. 1"
+                [class.error]="detailsForm.get('dlNo1')?.invalid && detailsForm.get('dlNo1')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('dlNo1')?.hasError('required') && detailsForm.get('dlNo1')?.touched">
+                DL No. 1 is required.
+              </div>
+              <div class="error-msg info" *ngIf="detailsForm.get('dlNo1')?.hasError('pattern') && detailsForm.get('dlNo1')?.touched">
+                10–30 characters; letters, numbers, hyphen, slash, space allowed.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="dlNo2">DL No. 2 <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="dlNo2" 
+                formControlName="dlNo2" 
+                placeholder="Enter Drug License No. 2"
+                [class.error]="detailsForm.get('dlNo2')?.invalid && detailsForm.get('dlNo2')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('dlNo2')?.hasError('required') && detailsForm.get('dlNo2')?.touched">
+                DL No. 2 is required.
+              </div>
+              <div class="error-msg info" *ngIf="detailsForm.get('dlNo2')?.hasError('pattern') && detailsForm.get('dlNo2')?.touched">
+                10–30 characters; letters, numbers, hyphen, slash, space allowed.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fssaiReg">FSSAI Registration <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="fssaiReg" 
+                formControlName="fssaiReg" 
+                placeholder="Enter FSSAI Registration Number"
+                [class.error]="detailsForm.get('fssaiReg')?.invalid && detailsForm.get('fssaiReg')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('fssaiReg')?.hasError('required') && detailsForm.get('fssaiReg')?.touched">
+                FSSAI Registration is required.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="gstin">GSTIN <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="gstin" 
+                formControlName="gstin" 
+                placeholder="e.g., 22ABCDE1234F1Z5"
+                [class.error]="detailsForm.get('gstin')?.invalid && detailsForm.get('gstin')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('gstin')?.hasError('required') && detailsForm.get('gstin')?.touched">
+                GSTIN is required.
+              </div>
+              <div class="error-msg info" *ngIf="detailsForm.get('gstin')?.hasError('pattern') && detailsForm.get('gstin')?.touched">
+                Must be 15 characters: 2 digits, 5 letters, 4 digits, 1 letter, 1 alnum, 'Z', 1 alnum.
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Banking Section -->
+          <div class="section-title">Banking Details</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="bankName">Bank Name <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="bankName" 
+                formControlName="bankName" 
+                placeholder="Enter Bank Name"
+                [class.error]="detailsForm.get('bankName')?.invalid && detailsForm.get('bankName')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('bankName')?.hasError('required') && detailsForm.get('bankName')?.touched">
+                Bank name is required.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="accountNumber">Account Number <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="accountNumber" 
+                formControlName="accountNumber" 
+                placeholder="Enter Bank Account Number"
+                [class.error]="detailsForm.get('accountNumber')?.invalid && detailsForm.get('accountNumber')?.touched">
+              <div class="error-msg" *ngIf="detailsForm.get('accountNumber')?.hasError('required') && detailsForm.get('accountNumber')?.touched">
+                Account number is required.
+              </div>
+              <div class="error-msg" *ngIf="detailsForm.get('accountNumber')?.hasError('pattern') && detailsForm.get('accountNumber')?.touched">
+                Must be numeric and 9–18 digits long.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="ifscCode">IFSC Code <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="ifscCode" 
+              formControlName="ifscCode" 
+              placeholder="e.g., SBIN0001234"
+              [class.error]="detailsForm.get('ifscCode')?.invalid && detailsForm.get('ifscCode')?.touched">
+            <div class="error-msg" *ngIf="detailsForm.get('ifscCode')?.hasError('required') && detailsForm.get('ifscCode')?.touched">
+              IFSC code is required.
+            </div>
+            <div class="error-msg" *ngIf="detailsForm.get('ifscCode')?.hasError('pattern') && detailsForm.get('ifscCode')?.touched">
+              IFSC must be 11 characters (AAAA0######).
+            </div>
+          </div>
+
         </div>
-        <!-- Rest of your form fields follow -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="phoneNumber" class="form-label">Phone No.: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="phoneNumber" formControlName="phoneNumber" placeholder="Enter 10-digit Mobile Number">
-                <div *ngIf="detailsForm.get('phoneNumber')?.hasError('required') && detailsForm.get('phoneNumber')?.touched" class="text-danger">Phone number is required.</div>
-                <div *ngIf="detailsForm.get('phoneNumber')?.hasError('pattern') && detailsForm.get('phoneNumber')?.touched" class="text-danger">Enter a valid 10-digit phone number.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="dlNo1" class="form-label">DL No. 1: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="dlNo1" formControlName="dlNo1" placeholder="Enter Drug License No. 1">
-                <div *ngIf="detailsForm.get('dlNo1')?.hasError('required') && detailsForm.get('dlNo1')?.touched" class="text-danger">DL No. 1 is required.</div>
-                <div *ngIf="detailsForm.get('dlNo1')?.hasError('pattern') && detailsForm.get('dlNo1')?.touched" class="text-danger">DL No. 1 must be 10–30 characters; letters, numbers, hyphen, slash, space allowed.</div>
-            </div>
+
+        <div class="details-footer">
+          <button type="submit" class="submit-btn" [disabled]="detailsForm.invalid">
+            Save Business Details
+          </button>
         </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="dlNo2" class="form-label">DL No. 2: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="dlNo2" formControlName="dlNo2" placeholder="Enter Drug License No. 2">
-                <div *ngIf="detailsForm.get('dlNo2')?.hasError('required') && detailsForm.get('dlNo2')?.touched" class="text-danger">DL No. 2 is required.</div>
-                <div *ngIf="detailsForm.get('dlNo2')?.hasError('pattern') && detailsForm.get('dlNo2')?.touched" class="text-danger">DL No. 2 must be 10–30 characters; letters, numbers, hyphen, slash, space allowed.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="fssaiReg" class="form-label">FSSAI Registration: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="fssaiReg" formControlName="fssaiReg" placeholder="Enter FSSAI Registration Number">
-                <div *ngIf="detailsForm.get('fssaiReg')?.hasError('required') && detailsForm.get('fssaiReg')?.touched" class="text-danger">FSSAI Registration is required.</div>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="gstin" class="form-label">GSTIN: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="gstin" formControlName="gstin" placeholder="Enter 15-digit GSTIN (e.g., 22ABCDE1234F1Z5)">
-                <div *ngIf="detailsForm.get('gstin')?.hasError('required') && detailsForm.get('gstin')?.touched" class="text-danger">GSTIN is required.</div>
-                <div *ngIf="detailsForm.get('gstin')?.hasError('pattern') && detailsForm.get('gstin')?.touched" class="text-danger">GSTIN must be 15 characters and follow format: 2 digits, 5 letters, 4 digits, 1 letter, 1 alnum, 'Z', 1 alnum.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="bankName" class="form-label">Bank Name: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="bankName" formControlName="bankName" placeholder="Enter Bank Name">
-                <div *ngIf="detailsForm.get('bankName')?.hasError('required') && detailsForm.get('bankName')?.touched" class="text-danger">Bank name is required.</div>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="accountNumber" class="form-label">Account Number: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="accountNumber" formControlName="accountNumber" placeholder="Enter Bank Account Number">
-                <div *ngIf="detailsForm.get('accountNumber')?.hasError('required') && detailsForm.get('accountNumber')?.touched" class="text-danger">Account number is required.</div>
-                <div *ngIf="detailsForm.get('accountNumber')?.hasError('pattern') && detailsForm.get('accountNumber')?.touched" class="text-danger">Account number must be numeric and 9–18 digits long.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="ifscCode" class="form-label">IFSC Code: <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="ifscCode" formControlName="ifscCode" placeholder="Enter IFSC Code (e.g., SBIN0001234)">
-                <div *ngIf="detailsForm.get('ifscCode')?.hasError('required') && detailsForm.get('ifscCode')?.touched" class="text-danger">IFSC code is required.</div>
-                <div *ngIf="detailsForm.get('ifscCode')?.hasError('pattern') && detailsForm.get('ifscCode')?.touched" class="text-danger">IFSC must be 11 characters (AAAA0######).</div>
-            </div>
-        </div>
-        <div class="text-center">
-            <button type="submit" style="background-color: #48e3cc; color: #000;" class="btn btn-primary" [disabled]="detailsForm.invalid">Submit</button>
-        </div>
+      </form>
     </div>
-</form>
+
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="showCropModal">
+  <div class="crop-modal-card">
+
+    <div class="modal-header">
+      <h2>Crop Business Logo</h2>
+      <button class="modal-close" (click)="closeCropModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="crop-container">
+        <image-cropper
+          #cropper
+          [imageChangedEvent]="imageChangedEvent"
+          [maintainAspectRatio]="true"
+          [aspectRatio]="1"
+          [resizeToWidth]="400"
+          [transform]="transform"
+          format="png"
+          (imageCropped)="imageCropped($event)">
+        </image-cropper>
+      </div>
+
+      <div class="crop-controls">
+        <button class="control-btn" (click)="zoomOut()">Zoom −</button>
+        <button class="control-btn" (click)="zoomIn()">Zoom +</button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-btn secondary" (click)="closeCropModal()">Cancel</button>
+      <button class="modal-btn primary" (click)="confirmCrop()">Use Image</button>
+    </div>
+
+  </div>
+</div>

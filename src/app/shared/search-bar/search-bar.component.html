@@ -1,22 +1,63 @@
-<div class="search-container" [ngClass]="{'active': isExpanded}">
-  <input type="text" class="search-input" 
-         [(ngModel)]="searchText" 
-         (input)="onInput()" 
-         (keyup.enter)="onEnter()"
-         placeholder="Search...">
-  
-  <ul class="suggestion-dropdown" *ngIf="suggestions.length > 0 && isExpanded">
-    <li *ngFor="let item of suggestions" (click)="selectItem(item)">
-      {{ resolveField(item, labelKey) }} 
-      <span class="sub-label" *ngIf="subLabelKey"> | {{ resolveField(item, subLabelKey) }}</span>
-    </li>
-  </ul>
-  
-  <ul class="suggestion-dropdown" *ngIf="searchText.length > 1 && suggestions.length === 0 && isExpanded">
-    <li class="no-results">No {{ notFoundText }} found</li>
-  </ul>
+<div class="search-wrapper" [class.expanded]="isExpanded">
+  <div class="search-container">
+    <!-- Search Input -->
+    <input 
+      type="text" 
+      class="search-input" 
+      [(ngModel)]="searchText" 
+      (input)="onInput()" 
+      (keyup.enter)="onEnter()"
+      (focus)="onFocus()"
+      placeholder="Search..."
+      [class.has-text]="searchText.length > 0">
 
-  <button class="search-button" (click)="toggleSearch()">
-    <fa-icon [icon]="faSearch"></fa-icon>
-  </button>
+    <!-- Search Icon Button -->
+    <button class="search-btn" (click)="toggleSearch()" type="button">
+      <fa-icon [icon]="faSearch"></fa-icon>
+    </button>
+
+    <!-- Clear Button (when text exists) -->
+    <button 
+      class="clear-btn" 
+      *ngIf="searchText.length > 0 && isExpanded" 
+      (click)="clearSearch()"
+      type="button">
+      <fa-icon [icon]="faTimes"></fa-icon>
+    </button>
+  </div>
+
+  <!-- Suggestions Dropdown -->
+  <div class="dropdown-container" *ngIf="isExpanded">
+    <!-- Results -->
+    <ul class="suggestion-dropdown" *ngIf="suggestions.length > 0">
+      <li 
+        *ngFor="let item of suggestions; let i = index" 
+        class="suggestion-item"
+        [class.highlighted]="highlightedIndex === i"
+        (click)="selectItem(item)"
+        (mouseenter)="highlightedIndex = i">
+        <div class="item-main">
+          <fa-icon [icon]="faBox" class="item-icon"></fa-icon>
+          <span class="item-label">{{ resolveField(item, labelKey) }}</span>
+        </div>
+        <span class="item-sub" *ngIf="subLabelKey">
+          {{ resolveField(item, subLabelKey) }}
+        </span>
+      </li>
+    </ul>
+
+    <!-- No Results -->
+    <ul class="suggestion-dropdown" *ngIf="searchText.length > 1 && suggestions.length === 0">
+      <li class="no-results">
+        <fa-icon [icon]="faSearchMinus"></fa-icon>
+        <span>No {{ notFoundText }} found</span>
+      </li>
+    </ul>
+
+    <!-- Search Hint -->
+    <div class="search-hint" *ngIf="searchText.length === 0">
+      <fa-icon [icon]="faLightbulb"></fa-icon>
+      <span>Start typing to search {{ notFoundText }}...</span>
+    </div>
+  </div>
 </div>

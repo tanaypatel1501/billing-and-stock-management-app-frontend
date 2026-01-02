@@ -1,0 +1,54 @@
+.app-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 320px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  animation: slideFadeIn 0.3s ease;
+  z-index: 10000;
+}
+
+.app-alert p {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+
+.app-alert.success {
+  background: linear-gradient(135deg, #48e3cc, #36c5b0);
+  color: #000;
+}
+
+.app-alert.error {
+  background: #fff5f5;
+  border-left: 6px solid #fa5252;
+  color: #000;
+}
+
+.app-alert.warning {
+  background: #fff9db;
+  border-left: 6px solid #fcc419;
+}
+
+.app-alert.info {
+  background: #f1f3f5;
+  border-left: 6px solid #339af0;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: inherit;
+}
+
+@keyframes slideFadeIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}

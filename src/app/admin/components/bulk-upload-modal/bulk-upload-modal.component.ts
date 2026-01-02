@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
+import { faUpload, faFile, faColumns, faEye, faExclamationTriangle, faExclamationCircle, faCloudUploadAlt } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-bulk-upload-modal',
@@ -18,6 +19,14 @@ export class BulkUploadModalComponent implements OnInit {
   previewRows: any[][] = [];
   fileError: string | null = null;
   submitting = false;
+
+  faUpload = faUpload;
+  faFile = faFile;
+  faColumns = faColumns;
+  faEye = faEye;
+  faExclamationTriangle = faExclamationTriangle;
+  faExclamationCircle = faExclamationCircle;
+  faCloudUploadAlt = faCloudUploadAlt;
 
   // mapping from internal field key -> selected header
   mapping: { [field: string]: string | null } = {};

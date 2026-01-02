@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
-// bulk upload logic moved to reusable component
+import { faUpload } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-add-product',
@@ -15,8 +15,8 @@ export class AddProductComponent implements OnInit {
   userId!: any;
   errorMessage: string | null = null;
   successMessage: string | null = null;
-  // control display of bulk modal component
   bulkModalOpen = false;
+  faUpload = faUpload;
 
   constructor(
     private fb: FormBuilder,

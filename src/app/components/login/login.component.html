@@ -1,31 +1,62 @@
-<div class="container">
-    <div class="card mx-auto mt-5" style="max-width: 400px;">
-      <div class="card-body">
-        <form (ngSubmit)="login()" [formGroup]="validateForm">
-          <h1 class="card-title text-center">Log In</h1>
-          <div class="mb-3">
-            <label for="inputEmail3" class="form-label">Email:</label>
-            <input type="email" class="form-control" id="inputEmail3" formControlName="email">
-            <div *ngIf="validateForm.get('email')?.hasError('required') && validateForm.get('email')?.touched"
-              class="text-danger">Email is required.</div>
-            <div *ngIf="validateForm.get('email')?.hasError('pattern') && validateForm.get('email')?.touched"
-              class="text-danger">Invalid email format.</div>
-          </div>
-          <div class="mb-3">
-            <label for="inputPassword3" class="form-label">Password:</label>
-            <input type="password" class="form-control" id="inputPassword3" formControlName="password">
-            <div *ngIf="validateForm.get('password')?.hasError('required') && validateForm.get('password')?.touched"
-              class="text-danger">Password is required.</div>
-            <div *ngIf="validateForm.get('password')?.hasError('invalidPassword') && validateForm.get('password')?.touched"
-              class="text-danger">
-              Password must be at least 8 characters long and contain at least one special character, one capital letter, and one digit.
-            </div>
-          </div>
-          <div class="text-center">
-            <button type="submit" class="btn btn-primary" style="background-color: #48e3cc; color: #000;" [disabled]="validateForm.invalid">Log in</button>
-          </div>
-        </form>
+<div class="auth-wrapper">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>Welcome Back</h1>
+        <p>Log in to manage your stock & billing</p>
       </div>
+      <div class="alert alert-danger" *ngIf="errorMessage" (click)="errorMessage = null">
+        <span class="alert-icon">⚠</span> {{ errorMessage }}
+      </div>
+      <form [formGroup]="validateForm" (ngSubmit)="login()">
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉️</span>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email" 
+              placeholder="name@company.com"
+              [class.error]="validateForm.get('email')?.invalid && validateForm.get('email')?.touched">
+          </div>
+          <div class="error-msg" *ngIf="validateForm.get('email')?.hasError('required') && validateForm.get('email')?.touched">
+            Email is required
+          </div>
+          <div class="error-msg" *ngIf="validateForm.get('email')?.hasError('pattern') && validateForm.get('email')?.touched">
+            Please enter a valid email
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <div class="label-row">
+            <label for="password">Password</label>
+            <a href="#" class="forgot-link">Forgot?</a>
+          </div>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password" 
+              placeholder="••••••••"
+              [class.error]="validateForm.get('password')?.invalid && validateForm.get('password')?.touched">
+          </div>
+          <div class="error-msg" *ngIf="validateForm.get('password')?.invalid && validateForm.get('password')?.touched">
+            Valid password required (8+ chars, 1 digit, 1 special)
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="validateForm.invalid">
+          Sign In
+        </button>
+
+        <p class="auth-footer">
+          Don't have an account? <a routerLink="/register">Register here</a>
+        </p>
+      </form>
     </div>
   </div>
-  
+</div>

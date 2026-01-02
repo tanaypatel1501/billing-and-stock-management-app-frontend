@@ -2,7 +2,7 @@ import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faFilter, faSortUp, faSortDown, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-filter-button',
@@ -20,6 +20,9 @@ export class FilterButtonComponent {
   selectedColumn = '';
   selectedDirection: 'asc' | 'desc' = 'asc';
   faFilter = faFilter;
+  faSortUp = faSortUp;
+  faSortDown = faSortDown;
+  faTrash = faTrash;
 
   toggleModal() {
     this.showModal = !this.showModal;

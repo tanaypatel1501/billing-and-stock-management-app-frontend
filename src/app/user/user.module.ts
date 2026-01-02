@@ -10,6 +10,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { DetailsComponent } from './components/details/details.component';
 import { BillPreviewComponent } from './components/bill-preview/bill-preview.component';
 import { BillsComponent } from './components/bills/bills.component';
+import { ImageCropperComponent } from 'ngx-image-cropper';
 
 
 @NgModule({
@@ -26,7 +27,8 @@ import { BillsComponent } from './components/bills/bills.component';
     FormsModule,
     ReactiveFormsModule,
     FontAwesomeModule,
-    BillsComponent
+    BillsComponent,
+    ImageCropperComponent,
     
   ]
 })

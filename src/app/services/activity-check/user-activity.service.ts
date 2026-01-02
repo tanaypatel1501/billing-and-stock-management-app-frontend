@@ -3,6 +3,7 @@ import { AuthService } from '../auth-service/auth.service';
 import { UserStorageService } from '../storage/user-storage.service';
 import jwt_decode from 'jwt-decode';
 import { Router } from '@angular/router';
+import { AlertService } from '../alert-service/alert.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,8 @@ export class UserActivityService {
   constructor(
     private authService: AuthService,
     private userStorageService: UserStorageService,
-    private router: Router
+    private router: Router,
+    private alertService: AlertService
   ) {}
 
   startMonitoringActivity(callback: Function): void {
@@ -56,7 +58,10 @@ export class UserActivityService {
         },
         (error: any) => {
           console.error('Token refresh failed:', error);
-          alert("Session Expired!! Login Again");
+          this.alertService.error(
+            'Your session has expired. Please log in again.',
+            'Session Expired', 0
+          );
           UserStorageService.signOut();
           this.router.navigateByUrl('login');
         }

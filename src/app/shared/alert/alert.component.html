@@ -1,0 +1,7 @@
+<div class="app-alert" *ngIf="alert" [ngClass]="alert.type">
+  <div class="alert-content">
+    <strong>{{ alert.title }}</strong>
+    <p>{{ alert.message }}</p>
+  </div>
+  <button class="alert-close" (click)="close()">×</button>
+</div>

@@ -1,97 +1,149 @@
-<div id="print-section">
-    <div class="invoice-header">
-        <h4 align="center">INVOICE</h4>
-        <button style="background-color: #48e3cc; color: #000;" class="btn btn-primary" (click)="printInvoice()">Print</button>
-    </div>  
-    <div class="row">
-        <div class="col logo-col">
-            <img src="../../../../assets/images/WhatsApp Image 2025-12-07 at 01.05.59.jpeg" alt="GST_Logo"/>
+<div id="print-section" class="invoice-container">
+  <!-- Mobile/Desktop View Header (Hidden on Print) -->
+  <div class="invoice-header no-print">
+    <button class="back-btn" routerLink="/user/bills" title="Back to Bills">
+      <fa-icon [icon]="faArrowLeft"></fa-icon>
+    </button>
+    <h4>INVOICE</h4>
+    <button class="print-btn" (click)="printInvoice()">
+      <fa-icon [icon]="faPrint"></fa-icon>
+      <span>Print</span>
+    </button>
+  </div>
+
+  <!-- Print Header (Hidden on Screen) -->
+  <div class="print-only">
+    <h4 class="print-title">INVOICE</h4>
+  </div>
+
+  <!-- Invoice Content -->
+  <div class="invoice-content">
+    
+    <!-- Business Details Section -->
+    <div class="invoice-top-section">
+      <div class="logo-section">
+        <img [src]="logoUrl" alt="Business Logo" class="business-logo" />
+      </div>
+      
+      <div class="business-info">
+        <h3 class="business-name">{{ details.name }}</h3>
+        <p class="business-address">
+          {{ details.addressLine1 }}, {{ details.addressLine2 }}, 
+          {{ details.city }}, {{ details.state }}, {{ details.pincode }}
+        </p>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">DL No.:</span>
+            <span>{{ details.dlNo1 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">FSSAI Reg.:</span>
+            <span>{{ details.fssaiReg }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label empty"></span>
+            <span>{{ details.dlNo2 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">GSTIN:</span>
+            <span>{{ details.gstin }}</span>
+          </div>
         </div>
-        <div class="col" style="width: 50%;">
-            <table class="details">
-                <tr><td colspan="2"><h3>{{details.name}}</h3></td></tr>
-                <tr><td colspan="2">{{details.addressLine1}},{{details.addressLine2}},{{details.city}},{{details.state}},{{details.pincode}}</td></tr>
-                <tr>
-                    <td><b>Dl No. :</b> {{details.dlNo1}}</td>
-                    <td><b>FSSAI Reg. :</b> {{details.fssaiReg}}</td>
-                </tr>
-                <tr>
-                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.dlNo2}}</td>
-                    <td><b>GSTIN :</b> {{details.gstin}}</td>
-                </tr>
-                <tr><td colspan="2" align="center"><b>BANK NAME : {{details.bankName}}</b></td></tr>
-                <tr>
-                    <td><b>A/C No. :</b> {{details.accountNumber}}</td>
-                    <td><b>IFSC Code :</b> {{details.ifscCode}}</td>
-                </tr>
-            </table>
+        <p class="bank-name"><strong>BANK NAME: {{ details.bankName }}</strong></p>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">A/C No.:</span>
+            <span>{{ details.accountNumber }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">IFSC Code:</span>
+            <span>{{ details.ifscCode }}</span>
+          </div>
         </div>
-        <div class="col" style="width: 30%;">
-            <table class="purchaserDetails">
-                <tr><b>To :</b> {{bill.purchaserName}}</tr>
-                <tr>
-                    <td><b>Dl No. :</b> {{bill.dl1}}</td>
-                    <td><b>GSTIN :</b> {{bill.gstin}}</td>
-                </tr>
-                <tr>
-                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{bill.dl2}}</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td><b>Invoice No :</b> {{bill.id}}</td>
-                    <td><b>Invoice Date :</b> {{bill.invoiceDate | date}} </td>
-                </tr>
-            </table>
+      </div>
+
+      <div class="purchaser-info">
+        <div class="purchaser-header-row">
+            <p class="purchaser-label"><strong>To:</strong></p>
+            <p class="purchaser-name">{{ bill.purchaserName }}</p>
         </div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">DL No.:</span>
+            <span>{{ bill.dl1 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">GSTIN:</span>
+            <span>{{ bill.gstin }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label empty"></span>
+            <span>{{ bill.dl2 }}</span>
+          </div>
+          <div class="info-item"></div>
+          <div class="info-item">
+            <span class="info-label">Invoice No:</span>
+            <span>{{ bill.id }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Invoice Date:</span>
+            <span>{{ bill.invoiceDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <table class="table">
+
+    <!-- Items Table -->
+    <div class="table-container">
+      <table class="invoice-table">
         <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Product Name</th>
-                <th scope="col">Packing</th>
-                <th scope="col">HSN</th>
-                <th scope="col">Batch No.</th>
-                <th scope="col">Expiry Date</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">Free</th>
-                <th scope="col">MRP</th>
-                <th scope="col">Rate</th>
-                <th scope="col">CGST</th>
-                <th scope="col">SGST</th>
-                <th scope="col">Amount</th>
-            </tr>
+          <tr>
+            <th>#</th>
+            <th>Product Name</th>
+            <th>Packing</th>
+            <th>HSN</th>
+            <th>Batch No.</th>
+            <th>Expiry Date</th>
+            <th>Qty</th>
+            <th>Free</th>
+            <th>MRP</th>
+            <th>Rate</th>
+            <th>CGST</th>
+            <th>SGST</th>
+            <th>Amount</th>
+          </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let item of bill.billItems; index as i">
-                <th scope="row">{{ i + 1 }}</th>
-                <td>{{ item.snapshotProductName }}</td>
-                <td>{{ item.snapshotPacking }}</td>
-                <td>{{ item.snapshotHsn }}</td>
-                <td>{{ item.batchNo }}</td>
-                <td>{{ item.expiryDate | date }}</td>
-                <td>{{ item.quantity | number }}</td>
-                <td>{{ item.free | number }}</td>
-                <td>{{ '₹' }} {{ item.snapshotUnitPrice | number }}</td>
-                <td>{{ '₹' }} {{ item.rate | number }}</td>
-                <td>{{ item.snapshotCgst | number }} %</td>
-                <td>{{ item.snapshotSgst | number }} %</td>
-                <td>{{ '₹' }} {{ item.amount | number }}</td>
-            </tr>
+          <tr *ngFor="let item of bill.billItems; index as i" class="item-row">
+            <td data-label="#">{{ i + 1 }}</td>
+            <td data-label="Product Name" class="product-name">{{ item.snapshotProductName }}</td>
+            <td data-label="Packing">{{ item.snapshotPacking }}</td>
+            <td data-label="HSN">{{ item.snapshotHsn }}</td>
+            <td data-label="Batch No.">{{ item.batchNo }}</td>
+            <td data-label="Expiry Date">{{ item.expiryDate | date:'dd/MM/yyyy' }}</td>
+            <td data-label="Qty">{{ item.quantity | number }}</td>
+            <td data-label="Free">{{ item.free | number }}</td>
+            <td data-label="MRP">₹{{ item.snapshotUnitPrice | number }}</td>
+            <td data-label="Rate">₹{{ item.rate | number }}</td>
+            <td data-label="CGST">{{ item.snapshotCgst | number }}%</td>
+            <td data-label="SGST">{{ item.snapshotSgst | number }}%</td>
+            <td data-label="Amount" class="amount">₹{{ item.amount | number }}</td>
+          </tr>
         </tbody>
-    </table>
-    <div class="row footer-row">
-        <div class="col footer-left">
-            <p><b>Amount in words:</b> {{ totalAmountInWords }}</p>
-
-            <p class="subject-bottom">Subject to {{details.city}} Juridiction only.</p>
-
-            <p class="authorized-sign">Authorized Signatory</p>
-        </div>
-
-        <div class="col total-col">
-            <p><b>Total :</b> ₹ {{bill.totalAmount}}</p>
-        </div>
+      </table>
     </div>
+
+    <!-- Footer Section -->
+    <div class="invoice-footer">
+      <div class="footer-left">
+        <p class="amount-words"><strong>Amount in words:</strong> {{ totalAmountInWords }}</p>
+        <p class="subject-line">Subject to {{ details.city }} Jurisdiction only.</p>
+        <p class="signature-line">Authorized Signatory</p>
+      </div>
+      <div class="footer-right">
+        <p class="total-amount"><strong>Total:</strong> ₹{{ bill.totalAmount | number }}</p>
+      </div>
+    </div>
+
+  </div>
 </div>
-  

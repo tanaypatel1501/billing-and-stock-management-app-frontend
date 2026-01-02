@@ -1,82 +1,94 @@
-<form [formGroup]="productForm" class="product-form" (ngSubmit)="onSubmit()">
-  <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
-    {{ errorMessage }}
-  </div>
+<div class="auth-wrapper">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>Add Stock</h1>
+        <p>Update your inventory</p>
+      </div>
 
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-5">
-        <h3 class="text-center mb-4">Add Stock</h3>
+      <!-- Alert -->
+      <div class="alert alert-danger" *ngIf="errorMessage" (click)="errorMessage = null">
+        <span class="alert-icon">⚠</span> {{ errorMessage }}
+      </div>
 
-        <div class="row mb-3">
-          <div class="col">
-            <label class="form-label">Product Name:</label>
-          </div>
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
         
-          <div class="col">
+        <!-- Product Name with Dropdown -->
+        <div class="form-group">
+          <label for="name">Product Name</label>
           <div class="custom-dropdown-container">
-            <input type="text"
-                   class="form-control"
-                   placeholder="Start typing product name..."
-                   formControlName="name"
-                   (input)="onProductSearch()"
-                   (focus)="openDropdown()"
-                   (blur)="onInputBlur()"
-                   autocomplete="off" />
-
+            <input 
+              type="text"
+              id="name"
+              class="form-control"
+              placeholder="Start typing product name..."
+              formControlName="name"
+              (input)="onProductSearch()"
+              (focus)="openDropdown()"
+              (blur)="onInputBlur()"
+              autocomplete="off"
+              [class.error]="productForm.get('name')?.invalid && productForm.get('name')?.touched" />
+            
             <ul class="suggestion-dropdown" *ngIf="showDropdown && products.length > 0">
               <li *ngFor="let p of products; let i = index" 
                   [class.active]="highlightedIndex === i"
                   (mousedown)="selectProduct(p)">
-                {{ p.name }} 
-                <!-- Showing packing label like search bar -->
+                {{ p.name }}
                 <span class="sub-label" *ngIf="p.packing"> | {{ p.packing }}</span>
               </li>
             </ul>
 
-            <!-- No results state -->
             <ul class="suggestion-dropdown" *ngIf="showDropdown && products.length === 0 && productForm.get('name')?.value.length > 1">
               <li class="no-results">No product found</li>
             </ul>
-            </div>
           </div>
         </div>
 
-        <!-- BATCH NO -->
-        <div class="row mb-3">
-          <div class="col">
-            <label for="batchNo" class="form-label">Batch No:</label>
+        <!-- Batch No & Expiry Date Row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="batchNo">Batch No</label>
+            <input 
+              type="text" 
+              id="batchNo" 
+              formControlName="batchNo"
+              placeholder="Enter batch number"
+              [class.error]="productForm.get('batchNo')?.invalid && productForm.get('batchNo')?.touched">
           </div>
-          <div class="col">
-            <input type="text" class="form-control" id="batchNo" formControlName="batchNo">
+
+          <div class="form-group">
+            <label for="expiryDate">Expiry Date</label>
+            <input 
+              type="date" 
+              id="expiryDate" 
+              formControlName="expiryDate"
+              [class.error]="productForm.get('expiryDate')?.invalid && productForm.get('expiryDate')?.touched">
           </div>
         </div>
 
-        <!-- EXPIRY -->
-        <div class="row mb-3">
-          <div class="col">
-            <label for="expiryDate" class="form-label">Expiry Date:</label>
-          </div>
-          <div class="col">
-            <input type="date" class="form-control" id="expiryDate" formControlName="expiryDate">
-          </div>
+        <!-- Quantity -->
+        <div class="form-group">
+          <label for="quantity">Quantity</label>
+          <input 
+            type="number" 
+            id="quantity" 
+            formControlName="quantity" 
+            min="0"
+            placeholder="Enter quantity"
+            [class.error]="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched">
         </div>
 
-        <!-- QUANTITY -->
-        <div class="row mb-3">
-          <div class="col">
-            <label for="quantity" class="form-label">Quantity:</label>
-          </div>
-          <div class="col">
-            <input type="number" class="form-control" id="quantity" formControlName="quantity" min="0">
-          </div>
-        </div>
+        <button 
+          type="submit" 
+          class="submit-btn" 
+          [disabled]="productForm.invalid">
+          Add Stock
+        </button>
 
-        <div class="text-center">
-          <button type="submit" style="background-color: #48e3cc; color: #000;" class="btn btn-primary">Add</button>
-        </div>
-
-      </div>
+        <p class="auth-footer">
+          Missing a product? <a routerLink="/products">Submit a request</a>
+        </p>
+      </form>
     </div>
   </div>
-</form>
+</div>

@@ -263,8 +263,21 @@ export class AuthService {
 
   /* ---------------------- DETAILS ---------------------- */
 
-  addDetails(userId: number, data: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}api/details/create/${userId}`, data,
+  addDetails(userId: number, details: any, logoFile?: File): Observable<any> {
+    const formData = new FormData();
+
+    formData.append(
+      'details',
+      new Blob([JSON.stringify(details)], { type: 'application/json' })
+    );
+
+    if (logoFile) {
+      formData.append('logo', logoFile);
+    }
+
+    return this.http.post(
+      `${this.baseUrl}api/details/create/${userId}`,
+      formData,
       { headers: this.createAuthorizationHeader() }
     );
   }
@@ -275,11 +288,25 @@ export class AuthService {
     );
   }
 
-  editDetails(userId: number, data: any): Observable<any> {
-    return this.http.put(`${this.baseUrl}api/details/update/${userId}`, data,
+  editDetails(userId: number, details: any, logoFile?: File): Observable<any> {
+    const formData = new FormData();
+
+    formData.append(
+      'details',
+      new Blob([JSON.stringify(details)], { type: 'application/json' })
+    );
+
+    if (logoFile) {
+      formData.append('logo', logoFile);
+    }
+
+    return this.http.put(
+      `${this.baseUrl}api/details/update/${userId}`,
+      formData,
       { headers: this.createAuthorizationHeader() }
     );
   }
+
 
   deleteDetails(userId: any): Observable<any> {
     return this.http.delete(`${this.baseUrl}api/details/delete/${userId}`,

@@ -2,3 +2,19 @@
 body{
     background-color: #e2e2e2;
 }
+
+@media print {
+  /* This file is not encapsulated, so it can hide the navbar */
+  app-navbar, 
+  .navbar-container, 
+  nav { 
+    display: none !important; 
+  }
+  
+  /* Ensure the body takes full width when navbar is gone */
+  body, app-root {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+}

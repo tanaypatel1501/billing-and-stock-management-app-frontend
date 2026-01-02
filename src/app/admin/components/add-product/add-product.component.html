@@ -1,69 +1,159 @@
-<form [formGroup]="productForm" class="product-form" (ngSubmit)="onSubmit()">
-    <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
-        {{ errorMessage }}
+<div class="product-wrapper">
+  <div class="product-container">
+    
+    <!-- Alerts -->
+    <div class="alert alert-success" *ngIf="successMessage" (click)="successMessage = null">
+      <span class="alert-icon">✓</span>
+      <pre class="alert-message">{{ successMessage }}</pre>
     </div>
-    <div class="alert alert-success" role="alert" *ngIf="successMessage" (click)="successMessage = null">
-        <pre style="margin:0; white-space:pre-wrap;">{{ successMessage }}</pre>
+    <div class="alert alert-danger" *ngIf="errorMessage" (click)="errorMessage = null">
+      <span class="alert-icon">⚠</span> {{ errorMessage }}
     </div>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-4">
-                <h3 class="text-center mb-4">Add Product</h3>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="name" class="form-label">Product Name:</label>
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="name" formControlName="name">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="hsn" class="form-label">HSN Code:</label>
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="hsn" formControlName="hsn">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="mrp" class="form-label">MRP:</label>
-                    </div>
-                    <div class="col">
-                        <input type="number" class="form-control" id="mrp" formControlName="mrp">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="cgst" class="form-label">CGST(%):</label>
-                    </div>
-                    <div class="col">
-                        <input type="number" class="form-control" id="cgst" formControlName="cgst">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="sgst" class="form-label">SGST(%):</label>
-                    </div>
-                    <div class="col">
-                        <input type="number" class="form-control" id="sgst" formControlName="sgst">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="packing" class="form-label">Packing:</label>
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="packing" formControlName="packing">
-                    </div>
-                </div>
-                <div class="text-center">
-                                        <button type="submit" style="background-color: #48e3cc; color: #000;" class="btn btn-primary">Add</button>
-                                        <button type="button" class="btn btn-secondary ms-2" (click)="bulkModalOpen = true">Bulk Add/Update</button>
-                </div>
+
+    <div class="product-card">
+      <div class="product-header">
+        <h1>Add Product</h1>
+        <p>Add a new product to your inventory</p>
+      </div>
+
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+        <div class="product-body">
+          
+          <!-- Product Name -->
+          <div class="form-group">
+            <label for="name">Product Name</label>
+            <input 
+              type="text" 
+              id="name" 
+              formControlName="name"
+              placeholder="Enter product name"
+              [class.error]="productForm.get('name')?.invalid && productForm.get('name')?.touched">
+            <div class="error-msg" *ngIf="productForm.get('name')?.hasError('required') && productForm.get('name')?.touched">
+              Product name is required.
             </div>
+          </div>
+
+          <!-- HSN Code & Packing -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="hsn">HSN Code</label>
+              <input 
+                type="text" 
+                id="hsn" 
+                formControlName="hsn"
+                placeholder="Enter HSN code"
+                [class.error]="productForm.get('hsn')?.invalid && productForm.get('hsn')?.touched">
+              <div class="error-msg" *ngIf="productForm.get('hsn')?.hasError('required') && productForm.get('hsn')?.touched">
+                HSN code is required.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="packing">Packing</label>
+              <input 
+                type="text" 
+                id="packing" 
+                formControlName="packing"
+                placeholder="e.g., 10x10 strips"
+                [class.error]="productForm.get('packing')?.invalid && productForm.get('packing')?.touched">
+              <div class="error-msg" *ngIf="productForm.get('packing')?.hasError('required') && productForm.get('packing')?.touched">
+                Packing is required.
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- MRP -->
+          <div class="form-group">
+            <label for="mrp">MRP (₹)</label>
+            <input 
+              type="number" 
+              id="mrp" 
+              formControlName="mrp"
+              placeholder="Enter MRP"
+              step="0.01"
+              min="0"
+              [class.error]="productForm.get('mrp')?.invalid && productForm.get('mrp')?.touched">
+            <div class="error-msg" *ngIf="productForm.get('mrp')?.hasError('required') && productForm.get('mrp')?.touched">
+              MRP is required.
+            </div>
+            <div class="error-msg" *ngIf="productForm.get('mrp')?.hasError('min') && productForm.get('mrp')?.touched">
+              MRP must be greater than 0.
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- GST Section -->
+          <div class="section-title">GST Details</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cgst">CGST (%)</label>
+              <input 
+                type="number" 
+                id="cgst" 
+                formControlName="cgst"
+                placeholder="Enter CGST %"
+                step="0.01"
+                min="0"
+                max="100"
+                [class.error]="productForm.get('cgst')?.invalid && productForm.get('cgst')?.touched">
+              <div class="error-msg" *ngIf="productForm.get('cgst')?.hasError('required') && productForm.get('cgst')?.touched">
+                CGST is required.
+              </div>
+              <div class="error-msg" *ngIf="(productForm.get('cgst')?.hasError('min') || productForm.get('cgst')?.hasError('max')) && productForm.get('cgst')?.touched">
+                CGST must be between 0-100%.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="sgst">SGST (%)</label>
+              <input 
+                type="number" 
+                id="sgst" 
+                formControlName="sgst"
+                placeholder="Enter SGST %"
+                step="0.01"
+                min="0"
+                max="100"
+                [class.error]="productForm.get('sgst')?.invalid && productForm.get('sgst')?.touched">
+              <div class="error-msg" *ngIf="productForm.get('sgst')?.hasError('required') && productForm.get('sgst')?.touched">
+                SGST is required.
+              </div>
+              <div class="error-msg" *ngIf="(productForm.get('sgst')?.hasError('min') || productForm.get('sgst')?.hasError('max')) && productForm.get('sgst')?.touched">
+                SGST must be between 0-100%.
+              </div>
+            </div>
+          </div>
+
+          <!-- Total GST Display -->
+          <div class="total-gst" *ngIf="productForm.get('cgst')?.value >= 0 && productForm.get('sgst')?.value >= 0">
+            <span class="gst-label">Total GST:</span>
+            <span class="gst-value">{{ (productForm.get('cgst')?.value || 0) + (productForm.get('sgst')?.value || 0) }}%</span>
+          </div>
+
         </div>
+
+        <div class="product-footer">
+          <button type="button" class="bulk-btn" (click)="bulkModalOpen = true">
+            <fa-icon [icon]="faUpload"></fa-icon>
+            <span>Bulk Add/Update</span>
+          </button>
+          <button type="submit" class="submit-btn" [disabled]="productForm.invalid">
+            Add Product
+          </button>
+        </div>
+      </form>
     </div>
-</form>
-<!-- Bulk upload modal component -->
-<app-bulk-upload-modal *ngIf="bulkModalOpen" (closed)="bulkModalOpen = false" (result)="onBulkResult($event)"></app-bulk-upload-modal>
+
+  </div>
+</div>
+
+<!-- Bulk upload modal -->
+<app-bulk-upload-modal 
+  *ngIf="bulkModalOpen" 
+  (closed)="bulkModalOpen = false" 
+  (result)="onBulkResult($event)">
+</app-bulk-upload-modal>

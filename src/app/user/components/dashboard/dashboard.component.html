@@ -1,204 +1,217 @@
 <ng-template #noProductsMessage>
-	<div class="message">
-		<h2>No Product in Stock</h2>
-		<p>Products available in stock will appear here</p>
-	</div>
+  <div class="empty-state-wrapper">
+    <div class="empty-state-card">
+      <div class="empty-state-icon">📦</div>
+      <h2>No Products in Stock</h2>
+      <p>Products available in stock will appear here</p>
+    </div>
+  </div>
 </ng-template>
+
 <ng-container *ngIf="initialLoadComplete">
-<ng-container *ngIf="stock.length > 0 || isSearchActive; else noProductsMessage">
-
-    <!-- KEEP the div for CSS -->
+  <ng-container *ngIf="stock.length > 0 || isSearchActive; else noProductsMessage">
+    
     <div class="dashboard-wrapper">
-	<div class="main-content">
-	<!-- Header -->
-	<div class="header-container d-flex align-items-center">
-		<div class="back-btn-container">
-		<button
-			class="back-btn me-2"
-			(click)="resetView()"
-			title="Reset Filters & Search"
-			*ngIf="searchText.length > 0">
-			<fa-icon [icon]="faArrowLeft"></fa-icon>
-		</button>
-		</div>
-		<div class="flex-1"></div>
+      <div class="main-content">
+        
+        <!-- Modern Header -->
+        <div class="modern-header">
+          <div class="header-left">
+            <button
+              class="back-btn"
+              (click)="resetView()"
+              title="Reset Filters & Search"
+              *ngIf="searchText.length > 0">
+              <fa-icon [icon]="faArrowLeft"></fa-icon>
+            </button>
+            
+            <div class="header-title-wrapper">
+              <h1 class="header-title">
+                <span class="title-text">Products in Stock</span>
+                <fa-icon [icon]="faCartFlatbed" class="title-icon"></fa-icon>
+              </h1>
+              <span class="stock-count">{{ stock.length }} item(s)</span>
+            </div>
+          </div>
 
-		<h4 class="header-title flex-grow-1">
-			<span class="title-text">Products in Stock</span>
-			<fa-icon
-				[icon]="faCartFlatbed"
-				class="title-icon">
-			</fa-icon>
-		</h4>
+          <div class="header-right">
+            <app-search-bar
+              [suggestions]="suggestions"
+              [labelKey]="'product.name'" 
+              [subLabelKey]="'product.packing'"
+              (onType)="handleTyping($event)"
+              (onSelect)="handleSearch($event)"
+              (onSearch)="handleSearch($event)"
+              notFoundText="products">
+            </app-search-bar>
+            <app-filter-button 
+              [columns]="filterColumns" 
+              [currentSortBy]="sortColumn"
+              [currentDirection]="sortDirection"
+              (onApplySort)="handleFilterSort($any($event))">
+            </app-filter-button>
+          </div>
+        </div>
 
-		<div class="flex-1 d-flex justify-content-end header-search">
-			<app-search-bar
-				[suggestions]="suggestions"
-				[labelKey]="'product.name'" 
-				[subLabelKey]="'product.packing'"
-				(onType)="handleTyping($event)"
-				(onSelect)="handleSearch($event)"
-				(onSearch)="handleSearch($event)"
-				notFoundText="products">
-			</app-search-bar>
-			<app-filter-button 
-				[columns]="filterColumns" 
-				[currentSortBy]="sortColumn"
-    			[currentDirection]="sortDirection"
-				(onApplySort)="handleFilterSort($any($event))">
-			</app-filter-button>
-		</div>
-	</div>
+        <!-- Modern Table Container -->
+        <div class="stock-table-container">
+          <div class="table-wrapper" (click)="collapseAll()">
+            <table class="modern-stock-table">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  
+                  <th scope="col" (dblclick)="onDoubleClickSort('product.name')" class="sortable-header">
+                    Product Name 
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'product.name'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'product.name'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
 
-	<!-- Table -->
-	<div class="table-wrapper" (click)="collapseAll()">
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th scope="col">#</th>
-					
-					<!-- Product Name -->
-					<th scope="col" (dblclick)="onDoubleClickSort('product.name')" class="sortable-header">
-					Product Name 
-					<span class="sort-icon">
-						<span *ngIf="sortColumn === 'product.name'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-						<span *ngIf="sortColumn !== 'product.name'" class="neutral-sort">⇅</span>
-					</span>
-					</th>
+                  <th scope="col" (dblclick)="onDoubleClickSort('product.packing')" class="sortable-header">
+                    Packing
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'product.packing'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'product.packing'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
 
-					<!-- Packing -->
-					<th scope="col" (dblclick)="onDoubleClickSort('product.packing')" class="sortable-header">
-					Packing
-					<span class="sort-icon">
-						<span *ngIf="sortColumn === 'product.packing'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-						<span *ngIf="sortColumn !== 'product.packing'" class="neutral-sort">⇅</span>
-					</span>
-					</th>
+                  <th scope="col" (dblclick)="onDoubleClickSort('product.HSN')" class="sortable-header">
+                    HSN
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'product.HSN'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'product.HSN'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
 
-					<!-- HSN -->
-					<th scope="col" (dblclick)="onDoubleClickSort('product.HSN')" class="sortable-header">
-					HSN
-					<span class="sort-icon">
-						<span *ngIf="sortColumn === 'product.HSN'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-						<span *ngIf="sortColumn !== 'product.HSN'" class="neutral-sort">⇅</span>
-					</span>
-					</th>
+                  <th scope="col" (dblclick)="onDoubleClickSort('batchNo')" class="sortable-header">
+                    Batch No.
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'batchNo'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'batchNo'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
 
-					<!-- Batch No. -->
-					<th scope="col" (dblclick)="onDoubleClickSort('batchNo')" class="sortable-header">
-					Batch No.
-					<span class="sort-icon">
-						<span *ngIf="sortColumn === 'batchNo'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-						<span *ngIf="sortColumn !== 'batchNo'" class="neutral-sort">⇅</span>
-					</span>
-					</th>
+                  <th scope="col" (dblclick)="onDoubleClickSort('expiryDate')" class="sortable-header">
+                    Expiry Date
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'expiryDate'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'expiryDate'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
 
-					<!-- Expiry Date -->
-					<th scope="col" (dblclick)="onDoubleClickSort('expiryDate')" class="sortable-header">
-					Expiry Date
-					<span class="sort-icon">
-						<span *ngIf="sortColumn === 'expiryDate'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-						<span *ngIf="sortColumn !== 'expiryDate'" class="neutral-sort">⇅</span>
-					</span>
-					</th>
+                  <th scope="col" (dblclick)="onDoubleClickSort('quantity')" class="sortable-header">
+                    Quantity
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'quantity'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'quantity'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
 
-					<!-- Quantity -->
-					<th scope="col" (dblclick)="onDoubleClickSort('quantity')" class="sortable-header">
-					Quantity
-					<span class="sort-icon">
-						<span *ngIf="sortColumn === 'quantity'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-						<span *ngIf="sortColumn !== 'quantity'" class="neutral-sort">⇅</span>
-					</span>
-					</th>
+                  <th scope="col" (dblclick)="onDoubleClickSort('product.MRP')" class="sortable-header">
+                    MRP
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'product.MRP'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'product.MRP'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
 
-					<!-- MRP -->
-					<th scope="col" (dblclick)="onDoubleClickSort('product.MRP')" class="sortable-header">
-					MRP
-					<span class="sort-icon">
-						<span *ngIf="sortColumn === 'product.MRP'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-						<span *ngIf="sortColumn !== 'product.MRP'" class="neutral-sort">⇅</span>
-					</span>
-					</th>
+                  <th scope="col" (dblclick)="onDoubleClickSort('product.CGST')" class="sortable-header">
+                    CGST
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'product.CGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'product.CGST'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
 
-					<!-- GST Columns (Usually fixed rates, but can be sorted) -->
-					<th scope="col" (dblclick)="onDoubleClickSort('product.CGST')" class="sortable-header">
-					CGST
-					<span class="sort-icon">
-						<span *ngIf="sortColumn === 'product.CGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-						<span *ngIf="sortColumn !== 'product.CGST'" class="neutral-sort">⇅</span>
-					</span>
-					</th>
-					<th scope="col" (dblclick)="onDoubleClickSort('product.SGST')" class="sortable-header">
-					SGST
-					<span class="sort-icon">
-						<span *ngIf="sortColumn === 'product.SGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-						<span *ngIf="sortColumn !== 'product.SGST'" class="neutral-sort">⇅</span>
-					</span>
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr *ngFor="let item of stock; index as i" class="mobile-card" [class.expanded]="expandedIndex === i"
-					(click)="toggleCard(i); $event.stopPropagation()">
-					<td class="expandable" data-label="#" scope="row">{{ i + 1 }}</td>
-					<td data-label="Product Name">{{ item.product.name }}</td>
-					<td class="expandable" data-label="Packing">{{ item.product.packing }}</td>
-					<td class="expandable" data-label="HSN">{{ item.product.hsn }}</td>
-					<td class="expandable" data-label="Batch No.">{{ item.batchNo }}</td>
-					<td data-label="Expiry Date">{{ item.expiryDate | date }}</td>
-					<td data-label="Quantity">{{ item.quantity | number }}</td>
-					<td data-label="MRP">₹ {{ item.product.mrp | number }}</td>
-					<td class="expandable" data-label="CGST">{{ item.product?.cgst | number }} %</td>
-					<td class="expandable" data-label="SGST">{{ item.product?.sgst | number }} %</td>
-				</tr>
-			</tbody>
-			<tbody *ngIf="stock.length === 0 && !isLoading" class="empty-state">
-				<tr>
-					<td colspan="10" class="empty-state-cell">
-						<div class="empty-state-content">
-							No products found matching your criteria.
-						</div>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
-	</div>
-	<!-- Pagination Controls (Visible on Desktop only) -->
-	<div class="pagination-container d-none d-md-flex justify-content-center mt-4 mb-5">
-		<nav aria-label="Page navigation">
-			<ul class="pagination">
-				<!-- First Page -->
-				<li class="page-item" [class.disabled]="currentPage === 0">
-					<a class="page-link" (click)="goToPage(0)">«</a>
-				</li>
-				<!-- Previous -->
-				<li class="page-item" [class.disabled]="currentPage === 0">
-					<a class="page-link" (click)="goToPage(currentPage - 1)">‹</a>
-				</li>
+                  <th scope="col" (dblclick)="onDoubleClickSort('product.SGST')" class="sortable-header">
+                    SGST
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'product.SGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'product.SGST'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of stock; index as i" 
+                    class="mobile-card" 
+                    [class.expanded]="expandedIndex === i"
+                    (click)="toggleCard(i); $event.stopPropagation()">
+                  <td class="expandable" data-label="#" scope="row">{{ i + 1 }}</td>
+                  <td data-label="Product Name" class="product-name">{{ item.product.name }}</td>
+                  <td class="expandable" data-label="Packing">{{ item.product.packing }}</td>
+                  <td class="expandable" data-label="HSN">{{ item.product.hsn }}</td>
+                  <td class="expandable" data-label="Batch No.">{{ item.batchNo }}</td>
+                  <td data-label="Expiry Date">{{ item.expiryDate | date }}</td>
+                  <td data-label="Quantity"><span class="quantity-badge">{{ item.quantity | number }}</span></td>
+                  <td data-label="MRP" class="price">₹{{ item.product.mrp | number }}</td>
+                  <td class="expandable" data-label="CGST">{{ item.product?.cgst | number }}%</td>
+                  <td class="expandable" data-label="SGST">{{ item.product?.sgst | number }}%</td>
+                </tr>
+              </tbody>
+              <tbody *ngIf="stock.length === 0 && !isLoading" class="empty-state">
+                <tr>
+                  <td colspan="10" class="empty-state-cell">
+                    <div class="empty-state-content">
+                      <div class="empty-icon">🔍</div>
+                      <p>No products found matching your criteria.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-				<!-- Dynamic Page Numbers -->
-				<li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
-					<a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
-				</li>
+        <!-- Modern Pagination -->
+        <div class="modern-pagination d-none d-md-flex">
+          <nav aria-label="Page navigation">
+            <ul class="pagination-list">
+              <!-- First Page -->
+              <li class="page-item" [class.disabled]="currentPage === 0">
+                <a class="page-link" (click)="goToPage(0)">
+                  <span>«</span>
+                </a>
+              </li>
+              
+              <!-- Previous -->
+              <li class="page-item" [class.disabled]="currentPage === 0">
+                <a class="page-link" (click)="goToPage(currentPage - 1)">
+                  <span>‹</span>
+                </a>
+              </li>
 
-				<!-- Next -->
-				<li class="page-item" [class.disabled]="isLastPage">
-					<a class="page-link" (click)="goToPage(currentPage + 1)">›</a>
-				</li>
-				<!-- Last Page -->
-				<li class="page-item" [class.disabled]="isLastPage">
-					<a class="page-link" (click)="goToPage(totalPages - 1)">»</a>
-				</li>
-			</ul>
-		</nav>
-	</div>
+              <!-- Dynamic Page Numbers -->
+              <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+                <a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
+              </li>
 
-	<!-- Loading Spinner for Mobile Scroll -->
-	<div *ngIf="isLoading && stock.length > 0" class="text-center p-3 d-md-none">
-		<div class="spinner-border text-primary" role="status"></div>
-	</div>
-	
-</div>
-</ng-container>
+              <!-- Next -->
+              <li class="page-item" [class.disabled]="isLastPage">
+                <a class="page-link" (click)="goToPage(currentPage + 1)">
+                  <span>›</span>
+                </a>
+              </li>
+              
+              <!-- Last Page -->
+              <li class="page-item" [class.disabled]="isLastPage">
+                <a class="page-link" (click)="goToPage(totalPages - 1)">
+                  <span>»</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        <!-- Loading Spinner for Mobile -->
+        <div *ngIf="isLoading && stock.length > 0" class="mobile-loader d-md-none">
+          <div class="spinner"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </ng-container>
 </ng-container>

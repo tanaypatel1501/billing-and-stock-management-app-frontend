@@ -1,48 +1,82 @@
 <div class="filter-wrapper">
-  <!-- Rounded Button matching search bar style -->
+  <!-- Filter Toggle Button -->
   <button class="filter-toggle-btn" (click)="toggleModal()" title="Sort & Filter">
     <fa-icon [icon]="faFilter"></fa-icon>
   </button>
 
-  <!-- Modal Overlay - now fixed to screen -->
+  <!-- Modal Overlay -->
   <div class="modal-overlay" *ngIf="showModal" (click)="toggleModal()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="filter-modal-card" (click)="$event.stopPropagation()">
+      
+      <!-- Header -->
       <div class="modal-header">
-        <h5 class="modal-title">Sort Settings</h5>
-        <button type="button" class="close-btn" (click)="toggleModal()">&times;</button>
+        <div class="header-content">
+          <fa-icon [icon]="faFilter"></fa-icon>
+          <h3>Sort Settings</h3>
+        </div>
+        <button type="button" class="modal-close" (click)="toggleModal()">×</button>
       </div>
 
+      <!-- Body -->
       <div class="modal-body">
-        <div class="field-group">
+        
+        <!-- Sort By Column -->
+        <div class="form-group">
           <label>Sort By Column</label>
+          <div class="select-wrapper">
           <select class="custom-select" [(ngModel)]="selectedColumn">
             <option value="" disabled>Select Column</option>
             <option *ngFor="let col of columns" [value]="col.value">{{ col.label }}</option>
           </select>
+          <span class="select-arrow">⌄</span>
+          </div>
         </div>
 
-        <div class="field-group">
-          <label>Direction</label>
+        <!-- Direction Toggle -->
+        <div class="form-group">
+          <label>Sort Direction</label>
           <div class="direction-toggle">
             <button 
               type="button" 
+              class="direction-btn"
               [class.active]="selectedDirection === 'asc'" 
-              (click)="selectedDirection = 'asc'">Ascending</button>
+              (click)="selectedDirection = 'asc'">
+              <fa-icon [icon]="faSortUp"></fa-icon>
+              <span>Ascending</span>
+            </button>
             <button 
               type="button" 
+              class="direction-btn"
               [class.active]="selectedDirection === 'desc'" 
-              (click)="selectedDirection = 'desc'">Descending</button>
+              (click)="selectedDirection = 'desc'">
+              <fa-icon [icon]="faSortDown"></fa-icon>
+              <span>Descending</span>
+            </button>
           </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button type="button" class="clear-btn" (click)="clearFilters()">
+          <fa-icon [icon]="faTrash"></fa-icon>
+          Clear All
+        </button>
+        <div class="footer-actions">
+          <button type="button" class="modal-btn secondary" (click)="toggleModal()">
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            class="modal-btn primary" 
+            (click)="apply()" 
+            [disabled]="!selectedColumn">
+            Apply Sort
+          </button>
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn-clear" (click)="clearFilters()">Clear All</button>
-        <div class="footer-actions">
-            <button type="button" class="btn-cancel" (click)="toggleModal()">Cancel</button>
-            <button type="button" class="btn-apply" (click)="apply()" [disabled]="!selectedColumn">Apply Sort</button>
-        </div>
-      </div>
     </div>
   </div>
 </div>

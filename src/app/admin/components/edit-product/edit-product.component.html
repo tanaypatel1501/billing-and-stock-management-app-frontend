@@ -1,63 +1,123 @@
-<form [formGroup]="productForm" class="product-form" (ngSubmit)="onSubmit()">
-    <div class="alert alert-danger" role="alert" *ngIf="errorMessage" (click)="errorMessage = null">
-        {{ errorMessage }}
+<div class="product-wrapper">
+  <div class="product-container">
+
+    <!-- Error Alert -->
+    <div class="alert alert-danger" *ngIf="errorMessage" (click)="errorMessage = null">
+      <span class="alert-icon">⚠</span>
+      {{ errorMessage }}
     </div>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-4">
-                <h3 class="text-center mb-4">Edit Product</h3>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="name" class="form-label">Product Name:</label>
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="name" formControlName="name">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="hsn" class="form-label">HSN Code:</label>
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="hsn" formControlName="hsn">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="mrp" class="form-label">MRP:</label>
-                    </div>
-                    <div class="col">
-                        <input type="number" class="form-control" id="mrp" formControlName="mrp">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="cgst" class="form-label">CGST(%):</label>
-                    </div>
-                    <div class="col">
-                        <input type="number" class="form-control" id="cgst" formControlName="cgst">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="sgst" class="form-label">SGST(%):</label>
-                    </div>
-                    <div class="col">
-                        <input type="number" class="form-control" id="sgst" formControlName="sgst">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="packing" class="form-label">Packing:</label>
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="packing" formControlName="packing">
-                    </div>
-                </div>
-                <div class="text-center">
-                    <button type="submit" style="background-color: #48e3cc; color: #000;" class="btn btn-primary">Update</button>
-                </div>
+
+    <div class="product-card">
+      <div class="product-header">
+        <h1>Edit Product</h1>
+        <p>Update product details in your inventory</p>
+      </div>
+
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+        <div class="product-body">
+
+          <!-- Product Name -->
+          <div class="form-group">
+            <label for="name">Product Name</label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="Enter product name"
+              [class.error]="productForm.get('name')?.invalid && productForm.get('name')?.touched"
+            />
+          </div>
+
+          <!-- HSN & Packing -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="hsn">HSN Code</label>
+              <input
+                id="hsn"
+                type="text"
+                formControlName="hsn"
+                placeholder="Enter HSN code"
+              />
             </div>
+
+            <div class="form-group">
+              <label for="packing">Packing</label>
+              <input
+                id="packing"
+                type="text"
+                formControlName="packing"
+                placeholder="e.g. 10x10 strips"
+              />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- MRP -->
+          <div class="form-group">
+            <label for="mrp">MRP (₹)</label>
+            <input
+              id="mrp"
+              type="number"
+              formControlName="mrp"
+              placeholder="Enter MRP"
+              min="0"
+            />
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- GST -->
+          <div class="section-title">GST Details</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cgst">CGST (%)</label>
+              <input
+                id="cgst"
+                type="number"
+                formControlName="cgst"
+                placeholder="CGST %"
+                min="0"
+                max="100"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="sgst">SGST (%)</label>
+              <input
+                id="sgst"
+                type="number"
+                formControlName="sgst"
+                placeholder="SGST %"
+                min="0"
+                max="100"
+              />
+            </div>
+          </div>
+
+          <!-- Total GST -->
+          <div class="total-gst"
+               *ngIf="productForm.get('cgst')?.value >= 0 && productForm.get('sgst')?.value >= 0">
+            <span class="gst-label">Total GST</span>
+            <span class="gst-value">
+              {{ (productForm.get('cgst')?.value || 0) + (productForm.get('sgst')?.value || 0) }}%
+            </span>
+          </div>
+
         </div>
+
+        <div class="product-footer">
+          <button
+            type="submit"
+            class="submit-btn"
+            [disabled]="productForm.invalid">
+            Update Product
+          </button>
+        </div>
+
+      </form>
     </div>
-</form>
+
+  </div>
+</div>

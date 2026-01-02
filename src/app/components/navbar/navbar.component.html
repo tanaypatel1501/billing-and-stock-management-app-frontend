@@ -1,76 +1,170 @@
-<!-- The primary fix is to use a single <nav> element for styling stability -->
-<nav class="navbar navbar-expand-lg" data-bs-theme="dark" style="background-color: #000;">
-    <div class="container-fluid">
+<nav class="modern-navbar">
+  <div class="navbar-container">
+    
+    <!-- Brand/Logo -->
+    <a class="navbar-brand" 
+       [routerLink]="(isAuthenticated$ | async) ? (isAdminLoggedIn ? 'admin/dashboard' : 'user/dashboard') : 'home'">
+      <div class="brand-logo">
+        <span class="brand-text">GST</span>
+        <span class="brand-highlight">Medicose</span>
+      </div>
+    </a>
 
-        <!-- BRAND LINK (changes based on authentication state) -->
-        <a class="navbar-brand" 
-           [routerLink]="(isAuthenticated$ | async) ? (isAdminLoggedIn ? 'admin/dashboard' : 'user/dashboard') : 'home'" 
-           style="color: #48e3cc;">
-             GST Medicose
-        </a>
+    <!-- Mobile Toggle -->
+    <button class="navbar-toggle" 
+            [class.active]="mobileMenuOpen"
+            (click)="toggleMobileMenu()"
+            aria-label="Toggle navigation">
+      <span class="toggle-line"></span>
+      <span class="toggle-line"></span>
+      <span class="toggle-line"></span>
+    </button>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
-          aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-             <span class="navbar-toggler-icon"></span>
-        </button>
+    <!-- Navigation Links -->
+    <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
+      
+      <!-- Logged Out Links -->
+      <ul class="nav-list" *ngIf="!(isAuthenticated$ | async)">
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/register" 
+             routerLinkActive="active"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faUserPlus"></fa-icon>
+            <span>Register</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/login" 
+             routerLinkActive="active"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faSignInAlt"></fa-icon>
+            <span>Login</span>
+          </a>
+        </li>
+      </ul>
 
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;"></ul>
-            
-            <!-- Link Group 1: Logged Out (Public) Links -->
-            <ul class="navbar-nav ml-auto" *ngIf="!(isAuthenticated$ | async)">
-                <li class="nav-item">
-                    <a class="nav-link active" routerLink="/register" routerLinkActive="active-link" style="color: #48e3cc;">Register</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" routerLink="/login" routerLinkActive="active-link" style="color: #48e3cc;">Login</a>
-                </li>
-            </ul>
+      <!-- Admin Links -->
+      <ul class="nav-list" *ngIf="(isAuthenticated$ | async) && isAdminLoggedIn">
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/admin/dashboard" 
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{exact: true}"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faChartLine"></fa-icon>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/admin/add-product" 
+             routerLinkActive="active"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faBoxOpen"></fa-icon>
+            <span>Add Product</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/profile" 
+             routerLinkActive="active"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faUser"></fa-icon>
+            <span>Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link logout-btn" (click)="logout()">
+            <fa-icon [icon]="faSignOutAlt"></fa-icon>
+            <span>Logout</span>
+          </button>
+        </li>
+      </ul>
 
-            <!-- Link Group 2: Logged In (User/Admin) Links -->
-            <ul class="navbar-nav ml-auto" *ngIf="(isAuthenticated$ | async)">
-              
-                <!-- If Admin, show Admin Links -->
-                <ng-container *ngIf="isAdminLoggedIn">
-                    <li class="nav-item">
-                        <a class="nav-link" routerLink="/admin/add-product" routerLinkActive="active-link" style="color: #48e3cc;">Add Product</a>
-                    </li>
-                    <li class="nav-item">
-                        <!-- FIX: Changed from /admin/profile to /profile -->
-                        <a class="nav-link" routerLink="/profile" routerLinkActive="active-link" style="color: #48e3cc;">Profile</a>
-                    </li>
-                </ng-container>
+      <!-- User Links -->
+      <ul class="nav-list" *ngIf="(isAuthenticated$ | async) && isUserLoggedIn && !isAdminLoggedIn">
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/user/dashboard" 
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{exact: true}"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faChartLine"></fa-icon>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/user/add-stock" 
+             routerLinkActive="active"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faBoxes"></fa-icon>
+            <span>Add Stock</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
 
-                <!-- If User (and not Admin), show User Links -->
-                <ng-container *ngIf="isUserLoggedIn && !isAdminLoggedIn">
-                    <li class="nav-item">
-                        <a class="nav-link" routerLink="/user/add-stock" routerLinkActive="active-link" style="color: #48e3cc;">Add Stock</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" (click)="onCreateBill($event)" [class.text-muted]="!detailsValid" [attr.aria-disabled]="!detailsValid" routerLinkActive="active-link" style="color: #48e3cc; cursor: pointer;">Create Bill</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" routerLink="/user/bills" routerLinkActive="active-link" style="color: #48e3cc;">Show Bills</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" routerLink="/user/details" routerLinkActive="active-link" style="color: #48e3cc;">Details</a>
-                    </li>
-                    <li class="nav-item">
-                        <!-- FIX: Changed from /user/profile to /profile -->
-                        <a class="nav-link" routerLink="/profile" routerLinkActive="active-link" style="color: #48e3cc;">Profile</a>
-                    </li>
-                </ng-container>
-              
-                <!-- Logout button (shared) -->
-                <li class="nav-item">
-                    <a class="nav-link" (click)="logout()" style="color: #48e3cc;">Log out</a>
-                </li>
-            </ul>
+            routerLinkActive="active"
+            [class.disabled]="!detailsValid"
+            [attr.aria-disabled]="!detailsValid"
+             (click)="onCreateBill($event)">
+            <fa-icon [icon]="faFileInvoice"></fa-icon>
+            <span>Create Bill</span>
+            <span class="disabled-badge" *ngIf="!detailsValid">Complete Details</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/user/bills" 
+             routerLinkActive="active"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faMoneyBillWave"></fa-icon>
+            <span>Bills</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/user/details" 
+             routerLinkActive="active"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faBuilding"></fa-icon>
+            <span>Details</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
+             routerLink="/profile" 
+             routerLinkActive="active"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faUser"></fa-icon>
+            <span>Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link logout-btn" (click)="logout()">
+            <fa-icon [icon]="faSignOutAlt"></fa-icon>
+            <span>Logout</span>
+          </button>
+        </li>
+      </ul>
 
-        </div>
     </div>
+  </div>
 </nav>
 
-<div class="container">
-    <div class="alert alert-danger mt-2" *ngIf="errorMessage" (click)="errorMessage = null">{{ errorMessage }}</div>
+<div
+  class="mobile-overlay"
+  *ngIf="mobileMenuOpen"
+  (click)="closeMobileMenu()">
+</div>
+
+<!-- Error Alert -->
+<div class="navbar-alert-container" *ngIf="errorMessage">
+  <div class="alert alert-danger" (click)="errorMessage = null">
+    <span class="alert-icon">⚠</span>
+    {{ errorMessage }}
+  </div>
 </div>

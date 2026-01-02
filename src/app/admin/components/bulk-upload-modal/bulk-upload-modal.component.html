@@ -1,62 +1,134 @@
-<div class="modal show d-block">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
+<div class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-card bulk-modal">
+      
+      <!-- Header -->
       <div class="modal-header">
-        <h5 class="modal-title">Bulk Add/Update Products</h5>
-        <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Choose file (.xlsx, .xls, .csv)</label>
-          <input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" (change)="onFileChange($event)" class="form-control" />
+        <div class="header-content">
+          <h2>Bulk Add/Update Products</h2>
+          <p>Upload Excel or CSV file to add multiple products</p>
         </div>
-        <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" id="firstRowHeader" [(ngModel)]="firstRowIsHeader" (change)="toggleHeader()" />
-          <label class="form-check-label" for="firstRowHeader">First row is header</label>
+        <button type="button" class="modal-close" (click)="cancel()">×</button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body">
+        
+        <!-- File Upload Section -->
+        <div class="upload-section">
+          <label class="upload-label">
+            <fa-icon [icon]="faUpload"></fa-icon>
+            <span>Choose File</span>
+            <input 
+              type="file" 
+              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+              (change)="onFileChange($event)"
+              style="display: none" />
+          </label>
+          <p class="file-info" *ngIf="selectedFile">
+            <fa-icon [icon]="faFile"></fa-icon>
+            {{ selectedFile.name }}
+          </p>
+          <p class="upload-hint">Supported formats: .xlsx, .xls, .csv</p>
         </div>
 
-        <div *ngIf="previewHeaders && previewHeaders.length">
-          <div class="mb-3">
-            <h6>Column mapping</h6>
-            <div *ngFor="let field of internalFields" class="row mb-2 align-items-center">
-              <div class="col-4">
-                <label class="form-label">{{ field.label }}</label>
+        <!-- Header Toggle -->
+        <div class="checkbox-group">
+          <label class="custom-checkbox">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="firstRowIsHeader" 
+              (change)="toggleHeader()" />
+            <span class="checkbox-mark"></span>
+            <span class="checkbox-label">First row is header</span>
+          </label>
+        </div>
+
+        <!-- Column Mapping -->
+        <div class="mapping-section" *ngIf="previewHeaders && previewHeaders.length">
+          <div class="section-title">
+            <fa-icon [icon]="faColumns"></fa-icon>
+            <span>Column Mapping</span>
+          </div>
+
+          <div class="mapping-list">
+            <div class="mapping-item" *ngFor="let field of internalFields">
+              <div class="mapping-label">
+                <span>{{ field.label }}</span>
               </div>
-              <div class="col-8">
-                <select class="form-select" [(ngModel)]="mapping[field.key]" (ngModelChange)="onMappingChange()">
+              <div class="mapping-control">
+                <select 
+                  class="mapping-select" 
+                  [(ngModel)]="mapping[field.key]" 
+                  (ngModelChange)="onMappingChange()">
                   <option [ngValue]="null">-- Not mapped --</option>
-                  <option *ngFor="let h of previewHeaders" [value]="h" [disabled]="isHeaderSelected(h) && mapping[field.key] !== h">{{ h }}</option>
+                  <option 
+                    *ngFor="let h of previewHeaders" 
+                    [value]="h" 
+                    [disabled]="isHeaderSelected(h) && mapping[field.key] !== h">
+                    {{ h }}
+                  </option>
                 </select>
-                <div *ngIf="numericIssues[field.key]" class="small text-warning mt-1">
-                  Numeric issues: {{ numericIssues[field.key].invalidCount }} invalid values (examples: {{ numericIssues[field.key].samples.join(', ') }})
+                <div class="validation-warning" *ngIf="numericIssues[field.key]">
+                  <fa-icon [icon]="faExclamationTriangle"></fa-icon>
+                  {{ numericIssues[field.key].invalidCount }} invalid values
+                  <span class="warning-samples">({{ numericIssues[field.key].samples.join(', ') }})</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered">
-              <thead>
-                <tr>
-                  <th *ngFor="let h of previewHeaders">{{ h }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let row of previewRows">
-                  <td *ngFor="let cell of row">{{ cell }}</td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Preview Table -->
+          <div class="preview-section">
+            <div class="section-title">
+              <fa-icon [icon]="faEye"></fa-icon>
+              <span>Preview (First 10 rows)</span>
+            </div>
+            <div class="table-container">
+              <table class="preview-table">
+                <thead>
+                  <tr>
+                    <th *ngFor="let h of previewHeaders">{{ h }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of previewRows">
+                    <td *ngFor="let cell of row">{{ cell }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <div *ngIf="fileError" class="text-danger mt-2">{{ fileError }}</div>
-        <div *ngIf="!numericValidationPassed && (!fileError)" class="text-warning mt-2">Some mapped numeric columns contain invalid values. Please review highlighted fields or the source file.</div>
+        <!-- Error Messages -->
+        <div class="alert alert-danger" *ngIf="fileError">
+          <fa-icon [icon]="faExclamationCircle"></fa-icon>
+          {{ fileError }}
+        </div>
+        <div class="alert alert-warning" *ngIf="!numericValidationPassed && !fileError">
+          <fa-icon [icon]="faExclamationTriangle"></fa-icon>
+          Some mapped numeric columns contain invalid values. Please review.
+        </div>
+
       </div>
+
+      <!-- Footer -->
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
-        <button type="button" class="btn btn-primary" [disabled]="!selectedFile || submitting || !isValidMapping()" (click)="submit()">{{ submitting ? 'Uploading...' : 'Submit' }}</button>
+        <button type="button" class="modal-btn secondary" (click)="cancel()">
+          Cancel
+        </button>
+        <button 
+          type="button" 
+          class="modal-btn primary" 
+          [disabled]="!selectedFile || submitting || !isValidMapping()" 
+          (click)="submit()">
+          <fa-icon [icon]="faCloudUploadAlt" *ngIf="!submitting"></fa-icon>
+          <span class="spinner-small" *ngIf="submitting"></span>
+          {{ submitting ? 'Uploading...' : 'Submit' }}
+        </button>
       </div>
+
     </div>
   </div>
 </div>

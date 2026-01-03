@@ -20,6 +20,8 @@ import { SearchBarComponent } from './shared/search-bar/search-bar.component';
 import { DashboardComponent } from './user/components/dashboard/dashboard.component';
 import { FilterButtonComponent } from './shared/filter-button/filter-button.component';
 import { AlertComponent } from './shared/alert/alert.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +34,8 @@ import { AlertComponent } from './shared/alert/alert.component';
     NotFoundComponent,
     ProfileComponent,
     AlertComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent,
   ],
   imports: [
     BrowserModule,

@@ -19,15 +19,26 @@ export class LoadingInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
+    
+    // --- ADD THIS BLOCK START ---
+    // Check if the custom header exists
+    if (request.headers.has('X-Skip-Loader')) {
+      // Clone the request to remove the header so it doesn't reach the server
+      const modifiedRequest = request.clone({
+        headers: request.headers.delete('X-Skip-Loader')
+      });
+      // Pass the request through WITHOUT incrementing activeRequests or showing loader
+      return next.handle(modifiedRequest);
+    }
+    // --- ADD THIS BLOCK END ---
+
     // 1. SHOW LOADER: Increment counter and show loader if it's the first active request
     if (this.activeRequests === 0) {
       this.loadingService.show();
     }
     this.activeRequests++;
 
-    // 2. PASS REQUEST: Handle the request and listen for its completion
     return next.handle(request).pipe(
-      // 3. HIDE LOADER: When the request is done (success or error), decrement and hide if counter is zero
       finalize(() => {
         this.activeRequests--;
         if (this.activeRequests === 0) {

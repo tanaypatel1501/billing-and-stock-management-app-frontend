@@ -16,6 +16,7 @@ export class SearchBarComponent {
   @Input() labelKey: string = '';
   @Input() subLabelKey: string = '';
   @Input() notFoundText: string = 'results';
+  @Input() isLoading: boolean = false;
   
   @Output() onType = new EventEmitter<string>();
   @Output() onSelect = new EventEmitter<any>();
@@ -33,6 +34,14 @@ export class SearchBarComponent {
   faLightbulb = faLightbulb;
 
   constructor(private elementRef: ElementRef) {}
+
+  onFormSubmit(event: Event): void {
+    event.preventDefault(); 
+    this.onEnter();
+
+    const input = this.elementRef.nativeElement.querySelector('.search-input');
+    if (input) input.blur();
+  }
 
   toggleSearch(): void {
     this.isExpanded = !this.isExpanded;

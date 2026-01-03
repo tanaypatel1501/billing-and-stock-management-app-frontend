@@ -28,13 +28,18 @@
               (blur)="onInputBlur()"
               autocomplete="off"
               [class.error]="productForm.get('name')?.invalid && productForm.get('name')?.touched" />
-            
+            <div class="input-loader" *ngIf="isLoadingSearch">
+              <div class="spinner-small"></div>
+            </div>
             <ul class="suggestion-dropdown" *ngIf="showDropdown && products.length > 0">
               <li *ngFor="let p of products; let i = index" 
                   [class.active]="highlightedIndex === i"
                   (mousedown)="selectProduct(p)">
                 {{ p.name }}
                 <span class="sub-label" *ngIf="p.packing"> | {{ p.packing }}</span>
+              </li>
+              <li class="loader-item" *ngIf="isMoreLoading">
+                <div class="spinner-small"></div>
               </li>
             </ul>
 

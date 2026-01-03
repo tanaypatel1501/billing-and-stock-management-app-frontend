@@ -204,7 +204,40 @@ input.error, .form-control.error {
 .auth-footer a:hover {
   text-decoration: underline;
 }
+/* Local Loaders */
+.input-loader {
+  position: absolute;
+  right: 12px;
+  top: 13px;
+  z-index: 5;
+}
 
+.loader-item {
+  display: flex;
+  justify-content: center;
+  padding: 10px !important;
+  background: #fcfcfc !important;
+}
+
+.spinner-small {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #eee;
+  border-top: 2px solid #48e3cc;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Ensure dropdown is scrollable for pagination */
+.suggestion-dropdown {
+  max-height: 250px;
+  overflow-y: auto;
+}
 /* Mobile View */
 @media (max-width: 500px) {
   .auth-wrapper {

@@ -8,6 +8,8 @@ import { NoauthGuard } from './guards/noAuth/noauth.guard';
 import { AdminGuard } from './guards/admin-guard/admin.guard';
 import { UserGuard } from './guards/user-guard/user.guard';
 import { ProfileComponent } from './components/profile/profile.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 const routes: Routes = [
   {
@@ -20,13 +22,18 @@ const routes: Routes = [
     path : "register", component : RegisterComponent,canActivate:[NoauthGuard]
   },
   {
-    // FIX: Using UserGuard as the standard authenticated access point.
-    // Ensure this guard allows both USER and ADMIN roles.
+    path: 'forgot-password',
+    component: ForgotPasswordComponent
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent
+  },
+  {
     path : "profile", 
     component : ProfileComponent,
     canActivate:[UserGuard || AdminGuard]
   },
-  // FIX: Corrected lazy loading syntax for modules (critical for Angular apps)
   { 
     path: 'admin', 
     loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule), 

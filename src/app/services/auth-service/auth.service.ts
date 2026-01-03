@@ -133,6 +133,20 @@ export class AuthService {
     );
   }
 
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}forgot-password`,
+      { email }
+    );
+  }
+
+  resetPassword(data: { token: string; newPassword: string }): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}reset-password`,
+      data
+    );
+  }
+
   /* ---------------------- POSTAL APIs ---------------------- */
 
   lookupPincode(pincode: string): Observable<AddressLookupDTO | null> {
@@ -207,10 +221,11 @@ export class AuthService {
 
   /* NEW: Search */
   searchProducts(params: SearchRequest): Observable<PageResponse<any>> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.post<PageResponse<any>>(
       `${this.baseUrl}api/product/search`,
       params,
-      { headers: this.createAuthorizationHeader() }
+      { headers: headers }
     );
   }
 
@@ -248,10 +263,11 @@ export class AuthService {
 
   /* NEW: Search Stock */
   searchStock(params: SearchRequest): Observable<PageResponse<any>> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.post<PageResponse<any>>(
       `${this.baseUrl}api/stock/search`,
       params,
-      { headers: this.createAuthorizationHeader() }
+      { headers: headers }
     );
   }
 
@@ -350,10 +366,11 @@ export class AuthService {
 
   /* NEW: Search Bills */
   searchBills(params: SearchRequest): Observable<PageResponse<any>> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.post<PageResponse<any>>(
       `${this.baseUrl}api/bill/search`,
       params,
-      { headers: this.createAuthorizationHeader() }
+      { headers: headers }
     );
   }
 

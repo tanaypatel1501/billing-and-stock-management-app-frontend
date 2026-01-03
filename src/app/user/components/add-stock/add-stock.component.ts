@@ -26,6 +26,10 @@ export class AddStockComponent implements OnInit {
 
   private searchTimeout: any;
   private SEARCH_DEBOUNCE_MS = 200;
+  isLoadingSearch: boolean = false;
+  isMoreLoading: boolean = false;
+  isLastPage: boolean = false;
+
 
   constructor(
     private fb: FormBuilder,
@@ -63,23 +67,59 @@ export class AddStockComponent implements OnInit {
   }
 
   // API CALL
-  private callProductSearchApi(text: string) {
+  private callProductSearchApi(text: string, isNextPage: boolean = false) {
+    if (isNextPage) {
+      this.isMoreLoading = true;
+    } else {
+      this.page = 0; 
+      this.isLastPage = false;
+      this.isLoadingSearch = true; 
+    }
+
     const body = {
       searchText: text,
       page: this.page,
       size: this.size
     };
 
+    // Note: Ensure your searchProducts method in authService includes the 'X-Skip-Loader' header
     this.authService.searchProducts(body).subscribe(
       (res: any) => {
-        this.products = res.content || [];
+        const newProducts = res.content || [];
+        
+        if (isNextPage) {
+          // Append new products to existing list
+          this.products = [...this.products, ...newProducts];
+        } else {
+          // Reset list for new search
+          this.products = newProducts;
+        }
+
+        this.isLastPage = res.last; // Set based on API response
         this.showDropdown = true;
+        this.isLoadingSearch = false;
+        this.isMoreLoading = false;
       },
       () => {
         this.products = [];
         this.showDropdown = false;
+        this.isLoadingSearch = false;
+        this.isMoreLoading = false;
       }
     );
+  }
+
+  // ADD THIS SCROLL HANDLER
+  onDropdownScroll(event: any) {
+    const element = event.target;
+    // If scrolled to bottom and not currently loading or at the last page
+    if (element.scrollHeight - element.scrollTop <= element.clientHeight + 1) {
+      if (!this.isMoreLoading && !this.isLastPage) {
+        this.page++;
+        const text = this.productForm.get('name')?.value || "";
+        this.callProductSearchApi(text, true);
+      }
+    }
   }
 
   // SELECT PRODUCT

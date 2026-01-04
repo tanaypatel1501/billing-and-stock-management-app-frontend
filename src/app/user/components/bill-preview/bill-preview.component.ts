@@ -15,7 +15,7 @@ export class BillPreviewComponent implements OnInit {
   details: any = {};
   bill: any = {};
   totalAmountInWords: string = '';
-  logoUrl: string = 'assets/images/GST_Logo.jpeg'; // Default fallback
+  logoUrl: string = 'assets/images/GST_Logo.jpeg';
   
   faArrowLeft = faArrowLeft;
   faPrint = faPrint;
@@ -25,6 +25,20 @@ export class BillPreviewComponent implements OnInit {
     private userStorageService: UserStorageService,
     private router: Router,
   ) {}
+
+  getIdentificationLabel(value: string): string {
+    if (!value) return 'GSTIN';
+    
+    if (/^[0-9]{12}$/.test(value)) {
+      return 'Aadhaar';
+    }
+    
+    if (/^[A-Z]{5}[0-9]{4}[A-Z]$/i.test(value)) {
+      return 'PAN';
+    }
+    
+    return 'GSTIN';
+  }
 
   private convertHundreds(num: number, ones: string[], teens: string[], tens: string[]): string {
     let result = '';

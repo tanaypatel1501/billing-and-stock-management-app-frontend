@@ -114,18 +114,38 @@
           </div>
 
           <div class="form-group">
-            <label for="gstin">GSTIN</label>
+            <label>
+              Identification Type
+              <span class="mrp-hint" style="color: #777; font-weight: 400;">Select one</span>
+            </label>
+            
+            <div class="doc-switcher">
+              <button type="button" 
+                      [class.active]="documentType === 'GST'" 
+                      (click)="changeDocType('GST')">GSTIN</button>
+              <button type="button" 
+                      [class.active]="documentType === 'PAN'" 
+                      (click)="changeDocType('PAN')">PAN</button>
+              <button type="button" 
+                      [class.active]="documentType === 'AADHAAR'" 
+                      (click)="changeDocType('AADHAAR')">Aadhaar</button>
+            </div>
+
             <input 
               type="text" 
               id="gstin" 
-              placeholder="GSTIN" 
+              [placeholder]="'Enter ' + documentType + ' Number'" 
               formControlName="gstin"
               [class.error]="billForm1.get('gstin')?.invalid && billForm1.get('gstin')?.touched">
+            
             <div class="error-msg" *ngIf="billForm1.get('gstin')?.hasError('required') && billForm1.get('gstin')?.touched">
-              GSTIN is required.
+              {{ documentType }} is required.
             </div>
+
             <div class="error-msg info" *ngIf="billForm1.get('gstin')?.hasError('pattern') && billForm1.get('gstin')?.touched">
-              Must be 15 characters: 2 digits, 5 letters, 4 digits, 1 letter, 1 alnum, 'Z', 1 alnum.
+              <span *ngIf="documentType === 'GST'">Format: 2 digits, 10 chars (PAN), 1 char, 1 char, 'Z', 1 char.</span>
+              <span *ngIf="documentType === 'PAN'">Format: 5 Letters, 4 Digits, 1 Letter (e.g., ABCDE1234F).</span>
+              <span *ngIf="documentType === 'AADHAAR'">Format: 12 numeric digits (Should not start with 0 or 1).</span>
             </div>
           </div>
 
@@ -248,21 +268,28 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="rate">Rate (₹)</label>
+         <div class="form-group">
+              <label for="rate">
+                Rate (₹)
+                <span *ngIf="selectedMrp !== null" class="mrp-hint">
+                  MRP: ₹{{ selectedMrp | number:'1.2-2' }}
+                </span>
+              </label>
+
               <input 
                 type="number" 
                 id="rate" 
-                placeholder="Enter rate" 
+                [placeholder]="'Enter rate'"
                 formControlName="rate"
                 [class.error]="billForm2.get('rate')?.invalid && billForm2.get('rate')?.touched">
-              <div class="error-msg" *ngIf="billForm2.get('rate')?.hasError('required') && billForm2.get('rate')?.touched">
+
+              <div class="error-msg"
+                  *ngIf="billForm2.get('rate')?.hasError('required') && billForm2.get('rate')?.touched">
                 Rate is required.
               </div>
             </div>
 
-            <div class="form-group">
+          <div class="form-group">
               <label for="amount">Amount (₹)</label>
               <input 
                 type="number" 
@@ -270,9 +297,7 @@
                 placeholder="Calculated amount" 
                 formControlName="amount" 
                 [readonly]="true">
-            </div>
           </div>
-
           <div class="button-group">
             <button type="button" class="submit-btn secondary" (click)="prevStep()">
               ← Previous

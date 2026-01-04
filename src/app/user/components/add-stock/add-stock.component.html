@@ -36,7 +36,7 @@
                   [class.active]="highlightedIndex === i"
                   (mousedown)="selectProduct(p)">
                 {{ p.name }}
-                <span class="sub-label" *ngIf="p.packing"> | {{ p.packing }}</span>
+                <span class="sub-label" *ngIf="p.packing"> {{ p.packing }}</span>
               </li>
               <li class="loader-item" *ngIf="isMoreLoading">
                 <div class="spinner-small"></div>

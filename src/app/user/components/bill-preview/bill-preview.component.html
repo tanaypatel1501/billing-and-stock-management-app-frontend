@@ -72,9 +72,13 @@
             <span class="info-label">DL No.:</span>
             <span>{{ bill.dl1 }}</span>
           </div>
-          <div class="info-item">
-            <span class="info-label">GSTIN:</span>
-            <span>{{ bill.gstin }}</span>
+          <div class="info-item" *ngIf="bill?.gstin">
+            <span class="info-label">{{ getIdentificationLabel(bill.gstin) }}:</span>
+            <span>
+              {{ getIdentificationLabel(bill.gstin) === 'Aadhaar' 
+                ? (bill.gstin | slice:0:4) + ' ' + (bill.gstin | slice:4:8) + ' ' + (bill.gstin | slice:8:12) 
+                : bill.gstin }}
+            </span>
           </div>
           <div class="info-item">
             <span class="info-label empty"></span>

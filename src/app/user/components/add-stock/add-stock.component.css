@@ -102,29 +102,49 @@ input.error, .form-control.error {
   z-index: 1000;
   max-height: 250px;
   overflow-y: auto;
+  overflow-x: hidden;
   border: 2px solid #eee;
   margin: 0;
 }
 
 .suggestion-dropdown li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   padding: 12px 16px;
   cursor: pointer;
   font-size: 14px;
   color: #333;
   transition: all 0.2s ease;
+  min-width: 0;
+  overflow: hidden;
+  will-change: transform, box-shadow;
 }
 
 .suggestion-dropdown li.active, 
 .suggestion-dropdown li:hover {
   background-color: #e6fcf5;
   color: #0ca678;
+  transform: translateX(4px);
+  box-shadow: inset 3px 0 0 #48e3cc;
 }
 
 .sub-label {
-  font-size: 12px;
-  color: #999;
-  font-weight: 400;
-  margin-left: 4px;
+  font-size: 0.8rem;
+  color: #777;
+  font-style: italic;
+  flex-shrink: 0;
+  padding: 3px 10px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  transition: all 0.25s ease;
+}
+.suggestion-dropdown li:hover .sub-label,
+.suggestion-dropdown li.active .sub-label {
+  background: #d3f9f1;
+  color: #087f5b;
+  transform: translateY(-1px);
 }
 
 .no-results {
@@ -219,6 +239,11 @@ input.error, .form-control.error {
   background: #fcfcfc !important;
 }
 
+.suggestion-dropdown li.loader-item {
+  justify-content: center;
+}
+
+
 .spinner-small {
   width: 18px;
   height: 18px;
@@ -263,6 +288,18 @@ input.error, .form-control.error {
   input, .form-control {
     padding: 14px; 
     font-size: 16px; 
+  }
+  .sub-label{
+    display: inline-block; 
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    margin-top: 4px;
+    align-self: flex-start; 
+  }
+  .suggestion-dropdown li:hover,
+  .suggestion-dropdown li.active {
+    transform: none;
+    box-shadow: none;
   }
 }
 

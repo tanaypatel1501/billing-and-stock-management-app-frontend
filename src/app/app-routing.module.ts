@@ -23,11 +23,11 @@ const routes: Routes = [
   },
   {
     path: 'forgot-password',
-    component: ForgotPasswordComponent
+    component: ForgotPasswordComponent,canActivate:[NoauthGuard]
   },
   {
     path: 'reset-password',
-    component: ResetPasswordComponent
+    component: ResetPasswordComponent,canActivate:[NoauthGuard]
   },
   {
     path : "profile", 

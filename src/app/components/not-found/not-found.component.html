@@ -34,11 +34,11 @@
       <div class="helpful-links">
         <p class="links-title">You might be looking for:</p>
         <div class="links-grid">
-          <a routerLink="/login" class="quick-link" *ngIf!="isAuthenticated">
+          <a routerLink="/login" class="quick-link" *ngIf="!isAuthenticated">
             <fa-icon [icon]="faSignInAlt"></fa-icon>
             <span>Login</span>
           </a>
-          <a routerLink="/register" class="quick-link" *ngIf!="isAuthenticated">
+          <a routerLink="/register" class="quick-link" *ngIf="!isAuthenticated">
             <fa-icon [icon]="faUserPlus"></fa-icon>
             <span>Register</span>
           </a>

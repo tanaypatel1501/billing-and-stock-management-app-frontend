@@ -27,6 +27,8 @@
               (focus)="openDropdown()"
               (blur)="onInputBlur()"
               autocomplete="off"
+              [disabled]="mode === 'edit'"
+              [class.readonly]="mode === 'edit'"
               [class.error]="productForm.get('name')?.invalid && productForm.get('name')?.touched" />
             <div class="input-loader" *ngIf="isLoadingSearch">
               <div class="spinner-small"></div>

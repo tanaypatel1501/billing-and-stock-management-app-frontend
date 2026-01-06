@@ -94,6 +94,24 @@ input.error, .form-control.error {
   border-color: #ff6b6b; 
 }
 
+input.readonly,
+input:disabled {
+  cursor: not-allowed;
+  background-color: #f1f3f5;
+  border-color: #dee2e6;
+  color: #868e96;
+  box-shadow: none;
+}
+
+input.readonly:focus,
+input:disabled:focus {
+  border-color: #dee2e6;
+  box-shadow: none;
+}
+
+.custom-dropdown-container input.readonly + .input-loader {
+  display: none;
+}
 /* Custom Dropdown Container */
 .custom-dropdown-container {
   position: relative;

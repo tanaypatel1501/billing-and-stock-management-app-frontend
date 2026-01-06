@@ -54,7 +54,8 @@ const routes: Routes = [
   },
   {
     path : "**",
-    component : NotFoundComponent
+    component : NotFoundComponent,
+    title: '404 - Page Not Found | GST Medicose'
   },
 ];
 

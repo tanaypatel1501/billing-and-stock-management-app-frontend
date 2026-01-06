@@ -60,6 +60,18 @@ label {
   margin-bottom: 6px;
   text-transform: uppercase;
 }
+.mrp-hint {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0ca678;
+  margin-left: 8px;
+}
+.form-group > label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 
 input, .form-control {
   width: 100%;

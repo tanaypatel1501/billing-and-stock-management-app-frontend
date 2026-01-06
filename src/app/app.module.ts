@@ -22,6 +22,7 @@ import { FilterButtonComponent } from './shared/filter-button/filter-button.comp
 import { AlertComponent } from './shared/alert/alert.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { ConfirmDeleteModalComponent } from './shared/confirm-delete-modal/confirm-delete-modal.component';
 
 @NgModule({
   declarations: [
@@ -48,6 +49,7 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
     FontAwesomeModule,
     DashboardComponent,
     FilterButtonComponent,
+    ConfirmDeleteModalComponent,
   ],
   providers: [
     {

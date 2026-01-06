@@ -1,0 +1,30 @@
+<div class="modal-overlay" (click)="onCancel()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <!-- Icon -->
+    <div class="modal-icon">
+      <div class="icon-wrapper">
+        <fa-icon [icon]="faExclamationTriangle"></fa-icon>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="modal-content">
+      <h2 class="modal-title">{{ title }}</h2>
+      <p class="modal-message">{{ message }}</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="modal-btn secondary" (click)="onCancel()">
+        <fa-icon [icon]="faTimes"></fa-icon>
+        <span>Cancel</span>
+      </button>
+      <button class="modal-btn danger" (click)="onConfirm()">
+        <fa-icon [icon]="faTrash"></fa-icon>
+        <span>Delete</span>
+      </button>
+    </div>
+
+  </div>
+</div>

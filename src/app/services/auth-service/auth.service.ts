@@ -261,6 +261,13 @@ export class AuthService {
     );
   }
 
+  getStockById(stockId: number): Observable<any> {
+    return this.http.get(
+      `${this.baseUrl}api/stock/${stockId}`,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
   /* NEW: Search Stock */
   searchStock(params: SearchRequest): Observable<PageResponse<any>> {
     const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
@@ -273,6 +280,12 @@ export class AuthService {
 
   updateStock(data: any): Observable<any> {
     return this.http.put(`${this.baseUrl}api/stock/update`, data,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  deleteStock(stockId: any): Observable<any> {
+    return this.http.delete(`${this.baseUrl}api/stock/${stockId}`,
       { headers: this.createAuthorizationHeader() }
     );
   }

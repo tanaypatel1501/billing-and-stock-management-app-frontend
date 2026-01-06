@@ -8,6 +8,8 @@ import { CommonModule } from '@angular/common';
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-button.component';
+import { ConfirmDeleteModalComponent } from 'src/app/shared/confirm-delete-modal/confirm-delete-modal.component';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -15,7 +17,8 @@ import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-butto
   imports: [
     CommonModule,             
     SearchBarComponent, 
-    FilterButtonComponent,        
+    FilterButtonComponent,   
+    ConfirmDeleteModalComponent,     
     FontAwesomeModule
   ],
   templateUrl: './dashboard.component.html',
@@ -51,7 +54,8 @@ export class DashboardComponent implements OnInit{
   ];
   searchText: string = '';
   suggestions: any[] = [];
-  
+  showDeleteModal = false;
+  stockToDeleteId: number | null = null;
 
   constructor(
     private authService: AuthService,
@@ -197,16 +201,36 @@ onWindowScroll() {
     this.isSearchActive = false;
     this.loadInitialData(); 
   }
-  delete(productId: any) {
-    this.authService.deleteProduct(productId).subscribe(() => {
-      console.log("Deleted Product Successfully");
-      // Remove the deleted product from the 'products' array
-      this.stock = this.stock.filter((product: any) => product.id !== productId);
+
+  edit(stockId: number){
+    this.router.navigate(['user/stock/edit',stockId]);
+  }
+
+  openDeleteModal(stockId: number) {
+    this.stockToDeleteId = stockId;
+    this.showDeleteModal = true;
+    document.body.classList.add('modal-open');
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.stockToDeleteId = null;
+    document.body.classList.remove('modal-open');
+  }
+
+  deleteStock() {
+    if (!this.stockToDeleteId) return;
+
+    this.authService.deleteStock(this.stockToDeleteId).subscribe({
+      next: () => {
+        this.stock = this.stock.filter(s => s.id !== this.stockToDeleteId);
+        this.closeDeleteModal();
+      },
+      error: () => {
+        alert('Failed to delete stock');
+        this.closeDeleteModal();
+      }
     });
   }
 
-  edit(productId: any){
-    this.userStorageService.saveProductId(productId);
-    this.router.navigateByUrl("user/edit-product");
-  }
 }

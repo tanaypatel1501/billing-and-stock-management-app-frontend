@@ -2,7 +2,7 @@
   <div class="auth-container">
     <div class="auth-card">
       <div class="auth-header">
-        <h1>Add Stock</h1>
+        <h1>{{ mode === 'edit' ? 'Edit Stock' : 'Add Stock' }}</h1>
         <p>Update your inventory</p>
       </div>
 
@@ -73,7 +73,12 @@
 
         <!-- Quantity -->
         <div class="form-group">
-          <label for="quantity">Quantity</label>
+          <label for="quantity">
+            Quantity
+            <span *ngIf="selectedMrp !== null" class="mrp-hint">
+              MRP: ₹{{ selectedMrp | number:'1.2-2' }}
+            </span>
+          </label>
           <input 
             type="number" 
             id="quantity" 
@@ -87,7 +92,7 @@
           type="submit" 
           class="submit-btn" 
           [disabled]="productForm.invalid">
-          Add Stock
+          {{ mode === 'edit' ? 'Update Stock' : 'Add Stock' }}
         </button>
 
         <p class="auth-footer">

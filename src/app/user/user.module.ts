@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { UserRoutingModule } from './user-routing.module';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { AddStockComponent } from './components/add-stock/add-stock.component';
+import { AddStockComponent } from './components/stock/add-stock/add-stock.component';
 import { CreateBillComponent } from './components/create-bill/create-bill.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -11,6 +11,8 @@ import { DetailsComponent } from './components/details/details.component';
 import { BillPreviewComponent } from './components/bill-preview/bill-preview.component';
 import { BillsComponent } from './components/bills/bills.component';
 import { ImageCropperComponent } from 'ngx-image-cropper';
+import { EditStockComponent } from './components/stock/edit-stock/edit-stock.component';
+import { StockFormComponent } from './components/stock/stock-form/stock-form.component';
 
 
 @NgModule({
@@ -19,6 +21,8 @@ import { ImageCropperComponent } from 'ngx-image-cropper';
     CreateBillComponent,
     DetailsComponent,
     BillPreviewComponent,
+    EditStockComponent,
+    StockFormComponent,
   ],
   imports: [
     CommonModule,

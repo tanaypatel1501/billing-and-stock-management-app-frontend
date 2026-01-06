@@ -133,6 +133,7 @@
                       <span *ngIf="sortColumn !== 'product.SGST'" class="neutral-sort">⇅</span>
                     </span>
                   </th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -150,6 +151,15 @@
                   <td data-label="MRP" class="price">₹{{ item.product.mrp | number }}</td>
                   <td class="expandable" data-label="CGST">{{ item.product?.cgst | number }}%</td>
                   <td class="expandable" data-label="SGST">{{ item.product?.sgst | number }}%</td>
+                  <td data-label="Actions" class="action-cell expandable">
+                    <button class="icon-btn edit" (click)="edit(item.id)">
+                      <fa-icon [icon]="faPencil"></fa-icon>
+                    </button>
+                    <button class="icon-btn delete"
+                            (click)="openDeleteModal(item.id); $event.stopPropagation()">
+                      <fa-icon [icon]="faTrashCan"></fa-icon>
+                    </button>
+                  </td>
                 </tr>
               </tbody>
               <tbody *ngIf="stock.length === 0 && !isLoading" class="empty-state">
@@ -216,3 +226,10 @@
 
   </ng-container>
 </ng-container>
+<app-confirm-delete-modal
+  *ngIf="showDeleteModal"
+  title="Delete Stock"
+  message="This stock entry will be permanently deleted. This action cannot be undone."
+  (confirm)="deleteStock()"
+  (cancel)="closeDeleteModal()">
+</app-confirm-delete-modal>

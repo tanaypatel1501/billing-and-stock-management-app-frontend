@@ -6,9 +6,9 @@ import { AddProductComponent } from './components/add-product/add-product.compon
 import { EditProductComponent } from './components/edit-product/edit-product.component';
 
 const routes: Routes = [
-  { path: 'dashboard', component: DashboardComponent, canActivate:[AdminGuard] },
-  { path: 'add-product', component: AddProductComponent, canActivate:[AdminGuard] },
-  { path: 'edit-product', component: EditProductComponent, canActivate:[AdminGuard] },
+  { path: 'dashboard', component: DashboardComponent, canActivate:[AdminGuard], title: 'Dashboard | GST Medicose' },
+  { path: 'add-product', component: AddProductComponent, canActivate:[AdminGuard], title: 'Add Product | GST Medicose' },
+  { path: 'edit-product', component: EditProductComponent, canActivate:[AdminGuard], title: 'Edit Product | GST Medicose' },
 ];
 
 @NgModule({

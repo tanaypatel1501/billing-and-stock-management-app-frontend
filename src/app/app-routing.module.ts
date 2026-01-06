@@ -13,26 +13,29 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 
 const routes: Routes = [
   {
-    path : "home", component : HomeComponent,canActivate:[NoauthGuard]
+    path : "home", component : HomeComponent,canActivate:[NoauthGuard],title: 'GST Medicose'
   },
   {
-    path : "login", component : LoginComponent,canActivate:[NoauthGuard]
+    path : "login", component : LoginComponent,canActivate:[NoauthGuard], title: 'Login | GST Medicose'
   },
   {
-    path : "register", component : RegisterComponent,canActivate:[NoauthGuard]
+    path : "register", component : RegisterComponent,canActivate:[NoauthGuard], title: 'Register | GST Medicose'
   },
   {
     path: 'forgot-password',
-    component: ForgotPasswordComponent,canActivate:[NoauthGuard]
+    component: ForgotPasswordComponent,canActivate:[NoauthGuard],
+    title: 'Forgot Password | GST Medicose'
   },
   {
     path: 'reset-password',
-    component: ResetPasswordComponent,canActivate:[NoauthGuard]
+    component: ResetPasswordComponent,canActivate:[NoauthGuard],
+    title: 'Reset Password | GST Medicose'
   },
   {
     path : "profile", 
     component : ProfileComponent,
-    canActivate:[UserGuard || AdminGuard]
+    canActivate:[UserGuard || AdminGuard],
+    title: 'Profile | GST Medicose'
   },
   { 
     path: 'admin', 

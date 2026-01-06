@@ -10,13 +10,13 @@ import { BillPreviewComponent } from './components/bill-preview/bill-preview.com
 import { BillsComponent } from './components/bills/bills.component';
 
 const routes: Routes = [
-  { path: 'dashboard', component: DashboardComponent ,canActivate:[UserGuard]},
-  { path: 'stock/add', component: AddStockComponent ,canActivate:[UserGuard]},
-  { path: 'stock/edit/:stockId', component: EditStockComponent ,canActivate:[UserGuard]},
-  { path: 'create-bill', component: CreateBillComponent ,canActivate:[UserGuard]},
-  { path: 'details', component: DetailsComponent ,canActivate:[UserGuard]},
-  { path: 'bill-preview', component: BillPreviewComponent ,canActivate:[UserGuard]},
-  { path: 'bills', component: BillsComponent ,canActivate:[UserGuard]},
+  { path: 'dashboard', component: DashboardComponent ,canActivate:[UserGuard],title: 'Dashboard | GST Medicose'},
+  { path: 'stock/add', component: AddStockComponent ,canActivate:[UserGuard],title: 'Add Stock | GST Medicose'},
+  { path: 'stock/edit/:stockId', component: EditStockComponent ,canActivate:[UserGuard],title: 'Edit Stock | GST Medicose'},
+  { path: 'create-bill', component: CreateBillComponent ,canActivate:[UserGuard],title: 'Create Bill | GST Medicose'},
+  { path: 'details', component: DetailsComponent ,canActivate:[UserGuard],title: 'Details | GST Medicose'},
+  { path: 'bill-preview', component: BillPreviewComponent ,canActivate:[UserGuard],title: 'Bill Preview | GST Medicose'},
+  { path: 'bills', component: BillsComponent ,canActivate:[UserGuard],title: 'Bills | GST Medicose'},
 ];
 
 @NgModule({

@@ -13,6 +13,9 @@ bazel-out/
 packages/
 !packages/**/*.json   # keep package metadata if any
 
+# Configuration files
+src/assets/runtime-config.js
+
 # Node dependencies
 node_modules/
 npm-debug.log*

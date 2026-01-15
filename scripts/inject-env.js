@@ -1,18 +1,21 @@
 const fs = require('fs');
 const path = require('path');
 
-const distDir = path.join(__dirname, '..', 'dist');
-const appDir = fs.readdirSync(distDir)[0]; // Angular app folder
-const targetFile = path.join(distDir, appDir, 'assets', 'runtime-config.js');
+const distRoot = path.join(__dirname, '..', 'dist');
+const appDir = fs.readdirSync(distRoot)[0];
 
-const template = `
-(function (window) {
-  window.runtimeConfig = {
-    BASIC_URL: "${process.env.BASIC_URL || ''}"
-  };
-})(this);
-`;
+const assetsDir = path.join(distRoot, appDir, 'assets');
 
-fs.writeFileSync(targetFile, template);
+const templatePath = path.join(assetsDir, 'runtime-config.template.js');
+const outputPath = path.join(assetsDir, 'runtime-config.js');
 
-console.log('runtime-config.js injected');
+let content = fs.readFileSync(templatePath, 'utf8');
+
+content = content.replace(
+  '__BASIC_URL__',
+  process.env.BASIC_URL || ''
+);
+
+fs.writeFileSync(outputPath, content);
+
+console.log('runtime-config.js injected successfully');

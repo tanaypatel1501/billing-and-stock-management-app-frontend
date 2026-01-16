@@ -1,44 +1,29 @@
 const fs = require('fs');
 const path = require('path');
 
-const distRoot = path.join(__dirname, '..', 'dist');
+// Based on your 'ls' output, the path is exactly here:
+const assetsDir = path.join(__dirname, '..', 'dist', 'billing-and-stock-management-app', 'assets');
 
-/**
- * Recursively find all 'assets' directories under a given path
- */
-function getAllAssetsDirs(startPath, acc = []) {
-  if (!fs.existsSync(startPath)) return acc;
-  const files = fs.readdirSync(startPath);
-  for (const file of files) {
-    const fullPath = path.join(startPath, file);
-    if (fs.lstatSync(fullPath).isDirectory()) {
-      if (file === 'assets') {
-        acc.push(fullPath);
-      } else {
-        getAllAssetsDirs(fullPath, acc);
-      }
-    }
-  }
-  return acc;
-}
+const templatePath = path.join(assetsDir, 'runtime-config.template.js');
+const outputPath = path.join(assetsDir, 'runtime-config.js');
 
-const assetsDirs = getAllAssetsDirs(distRoot);
+console.log('Checking for template at:', templatePath);
 
-if (assetsDirs.length === 0) {
-  console.error("❌ No 'assets' folder found in dist! Build might have failed or path is wrong.");
-  process.exit(1);
-}
-
-assetsDirs.forEach(dir => {
-  const templatePath = path.join(dir, 'runtime-config.template.js');
-  const outputPath = path.join(dir, 'runtime-config.js');
-
-  if (fs.existsSync(templatePath)) {
+if (fs.existsSync(templatePath)) {
     let content = fs.readFileSync(templatePath, 'utf8');
-    content = content.replace('__BASIC_URL__', process.env.BASIC_URL || 'http://localhost:8080');
+    
+    // Fallback for local testing if BASIC_URL isn't set
+    const url = process.env.BASIC_URL || 'http://localhost:8080';
+    
+    content = content.replace('__BASIC_URL__', url);
     fs.writeFileSync(outputPath, content);
-    console.log(`✅ Injected config into: ${outputPath}`);
-  } else {
-    console.log(`⚠️ Assets folder found at ${dir} but no template inside.`);
-  }
-});
+    
+    console.log('✅ Success! runtime-config.js created with URL:', url);
+} else {
+    console.error('❌ Error: Could not find template file at ' + templatePath);
+    // Log the contents of the assets folder to see what actually exists
+    if (fs.existsSync(assetsDir)) {
+        console.log('Assets folder contents:', fs.readdirSync(assetsDir));
+    }
+    process.exit(1);
+}

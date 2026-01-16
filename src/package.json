@@ -6,6 +6,8 @@
     "main": "electron.prod.js",
     "license": "MIT",
     "scripts": {
-        "build": "ng build && node scripts/inject-env.js"
+        "build": "ng build && node scripts/inject-env.js",
+        "test": "ng test",
+        "lint": "ng lint"
     }
 }

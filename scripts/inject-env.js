@@ -1,29 +1,31 @@
 const fs = require('fs');
 const path = require('path');
 
-// Based on your 'ls' output, the path is exactly here:
-const assetsDir = path.join(__dirname, '..', 'dist', 'billing-and-stock-management-app', 'assets');
+// Target the exact path we saw in your 'ls' output
+const distPath = path.resolve(__dirname, '../dist/billing-and-stock-management-app/assets');
+const templatePath = path.join(distPath, 'runtime-config.template.js');
+const outputPath = path.join(distPath, 'runtime-config.js');
 
-const templatePath = path.join(assetsDir, 'runtime-config.template.js');
-const outputPath = path.join(assetsDir, 'runtime-config.js');
+console.log('--- Environment Injection Start ---');
+console.log('Looking for assets in:', distPath);
 
-console.log('Checking for template at:', templatePath);
-
-if (fs.existsSync(templatePath)) {
-    let content = fs.readFileSync(templatePath, 'utf8');
-    
-    // Fallback for local testing if BASIC_URL isn't set
-    const url = process.env.BASIC_URL || 'http://localhost:8080';
-    
-    content = content.replace('__BASIC_URL__', url);
-    fs.writeFileSync(outputPath, content);
-    
-    console.log('✅ Success! runtime-config.js created with URL:', url);
-} else {
-    console.error('❌ Error: Could not find template file at ' + templatePath);
-    // Log the contents of the assets folder to see what actually exists
-    if (fs.existsSync(assetsDir)) {
-        console.log('Assets folder contents:', fs.readdirSync(assetsDir));
-    }
+if (!fs.existsSync(distPath)) {
+    console.error('❌ ERROR: Assets directory not found at:', distPath);
     process.exit(1);
 }
+
+if (fs.existsSync(templatePath)) {
+    const url = process.env.BASIC_URL || 'http://localhost:8080';
+    let content = fs.readFileSync(templatePath, 'utf8');
+    content = content.replace('__BASIC_URL__', url);
+    
+    fs.writeFileSync(outputPath, content);
+    
+    console.log('✅ SUCCESS: Created runtime-config.js');
+    console.log('🔗 Injected URL:', url);
+} else {
+    console.error('❌ ERROR: Template file missing at:', templatePath);
+    console.log('Folder contents:', fs.readdirSync(distPath));
+    process.exit(1);
+}
+console.log('--- Environment Injection End ---');

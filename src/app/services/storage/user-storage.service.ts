@@ -80,6 +80,7 @@ export class UserStorageService {
     window.localStorage.removeItem(TOKEN);
     window.localStorage.removeItem(USER);
     window.localStorage.removeItem(EXP_TIME);
+    window.localStorage.removeItem(BILL);
   }
 
   public saveProductId(productId :any){

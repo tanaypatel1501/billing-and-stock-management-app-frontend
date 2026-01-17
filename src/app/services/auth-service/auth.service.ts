@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable, EventEmitter } from '@angular/core';
-import { Observable, catchError, map, tap, BehaviorSubject, of } from 'rxjs';
+import { Observable, catchError, throwError, map, tap, BehaviorSubject, of } from 'rxjs';
 import { UserStorageService } from '../storage/user-storage.service';
 import { ConfigService } from '../config.service';
 import jwt_decode from 'jwt-decode';
@@ -117,7 +117,7 @@ export class AuthService {
         tap(res => console.log('Token refresh response:', res)),
         catchError(error => {
           console.error('Token refresh error:', error);
-          throw error;
+          return throwError(() => error);
         })
       );
   }

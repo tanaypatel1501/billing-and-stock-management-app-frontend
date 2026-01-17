@@ -1,7 +1,21 @@
-<div class="app-alert" *ngIf="alert" [ngClass]="alert.type">
-  <div class="alert-content">
-    <strong>{{ alert.title }}</strong>
-    <p>{{ alert.message }}</p>
+<div class="alert-overlay" *ngIf="alert" (click)="close()">
+  <div class="alert-modal" [ngClass]="alert.type" (click)="$event.stopPropagation()">
+    
+    <!-- Icon -->
+    <div class="alert-icon">
+      <fa-icon [icon]="getIcon()"></fa-icon>
+    </div>
+
+    <!-- Content -->
+    <div class="alert-content">
+      <h3 class="alert-title">{{ alert.title }}</h3>
+      <p class="alert-message">{{ alert.message }}</p>
+    </div>
+
+    <!-- Close Button -->
+    <div class="alert-footer">
+      <button class="alert-btn" (click)="close()">OK</button>
+    </div>
+
   </div>
-  <button class="alert-close" (click)="close()">×</button>
 </div>

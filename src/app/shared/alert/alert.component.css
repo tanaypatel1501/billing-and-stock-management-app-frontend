@@ -1,54 +1,162 @@
-.app-alert {
+/* Alert Overlay */
+.alert-overlay {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  min-width: 320px;
-  padding: 16px 20px;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  animation: slideFadeIn 0.3s ease;
+  align-items: center;
+  justify-content: center;
   z-index: 10000;
+  animation: fadeIn 0.2s ease;
 }
 
-.app-alert p {
-  margin: 4px 0 0;
-  font-size: 0.9rem;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.app-alert.success {
-  background: linear-gradient(135deg, #48e3cc, #36c5b0);
+/* Alert Modal */
+.alert-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.2s ease;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+
+/* Alert Icon */
+.alert-icon {
+  padding: 30px 20px 15px;
+  text-align: center;
+}
+
+.alert-icon fa-icon {
+  font-size: 3.5rem;
+}
+
+/* Icon Colors by Type */
+.alert-modal.success .alert-icon fa-icon {
+  color: #48e3cc;
+}
+
+.alert-modal.error .alert-icon fa-icon {
+  color: #fa5252;
+}
+
+.alert-modal.warning .alert-icon fa-icon {
+  color: #fcc419;
+}
+
+.alert-modal.info .alert-icon fa-icon {
+  color: #339af0;
+}
+
+/* Alert Content */
+.alert-content {
+  padding: 0 25px 20px;
+  text-align: center;
+}
+
+.alert-title {
+  font-size: 1.4rem;
+  font-weight: 800;
   color: #000;
+  margin: 0 0 8px 0;
 }
 
-.app-alert.error {
-  background: #fff5f5;
-  border-left: 6px solid #fa5252;
-  color: #000;
+.alert-message {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-.app-alert.warning {
-  background: #fff9db;
-  border-left: 6px solid #fcc419;
+/* Alert Footer */
+.alert-footer {
+  padding: 20px 25px 25px;
+  background: #f9f9f9;
+  border-top: 1px solid #f0f0f0;
 }
 
-.app-alert.info {
-  background: #f1f3f5;
-  border-left: 6px solid #339af0;
-}
-
-.alert-close {
-  background: none;
+.alert-btn {
+  width: 100%;
+  padding: 12px 18px;
   border: none;
-  font-size: 1.3rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
   cursor: pointer;
-  color: inherit;
+  transition: all 0.15s ease;
 }
 
-@keyframes slideFadeIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
+/* Button Colors by Type */
+.alert-modal.success .alert-btn {
+  background: #48e3cc;
+  color: #000;
+}
+
+.alert-modal.success .alert-btn:hover {
+  background: #36c5b0;
+}
+
+.alert-modal.error .alert-btn {
+  background: #fa5252;
+  color: #fff;
+}
+
+.alert-modal.error .alert-btn:hover {
+  background: #e03131;
+}
+
+.alert-modal.warning .alert-btn {
+  background: #fcc419;
+  color: #000;
+}
+
+.alert-modal.warning .alert-btn:hover {
+  background: #fab005;
+}
+
+.alert-modal.info .alert-btn {
+  background: #339af0;
+  color: #fff;
+}
+
+.alert-modal.info .alert-btn:hover {
+  background: #228be6;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .alert-modal {
+    width: 95%;
+  }
+
+  .alert-icon fa-icon {
+    font-size: 3rem;
+  }
+
+  .alert-title {
+    font-size: 1.2rem;
+  }
+
+  .alert-message {
+    font-size: 0.9rem;
+  }
 }

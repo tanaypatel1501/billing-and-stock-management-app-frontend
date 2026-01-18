@@ -230,6 +230,38 @@ section {
   cursor: pointer;
 }
 
+/* Footer Styles */
+.footer-section {
+  background-color: #fafafa;
+  padding: 40px 0;
+  text-align: center;
+  border-top: 1px solid #f0f0f0;
+}
+
+.footer-help {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.footer-link {
+  color: #48e3cc;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+.footer-copyright {
+  margin: 0;
+  font-size: 12px;
+  color: #bbb;
+}
+
 @media (max-width: 1100px) {
   .text-box h2 {
     white-space: normal;
@@ -286,5 +318,9 @@ section {
   .text-box h2 {
     font-size: 2rem;
     white-space: normal;
+  }
+
+  .footer-section {
+    padding: 30px 20px;
   }
 }

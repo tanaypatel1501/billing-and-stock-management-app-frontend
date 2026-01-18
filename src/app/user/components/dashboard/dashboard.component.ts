@@ -22,7 +22,7 @@ import { ConfirmDeleteModalComponent } from 'src/app/shared/confirm-delete-modal
     FontAwesomeModule
   ],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit{
   faTrashCan = faTrashCan;

@@ -7,7 +7,7 @@ import { UserStorageService } from 'src/app/services/storage/user-storage.servic
 @Component({
   selector: 'app-edit-product',
   templateUrl: './edit-product.component.html',
-  styleUrls: ['./edit-product.component.css']
+  styleUrls: ['./edit-product.component.scss']
 })
 export class EditProductComponent implements OnInit {
   productForm!: FormGroup;

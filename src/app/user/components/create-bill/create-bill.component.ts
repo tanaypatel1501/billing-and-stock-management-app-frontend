@@ -15,7 +15,7 @@ const PATTERNS = {
 @Component({
   selector: 'app-create-bill',
   templateUrl: './create-bill.component.html',
-  styleUrls: ['./create-bill.component.css']
+  styleUrls: ['./create-bill.component.scss']
 })
 
 export class CreateBillComponent implements OnInit, OnDestroy {

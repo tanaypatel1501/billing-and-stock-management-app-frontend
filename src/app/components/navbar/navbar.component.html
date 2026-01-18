@@ -43,6 +43,12 @@
             <span>Login</span>
           </a>
         </li>
+        <li class="nav-item">
+          <button class="nav-link settings-trigger" (click)="openSettings()">
+            <fa-icon [icon]="faGear"></fa-icon>
+            <span>Settings</span>
+          </button>
+        </li>
       </ul>
 
       <!-- Admin Links -->
@@ -74,6 +80,12 @@
             <fa-icon [icon]="faUser"></fa-icon>
             <span>Profile</span>
           </a>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link settings-trigger" (click)="openSettings()">
+            <fa-icon [icon]="faGear"></fa-icon>
+            <span>Settings</span>
+          </button>
         </li>
         <li class="nav-item">
           <button class="nav-link logout-btn" (click)="logout()">
@@ -142,6 +154,12 @@
             <fa-icon [icon]="faUser"></fa-icon>
             <span>Profile</span>
           </a>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link settings-trigger" (click)="openSettings()">
+            <fa-icon [icon]="faGear"></fa-icon>
+            <span>Settings</span>
+          </button>
         </li>
         <li class="nav-item">
           <button class="nav-link logout-btn" (click)="logout()">

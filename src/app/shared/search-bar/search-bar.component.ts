@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FontAwesomeModule, FormsModule],
   templateUrl: './search-bar.component.html',
-  styleUrls: ['./search-bar.component.css']
+  styleUrls: ['./search-bar.component.scss']
 })
 export class SearchBarComponent {
   @Input() suggestions: any[] = [];
@@ -51,7 +51,10 @@ export class SearchBarComponent {
         const input = this.elementRef.nativeElement.querySelector('.search-input');
         if (input) input.focus();
       }, 100);
-    } else {
+    }
+    if (this.searchText.length > 0) {
+      this.onType.emit(this.searchText);
+    }else {
       this.clearSearch();
     }
   }
@@ -68,6 +71,7 @@ export class SearchBarComponent {
   selectItem(item: any): void {
     this.searchText = this.resolveField(item, this.labelKey);
     this.onSelect.emit(item);
+    this.onSearch.emit(this.searchText);
     this.isExpanded = false;
     this.highlightedIndex = -1;
   }
@@ -77,6 +81,8 @@ export class SearchBarComponent {
       this.selectItem(this.suggestions[this.highlightedIndex]);
     } else {
       this.onSearch.emit(this.searchText);
+      this.isExpanded = false;
+      this.highlightedIndex = -1;
     }
   }
 

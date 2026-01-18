@@ -19,7 +19,7 @@ import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-butto
   ],
   providers: [DatePipe],
   templateUrl: './bills.component.html',
-  styleUrls: ['./bills.component.css']
+  styleUrls: ['./bills.component.scss']
 })
 export class BillsComponent implements OnInit {
   bills: any[] = [];

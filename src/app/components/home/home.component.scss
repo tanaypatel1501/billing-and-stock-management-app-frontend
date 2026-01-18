@@ -1,24 +1,11 @@
-/* Core Variables */
-:host {
-  --primary: #48e3cc;
-  --primary-dark: #36c5b0;
-  --bg-light: #ffffff;
-  --bg-alt: #efefef;
-  --text-dark: #333333;
-}
-
-/* Reset default margins to eliminate hidden white space */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* Global classes like .container and .grid are preserved to maintain layout */
 .landing-container {
   scroll-behavior: smooth;
-  color: var(--text-dark);
+  color: var(--gstm-text-main);
   font-family: 'Inter', -apple-system, sans-serif;
-  background-color: var(--bg-light);
+  background-color: var(--gstm-card-bg);
+  /* Base background for landing */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -37,14 +24,12 @@
 /* Standard Section Padding */
 section {
   padding: 80px 0;
-  /* Reduced from 100px */
 }
 
-/* Hero Specific - Removing forced height and extra space */
+/* Hero Specific */
 .hero-section {
-  background-color: var(--bg-light);
+  background-color: var(--gstm-bg-light);
   padding: 60px 0;
-  /* Tightened padding */
 }
 
 .hero-content {
@@ -53,20 +38,24 @@ section {
 
 .headline {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
-  /* Responsive font size */
   font-weight: 800;
   line-height: 1.1;
   margin-bottom: 24px;
+  color: var(--gstm-text-main);
+
+  .accent {
+    color: var(--gstm-primary-color);
+  }
 }
 
 .sub-description {
   font-size: 1.15rem;
-  color: #555;
+  color: var(--gstm-text-muted);
   margin-bottom: 32px;
   line-height: 1.6;
 }
 
-/* Fixed CTA Group for Mobile & Desktop */
+/* CTA Group */
 .cta-group {
   display: flex;
   flex-wrap: wrap;
@@ -86,32 +75,34 @@ section {
 }
 
 .btn-primary {
-  background-color: var(--primary);
+  background-color: var(--gstm-primary-color);
   color: #000;
-}
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(72, 227, 204, 0.4);
+  &:hover {
+    transform: translateY(-2px);
+    background-color: var(--gstm-primary-hover);
+    box-shadow: 0 8px 20px rgba(72, 227, 204, 0.4);
+  }
 }
 
 .btn-secondary {
   background-color: transparent;
-  color: #333;
-  border: 2px solid var(--primary);
-}
+  color: var(--gstm-text-main);
+  border: 2px solid var(--gstm-primary-color);
 
-.btn-secondary:hover {
-  background-color: rgba(72, 227, 204, 0.1);
+  &:hover {
+    background-color: rgba(72, 227, 204, 0.1);
+  }
 }
 
 /* Features & Others */
 .features-section {
-  background-color: var(--bg-alt);
+  background-color: var(--gstm-bg);
+  /* Using the slightly darker gray/black bg */
 }
 
 .about-section {
-  background-color: var(--bg-alt);
+  background-color: var(--gstm-bg);
   padding: 120px 0;
 }
 
@@ -120,7 +111,7 @@ section {
   margin: 0 auto;
   font-size: 1.25rem;
   line-height: 1.8;
-  color: #555;
+  color: var(--gstm-text-muted);
 }
 
 .label {
@@ -130,12 +121,14 @@ section {
   font-weight: 700;
   font-size: 1rem;
   margin-bottom: 15px;
+  color: var(--gstm-primary-color);
 }
 
 .section-title {
   text-align: center;
   font-size: 2.25rem;
   margin-bottom: 48px;
+  color: var(--gstm-text-main);
 }
 
 .feature-grid {
@@ -144,25 +137,8 @@ section {
   gap: 24px;
 }
 
-.icon-box {
-  font-size: 3.5rem;
-  margin-bottom: 20px;
-  display: block;
-}
-
-.feature-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: #000;
-}
-
-.feature-card p {
-  line-height: 1.6;
-  color: #666;
-}
-
 .feature-card {
-  background: white;
+  background: var(--gstm-card-bg);
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -170,10 +146,28 @@ section {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
+  transition: all 0.3s ease;
 
-.feature-card:hover {
-  transform: translateY(-5px);
+  .icon-box {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: var(--gstm-text-main);
+  }
+
+  p {
+    line-height: 1.6;
+    color: var(--gstm-text-muted);
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+  }
 }
 
 .text-box h2 {
@@ -181,22 +175,24 @@ section {
   line-height: 1.2;
   margin-bottom: 20px;
   white-space: nowrap;
+  color: var(--gstm-text-main);
 }
 
 .feature-list {
   list-style: none;
   padding: 0;
-}
 
-.feature-list li {
-  display: flex;
-  align-items: center;
-  margin: 6px 0;
-  font-weight: 500;
+  li {
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+    font-weight: 500;
+    color: var(--gstm-text-main);
+  }
 }
 
 .tick {
-  color: var(--primary);
+  color: var(--gstm-primary-color);
   font-weight: bold;
   margin-right: 12px;
   font-size: 1.2rem;
@@ -211,16 +207,25 @@ section {
 /* Final CTA Card */
 .cta-card {
   background: #000;
+  /* Keeping this black for impact in both themes */
   color: white;
   padding: 60px 40px;
   border-radius: 24px;
   text-align: center;
   max-width: 900px;
   margin: 0 auto;
+
+  h2 {
+    color: white;
+  }
+
+  p {
+    color: #ccc;
+  }
 }
 
 .btn-primary-dark {
-  background-color: var(--primary);
+  background-color: var(--gstm-primary-color);
   color: #000;
   padding: 16px 40px;
   border-radius: 8px;
@@ -228,47 +233,51 @@ section {
   border: none;
   margin-top: 24px;
   cursor: pointer;
+
+  &:hover {
+    background-color: var(--gstm-primary-hover);
+  }
 }
 
 /* Footer Styles */
 .footer-section {
-  background-color: #fafafa;
+  background-color: var(--gstm-bg);
   padding: 40px 0;
   text-align: center;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--gstm-input-border);
 }
 
 .footer-help {
   margin: 0 0 10px;
   font-size: 14px;
-  color: #666;
+  color: var(--gstm-text-muted);
 }
 
 .footer-link {
-  color: #48e3cc;
+  color: var(--gstm-primary-color);
   text-decoration: none;
   font-weight: 600;
   transition: opacity 0.2s;
-}
 
-.footer-link:hover {
-  text-decoration: underline;
-  opacity: 0.8;
+  &:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+  }
 }
 
 .footer-copyright {
   margin: 0;
   font-size: 12px;
-  color: #bbb;
+  color: var(--gstm-text-disabled);
 }
 
+/* Media Queries Preserved */
 @media (max-width: 1100px) {
   .text-box h2 {
     white-space: normal;
   }
 }
 
-/* Mobile Specific Fixes */
 @media (max-width: 768px) {
   section {
     padding: 50px 0;
@@ -295,14 +304,13 @@ section {
   .cta-card {
     border-radius: 0;
     text-align: center;
-    max-width: auto;
+    max-width: 100%;
     margin: 0 auto;
   }
 
   .btn-primary,
   .btn-secondary {
     width: 100%;
-    /* Full width buttons on mobile */
   }
 
   .hero-visual {

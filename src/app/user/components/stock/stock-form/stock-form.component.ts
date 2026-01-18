@@ -7,7 +7,7 @@ import { UserStorageService } from 'src/app/services/storage/user-storage.servic
 @Component({
   selector: 'app-stock-form',
   templateUrl: './stock-form.component.html',
-  styleUrls: ['./stock-form.component.css']
+  styleUrls: ['./stock-form.component.scss']
 })
 export class StockFormComponent implements OnInit {
 

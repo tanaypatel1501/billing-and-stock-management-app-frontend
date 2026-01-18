@@ -1,0 +1,50 @@
+<div class="settings-overlay" *ngIf="themeService.isSettingsOpen()" (click)="close()">
+  <div class="settings-card" (click)="$event.stopPropagation()">
+    
+    <div class="settings-header">
+      <h2>Appearance</h2>
+      <button class="close-btn" (click)="close()">
+        <fa-icon [icon]="faTimes"></fa-icon>
+      </button>
+    </div>
+
+    <div class="settings-body">
+      <p class="helper-text">Choose how GST Medicose looks to you.</p>
+
+      <div class="theme-options">
+        
+        <button 
+          class="theme-btn" 
+          [class.active]="themeService.currentTheme() === 'light'"
+          (click)="selectTheme('light')">
+          <div class="icon-wrapper light">
+            <fa-icon [icon]="faSun"></fa-icon>
+          </div>
+          <span class="label">Light</span>
+        </button>
+
+        <button 
+          class="theme-btn" 
+          [class.active]="themeService.currentTheme() === 'dark'"
+          (click)="selectTheme('dark')">
+          <div class="icon-wrapper dark">
+            <fa-icon [icon]="faMoon"></fa-icon>
+          </div>
+          <span class="label">Dark</span>
+        </button>
+
+        <button 
+          class="theme-btn" 
+          [class.active]="themeService.currentTheme() === 'system'"
+          (click)="selectTheme('system')">
+          <div class="icon-wrapper system">
+            <fa-icon [icon]="faDesktop"></fa-icon>
+          </div>
+          <span class="label">System</span>
+        </button>
+
+      </div>
+    </div>
+    
+  </div>
+</div>

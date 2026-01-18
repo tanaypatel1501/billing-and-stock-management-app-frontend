@@ -9,7 +9,7 @@ import { faFilter, faSortUp, faSortDown, faTrash } from '@fortawesome/free-solid
   standalone: true,
   imports: [CommonModule, FormsModule, FontAwesomeModule],
   templateUrl: './filter-button.component.html',
-  styleUrls: ['./filter-button.component.css']
+  styleUrls: ['./filter-button.component.scss']
 })
 export class FilterButtonComponent {
   @Input() columns: { label: string, value: string }[] = [];

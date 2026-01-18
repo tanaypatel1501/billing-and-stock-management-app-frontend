@@ -8,7 +8,7 @@ import { faExclamationTriangle, faTrash, faTimes } from '@fortawesome/free-solid
   standalone: true,
   imports: [CommonModule, FontAwesomeModule],
   templateUrl: './confirm-delete-modal.component.html',
-  styleUrls: ['./confirm-delete-modal.component.css']
+  styleUrls: ['./confirm-delete-modal.component.scss']
 })
 export class ConfirmDeleteModalComponent {
   @Input() title: string = 'Confirm Delete';

@@ -10,6 +10,7 @@
         (input)="onInput()" 
         (focus)="onFocus()"
         placeholder="Search..."
+        autocomplete="off"
         [class.has-text]="searchText.length > 0">
 
       <div class="search-loader" *ngIf="isLoading && isExpanded">

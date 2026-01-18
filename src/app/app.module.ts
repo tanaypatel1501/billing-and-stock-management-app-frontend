@@ -23,6 +23,7 @@ import { AlertComponent } from './shared/alert/alert.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { ConfirmDeleteModalComponent } from './shared/confirm-delete-modal/confirm-delete-modal.component';
+import { SettingsComponent } from './components/settings/settings.component';
 
 @NgModule({
   declarations: [
@@ -37,6 +38,7 @@ import { ConfirmDeleteModalComponent } from './shared/confirm-delete-modal/confi
     AlertComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
+    SettingsComponent,
   ],
   imports: [
     BrowserModule,

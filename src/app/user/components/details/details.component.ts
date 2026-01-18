@@ -12,7 +12,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
 @Component({
   selector: 'app-details',
   templateUrl: './details.component.html',
-  styleUrls: ['./details.component.css'],
+  styleUrls: ['./details.component.scss'],
   standalone: false,
 })
 export class DetailsComponent implements OnInit {

@@ -8,31 +8,40 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation:fI .3s ease
+  animation: fI .3s ease;
 }
-@keyframes fI{from{opacity:0}to{opacity:1}}
+
+@keyframes fI { 
+  from { opacity: 0; } 
+  to { opacity: 1; } 
+}
 
 /* Modal Card */
 .modal-card {
-  background: #fff;
+  background: var(--gstm-card-bg);
   border-radius: 16px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3,,,,,,,,,);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  animation:sU .3s ease;
+  animation: sU .3s ease;
+  border: 1px solid var(--gstm-border-subtle);
 }
-@keyframes sU{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+@keyframes sU { 
+  from { opacity: 0; transform: translateY(30px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
 
 /* Modal Icon */
 .modal-icon {
   padding: 30px 20px 15px;
   text-align: center;
-}
 
-.modal-icon fa-icon {
-  font-size: 3.5rem;
-  color: #fa5252;
+  fa-icon {
+    font-size: 3.5rem;
+    color: var(--gstm-danger);
+  }
 }
 
 /* Modal Content */
@@ -44,13 +53,13 @@
 .modal-title {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #000;
+  color: var(--gstm-text-main);
   margin: 0 0 8px 0;
 }
 
 .modal-message {
   font-size: 0.95rem;
-  color: #666;
+  color: var(--gstm-text-muted);
   line-height: 1.5;
   margin: 0;
 }
@@ -60,8 +69,8 @@
   display: flex;
   gap: 10px;
   padding: 20px 25px 25px;
-  background: #f9f9f9;
-  border-top: 1px solid #f0f0f0;
+  background: var(--gstm-input-bg);
+  border-top: 1px solid var(--gstm-input-border);
 }
 
 .modal-btn {
@@ -77,24 +86,24 @@
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.15s ease;
-}
 
-.modal-btn.secondary {
-  background: #f0f0f0;
-  color: #555;
-}
+  &.secondary {
+    background: var(--gstm-bg);
+    color: var(--gstm-text-label);
 
-.modal-btn.secondary:hover {
-  background: #e0e0e0;
-}
+    &:hover {
+      background: var(--gstm-input-border);
+    }
+  }
 
-.modal-btn.danger {
-  background: #fa5252;
-  color: #fff;
-}
+  &.danger {
+    background: var(--gstm-danger);
+    color: #fff;
 
-.modal-btn.danger:hover {
-  background: #e03131;
+    &:hover {
+      filter: brightness(0.9);
+    }
+  }
 }
 
 /* Mobile */

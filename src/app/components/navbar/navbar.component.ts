@@ -4,6 +4,7 @@ import { AuthService } from 'src/app/services/auth-service/auth.service'; // <--
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { Observable, Subscription } from 'rxjs';
 import { AppStateService } from 'src/app/services/app-state.service';
+import { ThemeService } from 'src/app/services/theme/theme.service';
 import { 
   faUserPlus, 
   faSignInAlt, 
@@ -14,13 +15,14 @@ import {
   faBoxes, 
   faFileInvoice, 
   faMoneyBillWave, 
-  faBuilding 
+  faBuilding,
+  faGear 
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.css']
+  styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit, OnDestroy { 
   isAuthenticated$!: Observable<boolean>;
@@ -40,10 +42,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   faFileInvoice = faFileInvoice;
   faMoneyBillWave = faMoneyBillWave;
   faBuilding = faBuilding;
+  faGear = faGear;
 
-  constructor(private router: Router, private authService: AuthService, private appState: AppStateService) { // <-- Inject AuthService
-    
-  }
+  constructor(
+    private router: Router, 
+    private authService: AuthService, 
+    private appState: AppStateService,
+    public themeService: ThemeService
+  ) {}
 
   ngOnInit() {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
@@ -106,5 +112,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
     // allowed — navigate to create bill
     this.router.navigateByUrl('/user/create-bill');
+  }
+
+  openSettings() {
+    this.themeService.toggleSettings();
+    this.closeMobileMenu();
   }
 }

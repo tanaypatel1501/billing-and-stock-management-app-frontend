@@ -1,0 +1,21 @@
+{
+  "name": "GST Medicose",
+  "short_name": "GST Medicose",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#232e34",
+  "background_color": "#121212",
+  "display": "standalone"
+}

@@ -58,8 +58,22 @@ export class ThemeService {
 
     if (isDark) {
       root.setAttribute('data-theme', 'dark');
+      this.setMetaThemeColor('#121212');
     } else {
       root.removeAttribute('data-theme');
+      this.setMetaThemeColor('#efefef');
     }
+  }
+  
+  private setMetaThemeColor(color: string) {
+    let meta = document.querySelector('meta[name="theme-color"]');
+
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+
+    meta.setAttribute('content', color);
   }
 }

@@ -45,11 +45,12 @@
   --gstm-danger-bg: #2d0606;
 }
 
-/* You can add global styles to this file, and also import other style files */
+/* Add global styles to this file, and also import other style files */
 body {
   background-color: var(--gstm-bg);
   color: var(--gstm-text-main);
   transition: background-color 0.3s ease; /* Smooth transition */
+  overscroll-behavior-y: none;
 }
 
 @media print {
@@ -65,5 +66,31 @@ body {
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
+  }
+}
+
+/* Target only Webkit/iOS browsers */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  input {
+    min-width: 0 !important; 
+    
+    -webkit-appearance: none;
+    appearance: none;
+
+    &[type="date"], &[type="datetime-local"], &[type="month"] {
+      display: inline-flex;
+      align-items: center;
+      min-height: 1.2em; 
+    }
+  }
+
+  .form-row {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr)) !important;
+    gap: 15px;
   }
 }

@@ -29,7 +29,12 @@
               "src/assets",
               "src/package.json",
               "src/_redirects",
-              "src/electron.prod.js"
+              "src/electron.prod.js",
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "/assets/"
+              }
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",

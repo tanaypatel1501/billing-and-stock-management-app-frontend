@@ -1,1 +1,7 @@
-/*    /index.html   200
+# Allow direct access to images and manifest
+/assets/* /assets/:splat  200
+/icons/* /icons/:splat   200
+/*.webmanifest /:splat 200
+
+# Catch-all for Angular Routing
+/* /index.html  200

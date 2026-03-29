@@ -58,9 +58,9 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     localStorage.removeItem('I_bill');
     this.billForm1 = this.fb.group({
       purchaserName: [null, Validators.required],
-      dl1: [null, [Validators.required, Validators.pattern(/^[A-Z0-9\-\/\s]{10,30}$/i)]],
-      dl2: [null, [Validators.required, Validators.pattern(/^[A-Z0-9\-\/\s]{10,30}$/i)]],
-      gstin: [null, [Validators.required, Validators.pattern(PATTERNS.GST)]],
+      dl1: [null, [Validators.pattern(/^[A-Z0-9\-\/\s]{10,30}$/i)]],
+      dl2: [null, [Validators.pattern(/^[A-Z0-9\-\/\s]{10,30}$/i)]],
+      gstin: [null, [Validators.pattern(PATTERNS.GST)]],
       invoiceDate: [null, Validators.required]
     });
 
@@ -107,7 +107,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     const control = this.billForm1.get('gstin');
     
     if (control) {
-      control.setValidators([Validators.required, Validators.pattern(PATTERNS[type])]);
+      control.setValidators([Validators.pattern(PATTERNS[type])]);
       control.updateValueAndValidity(); // Refresh validation state
     }
   }
@@ -235,7 +235,14 @@ export class CreateBillComponent implements OnInit, OnDestroy {
 
   nextStep(): void {
     if (this.billForm1.valid) {
-      this.step1Data = { ...this.billForm1.value, userId: this.userId };
+      const raw = this.billForm1.value;
+      this.step1Data = {
+        ...raw,
+        dl1: raw.dl1?.trim() || 'N/A',
+        dl2: raw.dl2?.trim() || 'N/A',
+        gstin: raw.gstin?.trim() || 'N/A',
+        userId: this.userId
+      };
       this.currentStep = 2;
     } else {
       this.billForm1.markAllAsTouched();

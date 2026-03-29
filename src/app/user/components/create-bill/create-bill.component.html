@@ -81,32 +81,32 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="dl1">DL No. 1</label>
+              <label for="dl1">DL No. 1 <span class="mrp-hint" style="color:#777;font-weight:400;">Optional</span></label>
               <input 
                 type="text" 
                 id="dl1" 
                 placeholder="DL No. 1" 
                 formControlName="dl1"
                 [class.error]="billForm1.get('dl1')?.invalid && billForm1.get('dl1')?.touched">
-              <div class="error-msg" *ngIf="billForm1.get('dl1')?.hasError('required') && billForm1.get('dl1')?.touched">
+              <!-- <div class="error-msg" *ngIf="billForm1.get('dl1')?.hasError('required') && billForm1.get('dl1')?.touched">
                 DL No. 1 is required.
-              </div>
+              </div> -->
               <div class="error-msg info" *ngIf="billForm1.get('dl1')?.hasError('pattern') && billForm1.get('dl1')?.touched">
                 10–30 characters; letters, numbers, hyphen, slash, space allowed.
               </div>
             </div>
 
             <div class="form-group">
-              <label for="dl2">DL No. 2</label>
+              <label for="dl2">DL No. 2 <span class="mrp-hint" style="color:#777;font-weight:400;">Optional</span></label>
               <input 
                 type="text" 
                 id="dl2" 
                 placeholder="DL No. 2" 
                 formControlName="dl2"
                 [class.error]="billForm1.get('dl2')?.invalid && billForm1.get('dl2')?.touched">
-              <div class="error-msg" *ngIf="billForm1.get('dl2')?.hasError('required') && billForm1.get('dl2')?.touched">
+              <!-- <div class="error-msg" *ngIf="billForm1.get('dl2')?.hasError('required') && billForm1.get('dl2')?.touched">
                 DL No. 2 is required.
-              </div>
+              </div> -->
               <div class="error-msg info" *ngIf="billForm1.get('dl2')?.hasError('pattern') && billForm1.get('dl2')?.touched">
                 10–30 characters; letters, numbers, hyphen, slash, space allowed.
               </div>
@@ -116,7 +116,7 @@
           <div class="form-group">
             <label>
               Identification Type
-              <span class="mrp-hint" style="color: #777; font-weight: 400;">Select one</span>
+              <span class="mrp-hint" style="color: #777; font-weight: 400;">Optional</span>
             </label>
             
             <div class="doc-switcher">
@@ -138,9 +138,9 @@
               formControlName="gstin"
               [class.error]="billForm1.get('gstin')?.invalid && billForm1.get('gstin')?.touched">
             
-            <div class="error-msg" *ngIf="billForm1.get('gstin')?.hasError('required') && billForm1.get('gstin')?.touched">
+            <!-- <div class="error-msg" *ngIf="billForm1.get('gstin')?.hasError('required') && billForm1.get('gstin')?.touched">
               {{ documentType }} is required.
-            </div>
+            </div> -->
 
             <div class="error-msg info" *ngIf="billForm1.get('gstin')?.hasError('pattern') && billForm1.get('gstin')?.touched">
               <span *ngIf="documentType === 'GST'">Format: 2 digits, 10 chars (PAN), 1 char, 1 char, 'Z', 1 char.</span>

@@ -26,7 +26,7 @@ export interface PageResponse<T> {
 export interface SearchRequest {
   page?: number;
   size?: number;
-  search?: string;
+  searchText?: string;
   sortBy?: string;
   sortDir?: string;
   filters?: { [key: string]: string };

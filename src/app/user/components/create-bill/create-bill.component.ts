@@ -4,7 +4,8 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { switchMap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 const PATTERNS = {
   GST: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/i,
@@ -46,6 +47,10 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
   documentType: 'GST' | 'PAN' | 'AADHAAR' = 'GST';
 
+  private searchSubject = new Subject<string>();
+  private lastStockSearch = '';
+  isLastStockPage = false;
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -76,7 +81,12 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     });
 
     this.subscriptions.push(
-      this.billForm2.valueChanges.subscribe(() => this.calculateAmount())
+      this.billForm2.valueChanges.subscribe(() => this.calculateAmount()),
+    
+      this.searchSubject.pipe(
+        debounceTime(200),
+        distinctUntilChanged()
+      ).subscribe(searchText => this.searchStockPaged(searchText, false))
     );
   }
 
@@ -91,7 +101,9 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   }
 
   openDropdown(): void {
-    this.showDropdown = true;
+    if (this.products.length > 0) {
+      this.showDropdown = true;
+    }
   }
 
   onInputBlur(): void {
@@ -115,25 +127,38 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   /* ---------------- Product search (RESTORED) ---------------- */
 
   onProductSearch(): void {
-    const searchText = this.billForm2.get('productName')?.value;
+    const searchText = this.billForm2.get('productName')?.value?.trim();
 
     if (!searchText || searchText.length < 2) {
       this.products = [];
+      this.stock = [];
       this.showDropdown = false;
       return;
     }
 
+    this.lastStockSearch = searchText;
+    this.searchSubject.next(searchText);   
+  }
+
+  searchStockPaged(searchText: string, isNextPage: boolean): void {
+    const page = isNextPage ? Math.ceil(this.stock.length / 20) : 0;
+
     this.authService.searchStock({
-      search: searchText,
-      page: 0,
-      size: 10
+      searchText: searchText,
+      page: page,
+      size: 20,
+      filters: { 'user.id': String(this.userId) }
     }).subscribe({
       next: (res: any) => {
         const list = res?.content ?? res ?? [];
-        this.stock = list;
 
+        // Accumulate all stock batches across pages
+        this.stock = isNextPage ? [...this.stock, ...list] : list;
+        this.isLastStockPage = res?.last ?? true;
+
+        // Dropdown shows only unique product names
         const seen = new Set<string>();
-        this.products = list
+        this.products = this.stock
           .filter((i: any) => {
             if (seen.has(i.product.name)) return false;
             seen.add(i.product.name);
@@ -144,7 +169,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
             packing: i.product.packing
           }));
 
-        this.showDropdown = true;
+        this.showDropdown = this.products.length > 0;
       },
       error: () => {
         this.products = [];

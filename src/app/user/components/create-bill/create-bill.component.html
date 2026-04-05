@@ -246,7 +246,7 @@
               <div class="error-msg" *ngIf="billForm2.get('quantity')?.hasError('required') && billForm2.get('quantity')?.touched">
                 Quantity is required.
               </div>
-              <div class="error-msg" *ngIf="billForm2.get('quantity')?.hasError('invalidQuantity') && billForm2.get('quantity')?.touched">
+              <div class="error-msg" *ngIf="billForm2.hasError('invalidQuantity') && (billForm2.dirty || billForm2.touched)">
                 Sum cannot exceed available quantity.
               </div>
             </div>
@@ -262,7 +262,7 @@
               <div class="error-msg" *ngIf="billForm2.get('free')?.hasError('required') && billForm2.get('free')?.touched">
                 Free Quantity is required.
               </div>
-              <div class="error-msg" *ngIf="billForm2.get('free')?.hasError('invalidQuantity') && billForm2.get('free')?.touched">
+              <div class="error-msg" *ngIf="billForm2.hasError('invalidQuantity') && (billForm2.dirty || billForm2.touched)">
                 Sum cannot exceed available quantity.
               </div>
             </div>
@@ -305,7 +305,7 @@
             <button type="button" class="submit-btn" (click)="addItem()">
               Add Item
             </button>
-            <button type="submit" class="submit-btn primary" (click)="submitBill()">
+            <button type="button" class="submit-btn primary" (click)="submitBill()">
               Submit Bill
             </button>
           </div>        

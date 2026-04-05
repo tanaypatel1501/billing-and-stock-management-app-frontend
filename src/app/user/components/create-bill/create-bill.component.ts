@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
-import { Subject, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { switchMap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 const PATTERNS = {
@@ -73,11 +73,13 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       productName: [null, Validators.required],
       productId: [null],
       batchNo: [null, Validators.required],
-      quantity: [null, [Validators.required, this.validateQuantity.bind(this)]],
-      free: [0, Validators.required],
+      quantity: [null, Validators.required, Validators.min(1)],
+      free: [0, Validators.required, Validators.min(0)],
       expiryDate: [null, Validators.required],
       rate: [null, Validators.required],
       amount: [{ value: null, disabled: true }]
+      }, {
+        validators: [this.validateQuantity.bind(this)]
     });
 
     this.subscriptions.push(
@@ -185,9 +187,13 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       free: 0
     });
 
-    this.filteredStock = this.stock.filter(
-      s => s.product.name === p.name
-    );
+    this.filteredStock = this.stock.filter(s => {
+      const used = this.step2Data
+        .filter(i => i.productName === s.product.name && i.batchNo === s.batchNo)
+        .reduce((sum, i) => sum + i.quantity + i.free, 0);
+
+      return (s.quantity - used) > 0;
+    });
 
     this.selectedMrp = null;
     this.quantityPlaceholder = 'Quantity';
@@ -228,7 +234,13 @@ export class CreateBillComponent implements OnInit, OnDestroy {
 
     if (!item) return;
 
-    this.quantityPlaceholder = `Available quantity: ${item.quantity}`;
+    const used = this.step2Data
+      .filter(i => i.productName === productName && i.batchNo === batchNo)
+      .reduce((sum, i) => sum + i.quantity + i.free, 0);
+
+    const remaining = item.quantity - used;
+
+    this.quantityPlaceholder = `Available quantity: ${remaining}`;
     this.selectedMrp = item.product.mrp;
 
     this.billForm2.patchValue({
@@ -239,17 +251,25 @@ export class CreateBillComponent implements OnInit, OnDestroy {
 
   /* ---------------- Validators ---------------- */
 
-  validateQuantity(): { [key: string]: boolean } | null {
-    const quantity = Number(this.billForm2?.get('quantity')?.value || 0);
-    const free = Number(this.billForm2?.get('free')?.value || 0);
-    const productName = this.billForm2?.get('productName')?.value;
-    const batchNo = this.billForm2?.get('batchNo')?.value;
+  validateQuantity(group: AbstractControl): { [key: string]: boolean } | null {
+    const quantity = Number(group.get('quantity')?.value || 0);
+    const free = Number(group.get('free')?.value || 0);
+    const productName = group.get('productName')?.value;
+    const batchNo = group.get('batchNo')?.value;
 
     const item = this.stock.find(
       s => s.product.name === productName && s.batchNo === batchNo
     );
 
-    if (item && quantity + free > item.quantity) {
+    if (!item) return null;
+
+    const used = this.step2Data
+      .filter(i => i.productName === productName && i.batchNo === batchNo)
+      .reduce((sum, i) => sum + i.quantity + i.free, 0);
+
+    const remaining = item.quantity - used;
+
+    if (quantity + free > remaining) {
       return { invalidQuantity: true };
     }
 
@@ -303,37 +323,75 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.billForm2.dirty && this.billForm2.invalid) {
+      this.billForm2.markAllAsTouched();
+      return;
+    }
+    
+    const invalidItems = this.step2Data.some(item => {
+      const stockItem = this.stock.find(
+        s => s.product.name === item.productName && s.batchNo === item.batchNo
+      );
+
+      if (!stockItem) return true;
+
+      return (item.quantity + item.free) > stockItem.quantity;
+    });
+
+    if (invalidItems) {
+      console.error('Invalid items in bill');
+      return;
+    }
+
     this.authService.createBill(this.step1Data).subscribe({
       next: (bill: any) => {
         this.userStorageService.saveBillId(bill.id);
-        let completed = 0;
-        this.step2Data.forEach(item => {
+
+        const requests = this.step2Data.map(item => {
           const stockItem = this.stock.find(
             s => s.product.name === item.productName && s.batchNo === item.batchNo
           );
 
-          if (!stockItem) return;
+          if (!stockItem) {
+            console.error('Stock item not found for:', item);
+            return null;
+          }
 
-          this.authService.addBillItem({
+          return this.authService.addBillItem({
             ...item,
             billId: bill.id,
             productId: stockItem.product.id
-          }).subscribe({
-            next: () => {
+          }).pipe(
+            switchMap(() =>
               this.authService.updateStock({
+                id: stockItem.id,
                 userId: this.userId,
                 productId: stockItem.product.id,
                 batchNo: stockItem.batchNo,
                 expiryDate: this.formatDate(stockItem.expiryDate),
                 quantity: stockItem.quantity - (item.quantity + item.free)
-              }).subscribe(() => {
-                if (++completed === this.step2Data.length) {
-                  this.router.navigate(['user/bill-preview']);
-                }
-              });
-            }
-          });
+              })
+            )
+          );
+        }).filter(req => req !== null);
+
+        if (requests.length === 0) {
+          console.error('No valid requests to process');
+          return;
+        }
+
+        // Execute all API calls together
+        forkJoin(requests).subscribe({
+          next: () => {
+            this.router.navigate(['user/bill-preview']);
+          },
+          error: (err) => {
+            console.error('Error in bill item processing:', err);
+          }
         });
+      },
+      error: (err) => {
+        console.error('Error creating bill:', err);
       }
     });
   }

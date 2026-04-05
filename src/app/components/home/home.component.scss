@@ -1,3 +1,11 @@
+.seo-hidden {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
 /* Global classes like .container and .grid are preserved to maintain layout */
 .landing-container {
   scroll-behavior: smooth;

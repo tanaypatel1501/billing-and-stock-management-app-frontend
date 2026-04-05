@@ -2,7 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
-import { faArrowLeft, faMoneyBillTrendUp, faFileInvoice, faCalendar, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faMoneyBillTrendUp, faFileInvoice, faCalendar, faArrowRight, faCircleCheck, faCircle } from '@fortawesome/free-solid-svg-icons';
 import { CommonModule,DatePipe } from '@angular/common'; 
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -30,6 +30,8 @@ export class BillsComponent implements OnInit {
   faFileInvoice = faFileInvoice;
   faCalendar = faCalendar;
   faArrowRight = faArrowRight;
+  faCircleCheck = faCircleCheck;
+  faCircle = faCircle;
   isSearchActive: boolean = false;
   currentPage: number = 0;
   totalPages: number = 0;
@@ -43,6 +45,7 @@ export class BillsComponent implements OnInit {
   filterColumns = [
     { label: 'To', value: 'purchaserName' },
     { label: 'Invoice Date', value: 'invoiceDate' },
+    { label: 'Payment Status', value: 'paid' }
   ];
   searchText: string = '';
   suggestions: any[] = [];
@@ -194,6 +197,16 @@ export class BillsComponent implements OnInit {
     this.searchText = '';
     this.isSearchActive = false;
     this.loadInitialData(); 
+  }
+
+  togglePaid(bill: any, event: Event): void {
+    event.stopPropagation(); 
+    const newStatus = !bill.paid;
+    
+    this.authService.updateBillPaidStatus(bill.id, newStatus).subscribe({
+      next: () => bill.paid = newStatus, // optimistic update
+      error: () => alert('Failed to update payment status')
+    });
   }
 
   openBill(billId: any) {

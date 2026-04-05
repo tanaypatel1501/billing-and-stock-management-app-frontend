@@ -387,6 +387,15 @@ export class AuthService {
     );
   }
 
+  updateBillPaidStatus(billId: number, paid: boolean): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true'); // ✅
+    return this.http.patch(
+      `${this.baseUrl}api/bill/${billId}/paid?paid=${paid}`,
+      null,
+      { headers }
+    );
+  }
+
   /* ---------------------- PROFILE ---------------------- */
 
   getProfile(): Observable<any> {

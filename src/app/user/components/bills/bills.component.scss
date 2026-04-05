@@ -154,9 +154,34 @@
 
 .bill-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding-top: 16px;
   border-top: 1px solid var(--gstm-input-border);
+}
+
+.paid-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 2px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-muted);
+  font: 600 0.85rem sans-serif;
+  cursor: pointer;
+  transition: .25s;
+
+  &:hover {
+    border-color: var(--gstm-primary-color);
+    color: var(--gstm-text-main);
+  }
+
+  &.paid {
+    background: var(--gstm-success-bg);
+    border-color: var(--gstm-success-text);
+    color: var(--gstm-success-text);
+  }
 }
 
 .view-link {

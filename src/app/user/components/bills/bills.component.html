@@ -83,6 +83,14 @@
             </div>
             
             <div class="bill-footer">
+              <button 
+                class="paid-toggle" 
+                [class.paid]="bill.paid"
+                (click)="togglePaid(bill, $event)">
+                <fa-icon [icon]="bill.paid ? faCircleCheck : faCircle"></fa-icon>
+                {{ bill.paid ? 'Paid' : 'Mark as Paid' }}
+              </button>
+
               <span class="view-link">
                 View Details
                 <fa-icon [icon]="faArrowRight"></fa-icon>

@@ -200,12 +200,23 @@ export class BillsComponent implements OnInit {
   }
 
   togglePaid(bill: any, event: Event): void {
-    event.stopPropagation(); 
+    event.stopPropagation();
+    event.preventDefault();
+
     const newStatus = !bill.paid;
-    
+    bill.paid = newStatus;
+    bill._reqId = (bill._reqId || 0) + 1;  
+    const reqId = bill._reqId;
+
     this.authService.updateBillPaidStatus(bill.id, newStatus).subscribe({
-      next: () => bill.paid = newStatus, // optimistic update
-      error: () => alert('Failed to update payment status')
+      next: () => {
+      },
+      error: () => {
+        if (bill._reqId === reqId) {        
+          bill.paid = !newStatus;
+          alert('Failed to update payment status');
+        }
+      }
     });
   }
 

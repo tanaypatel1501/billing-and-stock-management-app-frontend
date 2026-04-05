@@ -35,7 +35,7 @@ export class DashboardComponent implements OnInit{
   totalPages: number = 0;
   pageSize: number = 20;
   initialLoadComplete = false;
-  isLoading: boolean = false;
+  isLoading: boolean = true;
   isLastPage: boolean = false;
   userId!: any;
   expandedIndex: number | null = null;
@@ -79,7 +79,7 @@ export class DashboardComponent implements OnInit{
   }
 
   loadData(page: number = 0, append: boolean = false) {
-  if (this.isLoading) return;
+  // if (this.isLoading) return;
   this.isLoading = true;
     if (!append && page === 0) {
       this.stock = [];
@@ -135,6 +135,7 @@ handleSearch(eventData: any) {
     this.searchText = eventData.product.name;
   }
   this.isSearchActive = this.searchText.trim().length > 0;
+  this.isLoading = true;
   this.loadData(0, false);
 }
 
@@ -199,6 +200,7 @@ onWindowScroll() {
     this.sortDirection = 'asc';
     this.searchText = '';
     this.isSearchActive = false;
+    this.isLoading = true;
     this.loadInitialData(); 
   }
 

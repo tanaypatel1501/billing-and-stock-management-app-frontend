@@ -32,7 +32,7 @@ export class DashboardComponent implements OnInit{
   totalPages: number = 0;
   pageSize: number = 20;
   initialLoadComplete = false;
-  isLoading: boolean = false;
+  isLoading: boolean = true;
   isLastPage: boolean = false;
   products: any;
   userId!: any;
@@ -73,7 +73,7 @@ export class DashboardComponent implements OnInit{
     this.expandedIndex = null;
   }
   loadData(page: number = 0, append: boolean = false) {
-    if (this.isLoading) return;
+    // if (this.isLoading) return;
     this.isLoading = true;
 
     if (!append && page === 0) {

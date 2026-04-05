@@ -34,7 +34,7 @@ export class BillsComponent implements OnInit {
   currentPage: number = 0;
   totalPages: number = 0;
   pageSize: number = 12;
-  isLoading: boolean = false;
+  isLoading: boolean = true;
   isLastPage: boolean = false;
   expandedIndex: number | null = null;
   sortColumn: string | null = null;
@@ -80,7 +80,7 @@ export class BillsComponent implements OnInit {
   }
 
   loadData(page: number = 0, append: boolean = false) {
-    if (this.isLoading) return;
+    // if (this.isLoading) return;
     this.isLoading = true;
 
     if (!append && page === 0) {

@@ -1,3 +1,15 @@
+<div *ngIf="isLoading && bills.length === 0" class="loading-screen">
+  <div class="spinner-wrapper">
+    <div class="spinner-ring"></div>
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <p class="loading-text">Loading Bills</p>
+  </div>
+</div>
+
 <ng-template #noBillsMessage>
   <div class="empty-state-wrapper">
     <div class="empty-state-card">
@@ -8,7 +20,7 @@
   </div>
 </ng-template>
 
-<ng-container *ngIf="initialLoadComplete">
+<ng-container *ngIf="initialLoadComplete && !isLoading || bills.length > 0">
   <ng-container *ngIf="!isInitialEmpty; else noBillsMessage">
     
     <div class="bills-wrapper">

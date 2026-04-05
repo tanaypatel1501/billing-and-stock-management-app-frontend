@@ -42,7 +42,7 @@
                 <span class="title-text">Bills</span>
                 <fa-icon [icon]="faMoneyBillTrendUp" class="title-icon"></fa-icon>
               </h1>
-              <span class="bill-count">{{ bills.length }} bill(s)</span>
+              <span class="bill-count">{{ totalElements }} {{ isSearchActive ? ' bill(s) found' : ' bill(s)' }}</span>
             </div>
           </div>
 

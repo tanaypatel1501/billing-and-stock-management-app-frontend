@@ -33,6 +33,7 @@ export class BillsComponent implements OnInit {
   isSearchActive: boolean = false;
   currentPage: number = 0;
   totalPages: number = 0;
+  totalElements: number = 0;
   pageSize: number = 12;
   isLoading: boolean = true;
   isLastPage: boolean = false;
@@ -101,6 +102,7 @@ export class BillsComponent implements OnInit {
         this.totalPages = data.totalPages;
         this.isLastPage = data.last;
         this.currentPage = data.number;
+        this.totalElements = data.totalElements;
         this.bills = append ? [...this.bills, ...data.content] : data.content;
         this.isLoading = false;
         this.initialLoadComplete = true;

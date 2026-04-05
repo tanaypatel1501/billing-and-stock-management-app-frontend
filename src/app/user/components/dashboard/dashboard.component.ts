@@ -33,6 +33,7 @@ export class DashboardComponent implements OnInit{
   isSearchActive: boolean = false;
   currentPage: number = 0;
   totalPages: number = 0;
+  totalElements: number = 0;
   pageSize: number = 20;
   initialLoadComplete = false;
   isLoading: boolean = true;
@@ -98,6 +99,7 @@ export class DashboardComponent implements OnInit{
       this.totalPages = data.totalPages;
       this.isLastPage = data.last;
       this.currentPage = data.number;
+      this.totalElements = data.totalElements; 
       this.stock = append ? [...this.stock, ...data.content] : data.content;
       this.initialLoadComplete = true;
       this.isLoading = false;

@@ -42,7 +42,7 @@
                 <span class="title-text">Product List</span>
                 <fa-icon [icon]="faCapsules" class="title-icon"></fa-icon>
               </h1>
-              <span class="product-count">{{ productList.length }} item(s)</span>
+              <span class="product-count">{{ totalElements }} {{ isSearchActive ? ' product(s) found' : ' product(s)' }}</span>
             </div>
           </div>
 

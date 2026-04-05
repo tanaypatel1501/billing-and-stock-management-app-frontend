@@ -42,7 +42,7 @@
                 <span class="title-text">Products in Stock</span>
                 <fa-icon [icon]="faCartFlatbed" class="title-icon"></fa-icon>
               </h1>
-              <span class="stock-count">{{ stock.length }} item(s)</span>
+              <span class="stock-count">{{ totalElements }} {{ isSearchActive ? ' item(s) found' : ' item(s)' }}</span>
             </div>
           </div>
 

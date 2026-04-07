@@ -38,6 +38,7 @@ export class BillsComponent implements OnInit {
   totalElements: number = 0;
   pageSize: number = 12;
   isLoading: boolean = true;
+  isSuggestionLoading: boolean = false;
   isLastPage: boolean = false;
   expandedIndex: number | null = null;
   sortColumn: string | null = null;
@@ -121,15 +122,15 @@ export class BillsComponent implements OnInit {
 
   handleTyping(text: string) {
     if (text.length > 1) {
-      this.isLoading = true;
-      const req = { 
-        searchText: text, 
-        size: 5, 
-        filters: { "user.id": this.userId.toString() } 
-      };
-      this.authService.searchBills(req).subscribe(data => this.buildSuggestions(data.content));
+      this.isSuggestionLoading = true;
+      const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
+      this.authService.searchBills(req).subscribe({
+        next: (data) => { this.buildSuggestions(data.content); this.isSuggestionLoading = false; },
+        error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
+      });
     } else {
       this.suggestions = [];
+      this.isSuggestionLoading = false;
     }
   }
 

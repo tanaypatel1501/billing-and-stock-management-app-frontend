@@ -49,7 +49,7 @@
           <div class="header-right">
             <app-search-bar
               [suggestions]="suggestions"
-              [isLoading]="isLoading"
+              [isLoading]="isSuggestionLoading"
               [labelKey]="'name'"
               [subLabelKey]="'packing'"
               (onType)="handleTyping($event)"

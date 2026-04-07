@@ -37,6 +37,7 @@ export class DashboardComponent implements OnInit{
   pageSize: number = 20;
   initialLoadComplete = false;
   isLoading: boolean = true;
+  isSuggestionLoading: boolean = false;
   isLastPage: boolean = false;
   userId!: any;
   expandedIndex: number | null = null;
@@ -116,16 +117,15 @@ export class DashboardComponent implements OnInit{
 // Handler for typing (Live Suggestions)
 handleTyping(text: string) {
   if (text.length > 1) {
-    // Call search API with small size for suggestions
-    this.isLoading = true;
-    const req = { 
-      searchText: text, 
-      size: 5, 
-      filters: { "user.id": this.userId.toString() } 
-    };
-    this.authService.searchStock(req).subscribe(data => this.suggestions = data.content);
+    this.isSuggestionLoading = true;
+    const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
+    this.authService.searchStock(req).subscribe({
+      next: (data) => { this.suggestions = data.content; this.isSuggestionLoading = false; },
+      error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
+    });
   } else {
     this.suggestions = [];
+    this.isSuggestionLoading = false;
   }
 }
 

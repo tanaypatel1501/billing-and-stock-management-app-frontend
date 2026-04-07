@@ -188,6 +188,8 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     });
 
     this.filteredStock = this.stock.filter(s => {
+      if (s.product.name !== p.name) return false;
+      
       const used = this.step2Data
         .filter(i => i.productName === s.product.name && i.batchNo === s.batchNo)
         .reduce((sum, i) => sum + i.quantity + i.free, 0);

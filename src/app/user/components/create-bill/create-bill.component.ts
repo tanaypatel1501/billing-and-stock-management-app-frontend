@@ -73,8 +73,8 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       productName: [null, Validators.required],
       productId: [null],
       batchNo: [null, Validators.required],
-      quantity: [null, Validators.required, Validators.min(1)],
-      free: [0, Validators.required, Validators.min(0)],
+      quantity: [null, [Validators.required, Validators.min(1)]], 
+      free: [0, [Validators.required, Validators.min(0)]],
       expiryDate: [null, Validators.required],
       rate: [null, Validators.required],
       amount: [{ value: null, disabled: true }]

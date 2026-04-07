@@ -117,6 +117,7 @@ export class DashboardComponent implements OnInit{
 handleTyping(text: string) {
   if (text.length > 1) {
     // Call search API with small size for suggestions
+    this.isLoading = true;
     const req = { 
       searchText: text, 
       size: 5, 

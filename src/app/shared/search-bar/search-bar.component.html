@@ -48,7 +48,7 @@
       </li>
     </ul>
 
-    <ul class="suggestion-dropdown" *ngIf="searchText.length > 1 && suggestions.length === 0">
+    <ul class="suggestion-dropdown" *ngIf="searchText.length > 1 && suggestions.length === 0 && !isLoading">
       <li class="no-results">
         <fa-icon [icon]="faSearchMinus"></fa-icon>
         <span>No {{ notFoundText }} found</span>

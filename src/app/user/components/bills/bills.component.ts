@@ -121,6 +121,7 @@ export class BillsComponent implements OnInit {
 
   handleTyping(text: string) {
     if (text.length > 1) {
+      this.isLoading = true;
       const req = { 
         searchText: text, 
         size: 5, 

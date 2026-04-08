@@ -3,10 +3,12 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { faArrowLeft, faPrint } from '@fortawesome/free-solid-svg-icons';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-bill-preview',
   templateUrl: './bill-preview.component.html',
+  providers: [DatePipe],
   styleUrls: ['./bill-preview.component.scss']
 })
 export class BillPreviewComponent implements OnInit {
@@ -24,6 +26,7 @@ export class BillPreviewComponent implements OnInit {
     private authService: AuthService,
     private userStorageService: UserStorageService,
     private router: Router,
+    private datePipe: DatePipe,
   ) {}
 
   getIdentificationLabel(value: string): string {
@@ -121,7 +124,14 @@ export class BillPreviewComponent implements OnInit {
   }
 
   printInvoice() {
+    const originalTitle = document.title;
+  
+    const date = this.datePipe.transform(this.bill.invoiceDate, 'dd-MM-yyyy');
+    document.title = `${this.bill.purchaserName} - ${date} - GST Medicose`;
+
     window.print();
+
+    document.title = originalTitle;
   }
 
   ngOnInit(): void {

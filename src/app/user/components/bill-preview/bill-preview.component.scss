@@ -213,12 +213,16 @@
   flex-direction: column;
   justify-content: space-between;
   color: var(--gstm-text-main);
+
+  .signature-line {
+    align-self: flex-end;
+  }
 }
 
 .footer-right {
   padding: 15px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   color: var(--gstm-text-main);
 }
@@ -279,33 +283,107 @@
   .print-only { display: block !important; text-align: center; }
   .print-title { display: block !important; text-align: center !important; margin: 10px auto !important; }
 
-  .invoice-container { background: #fff !important; }
-  .invoice-content { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
-  
   @page { size: landscape; margin: 10mm; }
 
-  .invoice-top-section { 
-    display: grid !important; 
-    grid-template-columns: 150px 1fr 380px !important; 
+  .invoice-container { background: #fff !important; }
+  .invoice-content { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+
+  .invoice-top-section {
+    display: grid !important;
+    grid-template-columns: 150px 1fr 380px !important;
+    border: 1px solid #000 !important;
+    width: 100% !important;
+  }
+
+  // ✅ restored border-bottom, only override the mobile-added border-bottom
+  .logo-section {
+    border-right: 1px solid #000 !important;
+    border-bottom: none !important;   // logo-section has no natural bottom border
+    background: #fff !important;
+    width: auto !important;
+  }
+
+  .business-info {
+    border-right: 1px solid #000 !important;
+    border-bottom: none !important;   // business-info has no natural bottom border
+    background: #fff !important;
+    width: auto !important;
+  }
+
+  .purchaser-info {
+    border: none !important;
+  }
+
+  .info-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .invoice-table {
+    display: table !important;
+    width: 100% !important;
+
+    thead {
+      display: table-header-group !important;
+      background: #f0f0f0 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    tbody {
+      display: table-row-group !important;
+
+      tr {
+        display: table-row !important;
+        margin-bottom: 0 !important;
+        border: none !important;
+        padding: 0 !important;
+        background: #fff !important;
+      }
+    }
+
+    th, td {
+      display: table-cell !important;
+      border: 1px solid #000 !important;
+      padding: 10px 8px !important;
+      width: auto !important;
+      text-align: left !important;
+
+      &::before { display: none !important; }
+    }
+  }
+
+  .table-container {
+    border: 1px solid #000 !important;
+    overflow: visible !important;
+  }
+
+  .invoice-footer {
+    display: grid !important;
+    grid-template-columns: 3fr 1fr !important;
     border: 1px solid #000 !important;
   }
 
-  .logo-section, .business-info { 
-    border-right: 1px solid #000 !important; 
-    background: #fff !important; 
+  .footer-left {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    border-right: 1px solid #000 !important;
+    border-bottom: none !important;
+
+    .signature-line { align-self: flex-end !important; }
   }
 
-  .table-container, .invoice-table th, .invoice-table td, .invoice-footer, .footer-left {
-    border: 1px solid #000 !important;
+  .footer-right {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
-  .invoice-table thead { 
-    background: #f0f0f0 !important; 
-    -webkit-print-color-adjust: exact; 
-    print-color-adjust: exact; 
-  }
-
-  .business-name, .purchaser-name, .total-amount, .info-label, .amount, .invoice-table th, .invoice-table td {
+  .business-name, .purchaser-name, .total-amount, .info-label,
+  .amount, .invoice-table th, .invoice-table td,
+  .business-address, .subject-line, .amount-words,
+  .signature-line, .bank-name, .info-item, p, span, td, th {
     color: #000 !important;
   }
 }

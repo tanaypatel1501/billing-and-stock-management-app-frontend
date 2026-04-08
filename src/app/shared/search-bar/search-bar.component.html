@@ -13,13 +13,6 @@
         autocomplete="off"
         [class.has-text]="searchText.length > 0">
 
-      <div class="search-loader" *ngIf="isLoading && isExpanded">
-        <div class="spinner-micro"></div>
-      </div>
-      <button class="search-btn" (click)="toggleSearch()" type="button">
-        <fa-icon [icon]="faSearch" *ngIf="!isLoading || !isExpanded"></fa-icon>
-      </button>
-
       <button 
         class="clear-btn" 
         *ngIf="searchText.length > 0 && isExpanded" 
@@ -27,6 +20,15 @@
         type="button">
         <fa-icon [icon]="faTimes"></fa-icon>
       </button>
+
+      <div class="search-loader" *ngIf="isLoading && isExpanded">
+        <div class="spinner-micro"></div>
+      </div>
+      
+      <button class="search-btn" (click)="toggleSearch()" type="button">
+        <fa-icon [icon]="faSearch" *ngIf="!isLoading || !isExpanded"></fa-icon>
+      </button>
+
     </div>
   </form>
 

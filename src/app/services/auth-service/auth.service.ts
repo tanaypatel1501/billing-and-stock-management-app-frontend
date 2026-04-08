@@ -396,6 +396,48 @@ export class AuthService {
     );
   }
 
+  /* ---------------------- SALES ---------------------- */
+
+  getSalesSummary(userId: any, paidOnly: boolean = false): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get(
+      `${this.baseUrl}api/sales/user/${userId}/summary?paidOnly=${paidOnly}`,
+      { headers }
+    );
+  }
+
+  getTopProducts(userId: any, paidOnly: boolean = false, limit: number = 5): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get(
+      `${this.baseUrl}api/sales/user/${userId}/top-products?paidOnly=${paidOnly}&limit=${limit}`,
+      { headers }
+    );
+  }
+
+  getMonthlySales(userId: any, year: number, paidOnly: boolean = false): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get(
+      `${this.baseUrl}api/sales/user/${userId}/monthly?year=${year}&paidOnly=${paidOnly}`,
+      { headers }
+    );
+  }
+
+  getYearlySales(userId: any, paidOnly: boolean = false): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get(
+      `${this.baseUrl}api/sales/user/${userId}/yearly?paidOnly=${paidOnly}`,
+      { headers }
+    );
+  }
+
+  getAvailableYears(userId: any): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get(
+      `${this.baseUrl}api/sales/user/${userId}/years`,
+      { headers }
+    );
+  }
+
   /* ---------------------- PROFILE ---------------------- */
 
   getProfile(): Observable<any> {

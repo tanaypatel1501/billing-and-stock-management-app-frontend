@@ -16,7 +16,8 @@ import {
   faFileInvoice, 
   faMoneyBillWave, 
   faBuilding,
-  faGear 
+  faGear,
+  faChartBar 
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -43,6 +44,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   faMoneyBillWave = faMoneyBillWave;
   faBuilding = faBuilding;
   faGear = faGear;
+  faChartBar = faChartBar;
 
   constructor(
     private router: Router, 

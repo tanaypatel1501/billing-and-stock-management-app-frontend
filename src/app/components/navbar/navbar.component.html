@@ -138,6 +138,15 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link"
+            routerLink="/user/sales"
+            routerLinkActive="active"
+            (click)="closeMobileMenu()">
+            <fa-icon [icon]="faChartBar"></fa-icon>
+            <span>Sales</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" 
              routerLink="/user/details" 
              routerLinkActive="active"

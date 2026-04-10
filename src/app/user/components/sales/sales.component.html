@@ -9,7 +9,7 @@
   </div>
 </div>
 
-<!-- Empty State -->
+<!-- No bills at all -->
 <ng-template #noSalesMessage>
   <div class="empty-state-wrapper">
     <div class="empty-state-card">
@@ -20,8 +20,24 @@
   </div>
 </ng-template>
 
+<!-- Has bills but none are paid -->
+<ng-template #noPaidBillsMessage>
+  <div class="empty-state-wrapper">
+    <div class="empty-state-card">
+      <div class="empty-state-icon">💳</div>
+      <h2>No Paid Bills Found</h2>
+      <p>None of your bills have been marked as paid yet</p>
+      <button class="toggle-back-btn" (click)="onTogglePaid()">
+        <fa-icon [icon]="faToggleOff" class="toggle-icon"></fa-icon>
+        Show All Bills
+      </button>
+    </div>
+  </div>
+</ng-template>
+
 <ng-container *ngIf="!isLoading">
-  <ng-container *ngIf="summary && summary.totalBills > 0; else noSalesMessage">
+   <ng-container *ngIf="totalBillsOverall > 0; else noSalesMessage">
+    <ng-container *ngIf="summary && summary.totalBills > 0; else noPaidBillsMessage">
 
     <div class="dashboard-wrapper">
       <div class="main-content">
@@ -128,6 +144,6 @@
 
       </div>
     </div>
-
+    </ng-container>
   </ng-container>
 </ng-container>

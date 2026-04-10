@@ -30,6 +30,7 @@ export class SalesComponent implements OnInit {
   yearlySales: any[] = [];
   availableYears: number[] = [];
   selectedYear: number = new Date().getFullYear();
+  totalBillsOverall: number = 0;
 
   // Chart dimensions
   readonly BAR_HEIGHT = 32;
@@ -61,6 +62,11 @@ export class SalesComponent implements OnInit {
     let completed = 0;
     const done = () => { if (++completed === 4) this.isLoading = false; };
 
+    this.authService.getSalesSummary(this.userId, false).subscribe({
+      next: (data: any) => { this.totalBillsOverall = data?.totalBills ?? 0; },
+      error: () => { this.totalBillsOverall = 0; }
+    });
+    
     this.authService.getSalesSummary(this.userId, this.paidOnly).subscribe({
       next: (data: any) => { this.summary = data; done(); },
       error: () => done()

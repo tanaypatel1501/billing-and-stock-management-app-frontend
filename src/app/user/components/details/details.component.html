@@ -311,6 +311,40 @@
             </div>
           </div>
 
+        <div class="divider"></div>
+
+        <!-- UPI & QR Section -->
+        <div class="section-title">Payment QR <span class="optional-badge" style="font-size:.7rem;vertical-align:middle;margin-left:8px;">Optional</span></div>
+
+        <div class="form-group full-width">
+          <label for="upiId">UPI ID</label>
+          <input
+            type="text"
+            id="upiId"
+            formControlName="upiId"
+            placeholder="e.g., businessname@upi">
+            <div class="error-msg" *ngIf="detailsForm.get('upiId')?.hasError('pattern') && detailsForm.get('upiId')?.touched">
+            Enter a valid UPI ID (e.g., name@upi, mobile@paytm).
+          </div>
+        </div>
+
+        <!-- Show QR toggle — only visible if UPI ID is filled -->
+        <div class="qr-toggle-row" *ngIf="hasUpiId">
+          <div class="qr-toggle-info">
+            <span class="qr-toggle-label">Show QR Code on Bill</span>
+            <span class="qr-toggle-sub">Customers can scan to pay directly from the invoice</span>
+          </div>
+          <button
+            type="button"
+            class="qr-toggle-btn"
+            [class.active]="detailsForm.get('showQrOnBill')?.value"
+            (click)="detailsForm.get('showQrOnBill')?.setValue(!detailsForm.get('showQrOnBill')?.value)">
+            <span class="qr-toggle-track">
+              <span class="qr-toggle-thumb"></span>
+            </span>
+            <span class="qr-toggle-text">{{ detailsForm.get('showQrOnBill')?.value ? 'On' : 'Off' }}</span>
+          </button>
+        </div>
         </div>
 
         <div class="details-footer">

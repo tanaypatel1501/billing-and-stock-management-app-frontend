@@ -138,14 +138,28 @@
     </div>
 
     <!-- Footer Section -->
-    <div class="invoice-footer">
+    <div class="invoice-footer" [class.has-qr]="details.showQrOnBill && details.upiId">
       <div class="footer-left">
+      <div class="footer-left-top">
         <p class="amount-words"><strong>Amount in words:</strong> {{ totalAmountInWords }}</p>
         <p class="subject-line">Subject to {{ details.city }} Jurisdiction only.</p>
-        <p class="signature-line">Authorized Signatory</p>
       </div>
+      <p class="signature-line">Authorized Signatory</p>
+    </div>
       <div class="footer-right">
-        <p class="total-amount"><strong>Total:</strong> ₹{{ bill.totalAmount | number }}</p>
+        <div class="qr-half" *ngIf="details.showQrOnBill && details.upiId && upiQrData">
+            <span class="qr-label">Scan to Pay</span>
+            <qrcode
+              [qrdata]="upiQrData"
+              [width]="110"
+              [errorCorrectionLevel]="'M'"
+              [elementType]="'img'">
+            </qrcode>
+            <span class="qr-label">{{ details.upiId }}</span>
+        </div>
+        <div class="total-half">
+          <p class="total-amount"><strong>Total:</strong> ₹{{ bill.totalAmount | number }}</p>
+        </div>
       </div>
     </div>
 

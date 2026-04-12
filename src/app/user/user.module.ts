@@ -13,7 +13,7 @@ import { BillsComponent } from './components/bills/bills.component';
 import { ImageCropperComponent } from 'ngx-image-cropper';
 import { EditStockComponent } from './components/stock/edit-stock/edit-stock.component';
 import { StockFormComponent } from './components/stock/stock-form/stock-form.component';
-
+import { QRCodeModule } from 'angularx-qrcode';
 
 @NgModule({
   declarations: [
@@ -33,6 +33,7 @@ import { StockFormComponent } from './components/stock/stock-form/stock-form.com
     FontAwesomeModule,
     BillsComponent,
     ImageCropperComponent,
+    QRCodeModule,
     
   ]
 })

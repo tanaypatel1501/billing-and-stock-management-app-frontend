@@ -17,6 +17,7 @@ export class BillPreviewComponent implements OnInit {
   details: any = {};
   bill: any = {};
   totalAmountInWords: string = '';
+  upiQrData: string = '';
   logoUrl: string = 'assets/images/GST_Logo.jpeg';
   
   faArrowLeft = faArrowLeft;
@@ -137,30 +138,29 @@ export class BillPreviewComponent implements OnInit {
   ngOnInit(): void {
     this.userId = UserStorageService.getUserId();
     this.billId = this.userStorageService.getBillId();
-    
+
     this.authService.getDetailsByUserId(this.userId).subscribe(
       (response: any) => {
         this.details = response;
-        // Use uploaded logo if available, otherwise use default
         this.logoUrl = response.logoUrl || 'assets/images/default-gst-medicose.png';
-        console.log('Business details loaded:', this.details);
-        console.log('Logo URL:', this.logoUrl);
+        this.buildQrIfReady();
       },
-      (error) => {
-        console.error('Error loading business details:', error);
-
-      }
+      (error) => console.error('Error loading business details:', error)
     );
 
     this.authService.getBillById(this.billId).subscribe(
       (response: any) => {
         this.bill = response;
-        console.log('Bill loaded:', this.bill);
         this.totalAmountInWords = this.convertNumberToWords(this.bill.totalAmount);
+        this.buildQrIfReady();
       },
-      (error) => {
-        console.error('Error loading bill:', error);
-      }
+      (error) => console.error('Error loading bill:', error)
     );
+  }
+
+  private buildQrIfReady(): void {
+    if (this.details?.upiId && this.details?.showQrOnBill && this.bill?.totalAmount) {
+      this.upiQrData = `upi://pay?pa=${this.details.upiId}&pn=${encodeURIComponent(this.details.name)}&am=${this.bill.totalAmount.toFixed(2)}&cu=INR`;
+    }
   }
 }

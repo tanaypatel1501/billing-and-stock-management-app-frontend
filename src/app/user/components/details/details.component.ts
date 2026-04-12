@@ -66,6 +66,8 @@ export class DetailsComponent implements OnInit {
       bankName: [null, Validators.required],
       accountNumber: [null, [Validators.required, Validators.pattern(/^[0-9]{9,18}$/)]],
       ifscCode: [null, [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
+      upiId: [null, [Validators.pattern(/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/)]],
+      showQrOnBill: [false],
     });
 
     this.loadStates();
@@ -428,7 +430,9 @@ export class DetailsComponent implements OnInit {
       gstin: details.gstin,
       bankName: details.bankName,
       accountNumber: details.accountNumber,
-      ifscCode: details.ifscCode
+      ifscCode: details.ifscCode,
+      upiId: details.upiId || null,
+      showQrOnBill: details.showQrOnBill || false
     }, { emitEvent: false });
     
     this.appState.setDetailsValid(!!this.detailsForm.valid);
@@ -446,5 +450,9 @@ export class DetailsComponent implements OnInit {
     setTimeout(() => {
       this.errorMessage = null;
     }, 5000);
+  }
+
+  get hasUpiId(): boolean {
+    return !!this.detailsForm.get('upiId')?.value?.trim();
   }
 }

@@ -29,6 +29,7 @@ export class StockFormComponent implements OnInit {
   isMoreLoading = false;
   isLastPage = false;
   selectedMrp: number | null = null;
+  selectedBatchMrp: number | null = null;
 
 
   private searchTimeout: any;
@@ -57,6 +58,7 @@ export class StockFormComponent implements OnInit {
       batchNo: ['', Validators.required],
       expiryDate: ['', Validators.required],
       quantity: [null, [Validators.required, Validators.min(0)]],
+      mrp: [null, [Validators.required, Validators.min(0)]]
     });
   }
 
@@ -88,7 +90,8 @@ export class StockFormComponent implements OnInit {
         this.productForm.patchValue({
           batchNo: res.batchNo,
           expiryDate: this.formatDate(res.expiryDate),
-          quantity: res.quantity
+          quantity: res.quantity,
+          mrp: res.mrp ?? null
         });
         this.fetchProductName(res.productId);
         this.productForm.get('name')?.disable();
@@ -150,6 +153,10 @@ export class StockFormComponent implements OnInit {
     this.productForm.patchValue({ name: p.name });
     this.selectedProductId = p.id;
     this.selectedMrp = p.mrp ?? null; 
+    this.productForm.patchValue({
+      name: p.name,
+      mrp: p.mrp ?? null
+    });
     this.showDropdown = false;
   }
 
@@ -174,7 +181,8 @@ export class StockFormComponent implements OnInit {
       productId: this.selectedProductId,
       batchNo: this.productForm.value.batchNo,
       expiryDate: this.productForm.value.expiryDate,
-      quantity: this.productForm.value.quantity
+      quantity: this.productForm.value.quantity,
+      mrp: this.productForm.value.mrp 
     };
 
     if (this.mode === 'edit') {

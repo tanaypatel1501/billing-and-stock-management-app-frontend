@@ -73,21 +73,42 @@
           </div>
         </div>
 
-        <!-- Quantity -->
-        <div class="form-group">
-          <label for="quantity">
-            Quantity
-            <span *ngIf="selectedMrp !== null" class="mrp-hint">
-              MRP: ₹{{ selectedMrp | number:'1.2-2' }}
-            </span>
-          </label>
-          <input 
-            type="number" 
-            id="quantity" 
-            formControlName="quantity" 
-            min="0"
-            placeholder="Enter quantity"
-            [class.error]="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched">
+        <!-- Quantity & MRP Row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input 
+              type="number" 
+              id="quantity" 
+              formControlName="quantity" 
+              min="0"
+              placeholder="Enter quantity"
+              [class.error]="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched">
+            <div class="error-msg" *ngIf="productForm.get('quantity')?.hasError('required') && productForm.get('quantity')?.touched">
+              Quantity is required.
+            </div>
+          </div>
+
+          <!-- Batch-level MRP field -->
+          <div class="form-group">
+            <label for="mrp">
+              MRP (₹)
+              <span *ngIf="selectedMrp !== null" class="mrp-hint">
+                Default: ₹{{ selectedMrp | number:'1.2-2' }}
+              </span>
+            </label>
+            <input 
+              type="number" 
+              id="mrp" 
+              formControlName="mrp"
+              step="0.01"
+              min="0"
+              placeholder="Enter batch MRP"
+              [class.error]="productForm.get('mrp')?.invalid && productForm.get('mrp')?.touched">
+            <div class="error-msg" *ngIf="productForm.get('mrp')?.hasError('required') && productForm.get('mrp')?.touched">
+              MRP is required.
+            </div>
+          </div>
         </div>
 
         <button 

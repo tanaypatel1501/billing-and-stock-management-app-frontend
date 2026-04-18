@@ -243,7 +243,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     const remaining = item.quantity - used;
 
     this.quantityPlaceholder = `Available quantity: ${remaining}`;
-    this.selectedMrp = item.product.mrp;
+    this.selectedMrp = item.mrp ?? item.product.mrp;
 
     this.billForm2.patchValue({
       productId: item.product.id,

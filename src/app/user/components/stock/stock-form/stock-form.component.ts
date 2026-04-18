@@ -18,6 +18,7 @@ export class StockFormComponent implements OnInit {
 
   products: any[] = [];
   selectedProductId: number | null = null;
+  displayName: string = '';
   stockId!: number;
 
   showDropdown = false;
@@ -62,8 +63,29 @@ export class StockFormComponent implements OnInit {
     });
   }
 
-  private formatDate(date: string): string {
-    return date ? date.split('T')[0] : '';
+  private formatDateForDisplay(date: string): string {
+    if (!date) return '';
+    const d = new Date(date);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const lastDay = new Date(year, d.getMonth() + 1, 0).getDate();
+    return `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+  }
+
+  private toLastDayOfMonth(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  }
+
+  onExpiryDateChange(event: any): void {
+    const value: string = event.target.value;
+    if (!value) return;
+    const lastDay = this.toLastDayOfMonth(value);
+    this.productForm.patchValue({ expiryDate: lastDay }, { emitEvent: false });
   }
 
   private fetchProductName(productId: number) {
@@ -89,7 +111,7 @@ export class StockFormComponent implements OnInit {
 
         this.productForm.patchValue({
           batchNo: res.batchNo,
-          expiryDate: this.formatDate(res.expiryDate),
+          expiryDate: this.formatDateForDisplay(res.expiryDate),
           quantity: res.quantity,
           mrp: res.mrp ?? null
         });
@@ -153,6 +175,7 @@ export class StockFormComponent implements OnInit {
     this.productForm.patchValue({ name: p.name });
     this.selectedProductId = p.id;
     this.selectedMrp = p.mrp ?? null; 
+    this.displayName = p.packing ? `${p.name} | ${p.packing}` : p.name; 
     this.productForm.patchValue({
       name: p.name,
       mrp: p.mrp ?? null

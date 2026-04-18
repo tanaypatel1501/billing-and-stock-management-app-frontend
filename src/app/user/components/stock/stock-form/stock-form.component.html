@@ -21,6 +21,7 @@
               type="text"
               id="name"
               class="form-control"
+              [value]="displayName || productForm.get('name')?.value"
               placeholder="Start typing product name..."
               formControlName="name"
               (input)="onProductSearch()"

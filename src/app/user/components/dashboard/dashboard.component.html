@@ -158,7 +158,7 @@
                   <td class="expandable" data-label="Packing">{{ item.product.packing }}</td>
                   <td class="expandable" data-label="HSN">{{ item.product.hsn }}</td>
                   <td class="expandable" data-label="Batch No.">{{ item.batchNo }}</td>
-                  <td data-label="Expiry Date">{{ item.expiryDate | date }}</td>
+                  <td data-label="Expiry Date">{{ item.expiryDate | date:'MM/yyyy' }}</td>
                   <td data-label="Quantity"><span class="quantity-badge">{{ item.quantity | number }}</span></td>
                   <td data-label="MRP" class="price">₹{{ (item.mrp ?? item.product.mrp) | number }}</td>
                   <td class="expandable" data-label="CGST">{{ item.product?.cgst | number }}%</td>

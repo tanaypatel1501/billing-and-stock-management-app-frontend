@@ -151,7 +151,7 @@ export class BillPreviewComponent implements OnInit {
     this.authService.getBillById(this.billId).subscribe(
       (response: any) => {
         this.bill = response;
-        this.totalAmountInWords = this.convertNumberToWords(this.bill.totalAmount);
+        this.totalAmountInWords = this.convertNumberToWords(Math.round(this.bill.totalAmount * 100) / 100);
         this.buildQrIfReady();
       },
       (error) => console.error('Error loading bill:', error)
@@ -160,7 +160,8 @@ export class BillPreviewComponent implements OnInit {
 
   private buildQrIfReady(): void {
     if (this.details?.upiId && this.details?.showQrOnBill && this.bill?.totalAmount) {
-      this.upiQrData = `upi://pay?pa=${this.details.upiId}&pn=${encodeURIComponent(this.details.name)}&am=${this.bill.totalAmount.toFixed(2)}&cu=INR`;
+      const rounded = Math.round(this.bill.totalAmount * 100) / 100;
+      this.upiQrData = `upi://pay?pa=${this.details.upiId}&pn=${encodeURIComponent(this.details.name)}&am=${rounded.toFixed(2)}&cu=INR`;
     }
   }
 }

@@ -38,7 +38,7 @@
             <td data-label="Quantity">{{ item.quantity | number }}</td>
             <td class="expandable" data-label="Free">{{ item.free | number }}</td>
             <td class="expandable" data-label="Rate">₹{{ item.rate | number }}</td>
-            <td data-label="Amount"><strong>₹{{ item.amount | number }}</strong></td>
+            <td data-label="Amount"><strong>₹{{ item.amount | number:'1.2-2' }}</strong></td>
             <td data-label="Actions">
               <button class="delete-button" (click)="delete(i); $event.stopPropagation()">
                 <fa-icon [icon]="faTrashCan"></fa-icon>
@@ -181,6 +181,7 @@
               <input
                 type="text"
                 id="productName"
+                [value]="displayProductName || billForm2.get('productName')?.value"
                 placeholder="Start typing product name..."
                 formControlName="productName"
                 (input)="onProductSearch()"

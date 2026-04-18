@@ -38,10 +38,12 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   step1Data: any = {};
   step2Data: any[] = [];
 
+  displayProductName: string = '';
   showDropdown = false;
   highlightedIndex = -1;
   quantityPlaceholder = 'Quantity';
   selectedMrp: number | null = null;
+  selectedPacking: string | null = null;
 
   expandedIndex: number | null = null;
   subscriptions: Subscription[] = [];
@@ -129,6 +131,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   /* ---------------- Product search (RESTORED) ---------------- */
 
   onProductSearch(): void {
+    this.displayProductName = '';
     const searchText = this.billForm2.get('productName')?.value?.trim();
 
     if (!searchText || searchText.length < 2) {
@@ -182,10 +185,12 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   }
 
   selectProduct(p: any): void {
+    this.displayProductName = p.packing ? `${p.name} | ${p.packing}` : p.name;
     this.billForm2.reset({
       productName: p.name,
       free: 0
     });
+    this.selectedPacking = p.packing ?? null;
 
     this.filteredStock = this.stock.filter(s => {
       if (s.product.name !== p.name) return false;
@@ -223,7 +228,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     const tax =
       (base * (Number(stockItem.product.cgst) + Number(stockItem.product.sgst))) / 100;
 
-    this.billForm2.get('amount')?.setValue(base + tax);
+    this.billForm2.get('amount')?.setValue(Math.round((base + tax) * 100) / 100);
   }
 
   updateQuantityPlaceholder(): void {
@@ -399,6 +404,10 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   }
 
   formatDate(date: string | Date): string {
-    return new Date(date).toISOString().split('T')[0];
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
   }
 }

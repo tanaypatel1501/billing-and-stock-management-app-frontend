@@ -49,8 +49,14 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
   documentType: 'GST' | 'PAN' | 'AADHAAR' = 'GST';
 
+  purchaserSuggestions: any[] = [];
+  showPurchaserDropdown = false;
+  isPurchaserLoading = false;
+  selectedPurchaserId: number | null = null;
+
   private searchSubject = new Subject<string>();
   private lastStockSearch = '';
+  private purchaserSearchTimeout: any;
   isLastStockPage = false;
 
   constructor(
@@ -295,6 +301,19 @@ export class CreateBillComponent implements OnInit, OnDestroy {
         gstin: raw.gstin?.trim() || 'N/A',
         userId: this.userId
       };
+
+      this.authService.savePurchaser({
+        id: this.selectedPurchaserId ?? undefined,
+        userId: this.userId,
+        name: this.step1Data.purchaserName,
+        dl1: this.step1Data.dl1,
+        dl2: this.step1Data.dl2,
+        gstin: this.step1Data.gstin
+      }).subscribe({
+        next: (saved) => this.selectedPurchaserId = saved.id,
+        error: () => {} 
+      });
+
       this.currentStep = 2;
     } else {
       this.billForm1.markAllAsTouched();
@@ -321,6 +340,65 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     if (this.expandedIndex === index) this.expandedIndex = null;
   }
 
+  /* ---------------- Purchaser Details ---------------- */
+  onPurchaserSearch(): void {
+    const text = this.billForm1.get('purchaserName')?.value?.trim();
+    this.selectedPurchaserId = null; // clear selection on new typing
+
+    if (!text || text.length < 2) {
+      this.purchaserSuggestions = [];
+      this.showPurchaserDropdown = false;
+      return;
+    }
+
+    clearTimeout(this.purchaserSearchTimeout);
+    this.purchaserSearchTimeout = setTimeout(() => {
+      this.isPurchaserLoading = true;
+      this.authService.searchPurchasers(this.userId, text).subscribe({
+        next: (data) => {
+          this.purchaserSuggestions = data;
+          this.showPurchaserDropdown = data.length > 0;
+          this.isPurchaserLoading = false;
+        },
+        error: () => {
+          this.purchaserSuggestions = [];
+          this.isPurchaserLoading = false;
+        }
+      });
+    }, 200);
+  }
+
+  selectPurchaser(p: any): void {
+    this.selectedPurchaserId = p.id;
+
+    // ✅ detect doc type from gstin value
+    if (p.gstin && p.gstin !== 'N/A') {
+      if (/^[0-9]{12}$/.test(p.gstin)) {
+        this.documentType = 'AADHAAR';
+      } else if (/^[A-Z]{5}[0-9]{4}[A-Z]$/i.test(p.gstin)) {
+        this.documentType = 'PAN';
+      } else {
+        this.documentType = 'GST';
+      }
+      const control = this.billForm1.get('gstin');
+      control?.setValidators([Validators.pattern(PATTERNS[this.documentType])]);
+      control?.updateValueAndValidity();
+    }
+
+    this.billForm1.patchValue({
+      purchaserName: p.name,
+      dl1: p.dl1 === 'N/A' ? null : p.dl1,
+      dl2: p.dl2 === 'N/A' ? null : p.dl2,
+      gstin: p.gstin === 'N/A' ? null : p.gstin,
+    });
+
+    this.showPurchaserDropdown = false;
+    this.purchaserSuggestions = [];
+  }
+
+  onPurchaserBlur(): void {
+    setTimeout(() => (this.showPurchaserDropdown = false), 200);
+  }
   /* ---------------- Submit ---------------- */
 
   submitBill(): void {

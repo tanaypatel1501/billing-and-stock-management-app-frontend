@@ -396,6 +396,31 @@ export class AuthService {
     );
   }
 
+  /* ---------------------- PURCHASER ---------------------- */
+
+  searchPurchasers(userId: number, name: string): Observable<any[]> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<any[]>(
+      `${this.baseUrl}api/purchaser/search?userId=${userId}&name=${encodeURIComponent(name)}`,
+      { headers }
+    );
+  }
+
+  savePurchaser(data: any): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}api/purchaser/save`,
+      data,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  deletePurchaser(purchaserId: number): Observable<any> {
+    return this.http.delete(
+      `${this.baseUrl}api/purchaser/${purchaserId}`,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
   /* ---------------------- SALES ---------------------- */
 
   getSalesSummary(userId: any, paidOnly: boolean = false): Observable<any> {

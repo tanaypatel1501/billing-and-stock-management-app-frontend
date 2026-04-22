@@ -68,12 +68,30 @@
         <form [formGroup]="billForm1">
           <div class="form-group">
             <label for="purchaserName">Name</label>
-            <input 
-              type="text" 
-              id="purchaserName" 
-              placeholder="Enter purchaser name" 
-              formControlName="purchaserName"
-              [class.error]="billForm1.get('purchaserName')?.invalid && billForm1.get('purchaserName')?.touched">
+            <div class="custom-dropdown-container">
+              <input 
+                type="text" 
+                id="purchaserName" 
+                placeholder="Enter purchaser name" 
+                formControlName="purchaserName"
+                (input)="onPurchaserSearch()"
+                (blur)="onPurchaserBlur()"
+                autocomplete="off"
+                [class.error]="billForm1.get('purchaserName')?.invalid && billForm1.get('purchaserName')?.touched">
+
+              <div class="input-loader" *ngIf="isPurchaserLoading">
+                <div class="spinner-small"></div>
+              </div>
+
+              <ul class="suggestion-dropdown" *ngIf="showPurchaserDropdown && purchaserSuggestions.length > 0">
+                <li *ngFor="let p of purchaserSuggestions"
+                    (mousedown)="selectPurchaser(p)">
+                  {{ p.name }}
+                  <span class="sub-label" *ngIf="p.gstin && p.gstin !== 'N/A'">| {{ p.gstin }}</span>
+                </li>
+              </ul>
+            </div>
+
             <div class="error-msg" *ngIf="billForm1.get('purchaserName')?.hasError('required') && billForm1.get('purchaserName')?.touched">
               Purchaser name is required.
             </div>

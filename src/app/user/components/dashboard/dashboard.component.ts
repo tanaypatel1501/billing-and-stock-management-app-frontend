@@ -41,7 +41,7 @@ export class DashboardComponent implements OnInit{
   isLastPage: boolean = false;
   userId!: any;
   expandedIndex: number | null = null;
-  sortColumn: string | null = null;
+  sortColumn: string | null = 'expiryDate';
   sortDirection: 'asc' | 'desc' = 'asc';
   filterColumns = [
     { label: 'Product Name', value: 'product.name' },
@@ -199,7 +199,7 @@ onWindowScroll() {
   }
 }
   resetView() {
-    this.sortColumn = null;
+    this.sortColumn = 'expiryDate';
     this.sortDirection = 'asc';
     this.searchText = '';
     this.isSearchActive = false;
@@ -238,4 +238,11 @@ onWindowScroll() {
     });
   }
 
+  isExpired(dateString: string): boolean {
+    if (!dateString) return false;
+    const expiryDate = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return expiryDate < today;
+  }
 }

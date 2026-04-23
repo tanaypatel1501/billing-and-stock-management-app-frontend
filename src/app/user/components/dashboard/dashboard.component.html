@@ -152,13 +152,21 @@
                 <tr *ngFor="let item of stock; index as i" 
                     class="mobile-card" 
                     [class.expanded]="expandedIndex === i"
+                    [class.expired-row]="isExpired(item.expiryDate)"
                     (click)="toggleCard(i); $event.stopPropagation()">
                   <td class="expandable" data-label="#" scope="row">{{ i + 1 }}</td>
-                  <td data-label="Product Name" class="product-name">{{ item.product.name }}</td>
+                  <td data-label="Product Name" class="product-name">
+                    <div class="name-container">
+                      {{ item.product.name }}
+                      <span *ngIf="isExpired(item.expiryDate)" class="expired-label" title="Item Expired">
+                        EXPIRED
+                      </span>
+                    </div>
+                  </td>
                   <td class="expandable" data-label="Packing">{{ item.product.packing }}</td>
                   <td class="expandable" data-label="HSN">{{ item.product.hsn }}</td>
                   <td class="expandable" data-label="Batch No.">{{ item.batchNo }}</td>
-                  <td data-label="Expiry Date">{{ item.expiryDate | date:'MM/yyyy' }}</td>
+                  <td data-label="Expiry Date" [class.text-danger]="isExpired(item.expiryDate)">{{ item.expiryDate | date:'MM/yyyy' }}</td>
                   <td data-label="Quantity"><span class="quantity-badge">{{ item.quantity | number }}</span></td>
                   <td data-label="MRP" class="price">₹{{ (item.mrp ?? item.product.mrp) | number }}</td>
                   <td class="expandable" data-label="CGST">{{ item.product?.cgst | number }}%</td>

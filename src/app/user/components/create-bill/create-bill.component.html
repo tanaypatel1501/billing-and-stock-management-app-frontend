@@ -34,7 +34,7 @@
             <th class="expandable" data-label="#" scope="row">{{ i + 1 }}</th>
             <td data-label="Product Name">{{ item.productName }}</td>
             <td class="expandable" data-label="Batch No.">{{ item.batchNo }}</td>
-            <td data-label="Expiry Date">{{ item.expiryDate | date }}</td>
+            <td data-label="Expiry Date">{{ item.expiryDate | date:'MM/yyyy' }}</td>
             <td data-label="Quantity">{{ item.quantity | number }}</td>
             <td class="expandable" data-label="Free">{{ item.free | number }}</td>
             <td class="expandable" data-label="Rate">₹{{ item.rate | number }}</td>

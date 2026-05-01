@@ -510,4 +510,36 @@
   }
 
   .qr-label, .total-amount { color: #000 !important; }
+
+  .invoice-table,
+  .invoice-table tbody,
+  .invoice-table thead,
+  .invoice-table tr,
+  .invoice-table th,
+  .invoice-table td {
+    display: table !important;
+    display: revert !important;
+  }
+
+  .invoice-table { width: 100% !important; }
+  .invoice-table thead { display: table-header-group !important; }
+  .invoice-table tbody { display: table-row-group !important; }
+  .invoice-table tr { display: table-row !important; }
+  .invoice-table th,
+  .invoice-table td {
+    display: table-cell !important;
+    width: auto !important;
+    padding: 6px 4px !important;
+    font-size: 0.7rem !important;
+    text-align: left !important;
+    border: 1px solid #000 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    &::before { display: none !important; }
+  }
+
+  .table-container {
+    overflow: visible !important;
+    width: 100% !important;
+  }
 }

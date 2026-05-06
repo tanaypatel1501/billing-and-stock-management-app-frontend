@@ -396,6 +396,16 @@ export class AuthService {
     );
   }
 
+  getPdfBlob(billId: number): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}api/pdf/bill/${billId}`,
+      {
+        headers: this.createAuthorizationHeader(),
+        responseType: 'blob'
+      }
+    );
+  }
+  
   /* ---------------------- PURCHASER ---------------------- */
 
   searchPurchasers(userId: number, name: string): Observable<any[]> {

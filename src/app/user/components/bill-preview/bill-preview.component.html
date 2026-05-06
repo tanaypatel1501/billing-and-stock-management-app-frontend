@@ -5,7 +5,7 @@
       <fa-icon [icon]="faArrowLeft"></fa-icon>
     </button>
     <h4>INVOICE</h4>
-    <button class="print-btn" (click)="printInvoice()">
+    <button class="print-btn" (click)="openPdfPreview()">
       <fa-icon [icon]="faPrint"></fa-icon>
       <span>Print</span>
     </button>
@@ -142,9 +142,11 @@
       <div class="footer-left">
       <div class="footer-left-top">
         <p class="amount-words"><strong>Amount in words:</strong> {{ totalAmountInWords }}</p>
-        <p class="subject-line">Subject to {{ details.city }} Jurisdiction only.</p>
       </div>
-      <p class="signature-line">Authorized Signatory</p>
+      <div class="footer-left-bottom">
+        <p class="subject-line">Subject to {{ details.city }} Jurisdiction only.</p>
+        <p class="signature-line">Authorized Signatory</p>
+      </div>
     </div>
       <div class="footer-right">
         <div class="qr-half" *ngIf="details.showQrOnBill && details.upiId && upiQrData">
@@ -161,6 +163,56 @@
           <p class="total-amount"><strong>Total:</strong> ₹{{ bill.totalAmount | number:'1.2-2' }}</p>
         </div>
       </div>
+    </div>
+
+  </div>
+</div>
+<!-- PDF Preview Modal -->
+<div class="pdf-modal-overlay" *ngIf="showPdfModal" (click)="closePdfModal()">
+  <div class="pdf-modal-card" (click)="$event.stopPropagation()">
+
+    <div class="pdf-modal-header">
+      <span class="pdf-modal-title">Invoice Preview</span>
+      <button class="pdf-modal-close" (click)="closePdfModal()">
+        <fa-icon [icon]="faTimes"></fa-icon>
+      </button>
+    </div>
+
+    <!-- Loading state -->
+    <div class="pdf-modal-loading" *ngIf="pdfLoading">
+      <div class="pdf-spinner"></div>
+      <p>Generating PDF...</p>
+    </div>
+
+    <!-- Error state -->
+    <div class="pdf-modal-error" *ngIf="pdfError && !pdfLoading">
+      <p>Failed to generate PDF. Please try again.</p>
+      <button class="pdf-action-btn primary" (click)="openPdfPreview()">Retry</button>
+    </div>
+
+    <!-- PDF Viewer -->
+    <div class="pdf-viewer-wrapper" *ngIf="!pdfLoading && !pdfError && safePdfUrl">
+      <iframe
+        [src]="safePdfUrl"
+        class="pdf-iframe"
+        type="application/pdf">
+      </iframe>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="pdf-modal-actions" *ngIf="!pdfLoading && !pdfError">
+      <button class="pdf-action-btn secondary" (click)="printPdf()">
+        <fa-icon [icon]="faPrint"></fa-icon>
+        <span>Print</span>
+      </button>
+      <button class="pdf-action-btn primary" (click)="downloadPdf()">
+        <fa-icon [icon]="faDownload"></fa-icon>
+        <span>Download</span>
+      </button>
+      <button class="pdf-action-btn share" (click)="sharePdf()">
+        <fa-icon [icon]="faShare"></fa-icon>
+        <span>Share</span>
+      </button>
     </div>
 
   </div>

@@ -388,7 +388,7 @@ export class AuthService {
   }
 
   updateBillPaidStatus(billId: number, paid: boolean): Observable<any> {
-    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true'); // ✅
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true'); 
     return this.http.patch(
       `${this.baseUrl}api/bill/${billId}/paid?paid=${paid}`,
       null,
@@ -396,6 +396,17 @@ export class AuthService {
     );
   }
 
+  getPdfBlob(billId: number): Observable<Blob> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true'); 
+    return this.http.get(
+      `${this.baseUrl}api/pdf/bill/${billId}`,
+      {
+        headers: headers,
+        responseType: 'blob'
+      }
+    );
+  }
+  
   /* ---------------------- PURCHASER ---------------------- */
 
   searchPurchasers(userId: number, name: string): Observable<any[]> {

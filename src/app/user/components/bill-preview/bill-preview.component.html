@@ -5,7 +5,7 @@
       <fa-icon [icon]="faArrowLeft"></fa-icon>
     </button>
     <h4>INVOICE</h4>
-    <button class="print-btn" (click)="printInvoice()">
+    <button class="print-btn" (click)="openPdfPreview()">
       <fa-icon [icon]="faPrint"></fa-icon>
       <span>Print</span>
     </button>
@@ -142,9 +142,11 @@
       <div class="footer-left">
       <div class="footer-left-top">
         <p class="amount-words"><strong>Amount in words:</strong> {{ totalAmountInWords }}</p>
-        <p class="subject-line">Subject to {{ details.city }} Jurisdiction only.</p>
       </div>
-      <p class="signature-line">Authorized Signatory</p>
+      <div class="footer-left-bottom">
+        <p class="subject-line">Subject to {{ details.city }} Jurisdiction only.</p>
+        <p class="signature-line">Authorized Signatory</p>
+      </div>
     </div>
       <div class="footer-right">
         <div class="qr-half" *ngIf="details.showQrOnBill && details.upiId && upiQrData">
@@ -163,5 +165,84 @@
       </div>
     </div>
 
+  </div>
+</div>
+<!-- PDF Preview Modal -->
+<div class="pdf-modal-overlay" *ngIf="showPdfModal" (click)="closePdfModal()">
+  <div class="pdf-modal-card" (click)="$event.stopPropagation()">
+
+    <div class="pdf-modal-header">
+      <span class="pdf-modal-title">Invoice Preview</span>
+      <button class="pdf-modal-close" (click)="closePdfModal()">
+        <fa-icon [icon]="faTimes"></fa-icon>
+      </button>
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading-screen " *ngIf="pdfLoading">
+      <div class="spinner-wrapper">
+        <div class="spinner-ring"></div>
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <p class="loading-text">Generating PDF</p>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div class="pdf-modal-error" *ngIf="pdfError && !pdfLoading">
+      <p>Failed to generate PDF. Please try again.</p>
+      <button class="pdf-action-btn primary" (click)="openPdfPreview()">Retry</button>
+    </div>
+
+    <!-- PDF Viewer -->
+    <div class="pdf-viewer-wrapper" *ngIf="!pdfLoading && !pdfError && safePdfUrl">
+      <iframe
+        [src]="safePdfUrl"
+        class="pdf-iframe"
+        type="application/pdf">
+      </iframe>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="pdf-modal-actions" *ngIf="!pdfLoading && !pdfError">
+      <button class="pdf-action-btn secondary" (click)="printPdf()">
+        <fa-icon [icon]="faPrint"></fa-icon>
+        <span>Print</span>
+      </button>
+      <button class="pdf-action-btn primary" (click)="downloadPdf()">
+        <fa-icon [icon]="faDownload"></fa-icon>
+        <span>Download</span>
+      </button>
+      <button class="pdf-action-btn share" (click)="openShareSheet()">
+        <fa-icon [icon]="faShare"></fa-icon>
+        <span>Share</span>
+      </button>
+    </div>
+    <div class="share-sheet-overlay" *ngIf="showShareSheet" (click)="closeShareSheet()">
+      <div class="share-sheet" (click)="$event.stopPropagation()">
+        <div class="share-sheet-handle"></div>
+        <p class="share-sheet-title">Share Invoice</p>
+        <div class="share-options">
+          <button class="share-option email" (click)="shareViaEmail()">
+            <div class="share-option-icon">
+              <fa-icon [icon]="faEnvelope"></fa-icon>
+            </div>
+            <span class="share-option-label">Attach in Email</span>
+            <span class="share-option-sub">Downloads PDF &amp; opens mail</span>
+          </button>
+          <button class="share-option whatsapp" (click)="shareViaWhatsApp()">
+            <div class="share-option-icon">
+              <fa-icon [icon]="faWhatsapp"></fa-icon>
+            </div>
+            <span class="share-option-label">Share on WhatsApp</span>
+            <span class="share-option-sub">Sends PDF as attachment</span>
+          </button>
+        </div>
+        <button class="share-cancel" (click)="closeShareSheet()">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>

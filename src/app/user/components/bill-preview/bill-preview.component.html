@@ -179,9 +179,16 @@
     </div>
 
     <!-- Loading state -->
-    <div class="pdf-modal-loading" *ngIf="pdfLoading">
-      <div class="pdf-spinner"></div>
-      <p>Generating PDF...</p>
+    <div class="loading-screen " *ngIf="pdfLoading">
+      <div class="spinner-wrapper">
+        <div class="spinner-ring"></div>
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <p class="loading-text">Generating PDF</p>
+      </div>
     </div>
 
     <!-- Error state -->
@@ -209,11 +216,33 @@
         <fa-icon [icon]="faDownload"></fa-icon>
         <span>Download</span>
       </button>
-      <button class="pdf-action-btn share" (click)="sharePdf()">
+      <button class="pdf-action-btn share" (click)="openShareSheet()">
         <fa-icon [icon]="faShare"></fa-icon>
         <span>Share</span>
       </button>
     </div>
-
+    <div class="share-sheet-overlay" *ngIf="showShareSheet" (click)="closeShareSheet()">
+      <div class="share-sheet" (click)="$event.stopPropagation()">
+        <div class="share-sheet-handle"></div>
+        <p class="share-sheet-title">Share Invoice</p>
+        <div class="share-options">
+          <button class="share-option email" (click)="shareViaEmail()">
+            <div class="share-option-icon">
+              <fa-icon [icon]="faEnvelope"></fa-icon>
+            </div>
+            <span class="share-option-label">Attach in Email</span>
+            <span class="share-option-sub">Downloads PDF &amp; opens mail</span>
+          </button>
+          <button class="share-option whatsapp" (click)="shareViaWhatsApp()">
+            <div class="share-option-icon">
+              <fa-icon [icon]="faWhatsapp"></fa-icon>
+            </div>
+            <span class="share-option-label">Share on WhatsApp</span>
+            <span class="share-option-sub">Sends PDF as attachment</span>
+          </button>
+        </div>
+        <button class="share-cancel" (click)="closeShareSheet()">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>

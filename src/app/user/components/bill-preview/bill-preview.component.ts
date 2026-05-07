@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
-import { faArrowLeft, faPrint, faDownload, faShare, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faPrint, faDownload, faShare, faTimes, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { DatePipe } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
@@ -28,12 +29,15 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
   pdfBlobUrl: string | null = null;
   safePdfUrl: SafeResourceUrl | null = null;
   pdfBlob: Blob | null = null;
+  showShareSheet = false;
 
   faArrowLeft = faArrowLeft;
   faPrint = faPrint;
   faDownload = faDownload;
   faShare = faShare;
   faTimes = faTimes;
+  faEnvelope = faEnvelope;
+  faWhatsapp = faWhatsapp;
 
   constructor(
     private authService: AuthService,
@@ -87,38 +91,67 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
     URL.revokeObjectURL(url);
   }
 
-  async sharePdf(): Promise<void> {
+  openShareSheet(): void {
     if (!this.pdfBlob) return;
+    this.showShareSheet = true;
+  }
+
+  closeShareSheet(): void {
+    this.showShareSheet = false;
+  }
+
+  shareViaEmail(): void {
+    const date = this.datePipe.transform(this.bill.invoiceDate, 'dd-MM-yyyy');
+    const subject = encodeURIComponent(`Invoice - ${this.bill.purchaserName} - ${date}`);
+    const body = encodeURIComponent(
+      `Please find attached the invoice for ${this.bill.purchaserName} dated ${date}.\n\nRegards,\n${this.details.name}`
+    );
+    // Opens mail client — user attaches the PDF manually after download
+    this.downloadPdf();
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    this.closeShareSheet();
+  }
+
+  shareViaWhatsApp(): void {
     const date = this.datePipe.transform(this.bill.invoiceDate, 'dd-MM-yyyy');
     const fileName = `Invoice-${this.bill.purchaserName}-${date}.pdf`;
-    const file = new File([this.pdfBlob], fileName, { type: 'application/pdf' });
+    const file = new File([this.pdfBlob!], fileName, { type: 'application/pdf' });
 
+    // Use Web Share API for file attachment — WhatsApp picks it up on mobile
     if (navigator.share && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          title: `Invoice - ${this.bill.purchaserName}`,
-          text: `Invoice dated ${date}`,
-          files: [file]
-        });
-      } catch (err) {
-        console.error('Share failed:', err);
-      }
+      navigator.share({
+        files: [file],
+        title: `Invoice - ${this.bill.purchaserName}`,
+        text: `Invoice dated ${date} from ${this.details.name}`
+      }).catch(err => console.error('WhatsApp share failed:', err));
     } else {
-      // Fallback to download if native share not supported
+      // Fallback: open WhatsApp web with a pre-filled message + trigger download
       this.downloadPdf();
+      const text = encodeURIComponent(
+        `Invoice for ${this.bill.purchaserName} dated ${date} from ${this.details.name}. Please find the attached PDF.`
+      );
+      window.open(`https://wa.me/?text=${text}`, '_blank');
     }
+    this.closeShareSheet();
   }
 
   printPdf(): void {
     if (!this.pdfBlobUrl) return;
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = this.pdfBlobUrl;
-    document.body.appendChild(iframe);
-    iframe.onload = () => {
-      iframe.contentWindow?.print();
-      setTimeout(() => document.body.removeChild(iframe), 1000);
-    };
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+
+    if (isIOS) {
+      window.open(this.pdfBlobUrl, '_blank');
+    } else {
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = this.pdfBlobUrl;
+      document.body.appendChild(iframe);
+      iframe.onload = () => {
+        iframe.contentWindow?.print();
+        setTimeout(() => document.body.removeChild(iframe), 1000);
+      };
+    }
   }
 
   ngOnDestroy(): void {

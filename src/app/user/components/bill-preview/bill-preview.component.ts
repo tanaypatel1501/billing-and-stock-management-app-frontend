@@ -20,7 +20,7 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
   bill: any = {};
   totalAmountInWords: string = '';
   upiQrData: string = '';
-  logoUrl: string = 'assets/images/GST_Logo.jpeg';
+  logoUrl: string = '';
 
   // PDF modal state
   showPdfModal = false;
@@ -30,6 +30,7 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
   safePdfUrl: SafeResourceUrl | null = null;
   pdfBlob: Blob | null = null;
   showShareSheet = false;
+  private logoBlobUrl: string | null = null;
 
   faArrowLeft = faArrowLeft;
   faPrint = faPrint;
@@ -156,6 +157,10 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.closePdfModal();
+      if (this.logoBlobUrl) {
+      URL.revokeObjectURL(this.logoBlobUrl);
+      this.logoBlobUrl = null;
+    }
   }
 
   // ── Existing methods ──
@@ -222,7 +227,11 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
     this.authService.getDetailsByUserId(this.userId).subscribe(
       (response: any) => {
         this.details = response;
-        this.logoUrl = response.logoUrl || 'assets/images/default-gst-medicose.png';
+        this.authService.getLogoUrl(this.userId).subscribe(url => {
+          if (this.logoBlobUrl) URL.revokeObjectURL(this.logoBlobUrl);
+          this.logoBlobUrl = url.startsWith('blob:') ? url : null;
+          this.logoUrl = url;
+        });
         this.buildQrIfReady();
       },
       (error) => console.error('Error loading business details:', error)

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, AddressLookupDTO } from 'src/app/services/auth-service/auth.service';
@@ -15,7 +15,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
   styleUrls: ['./details.component.scss'],
   standalone: false,
 })
-export class DetailsComponent implements OnInit {
+export class DetailsComponent implements OnInit, OnDestroy {
   detailsForm!: FormGroup;
   userId!: any;
   errorMessage: string | null = null;
@@ -41,6 +41,7 @@ export class DetailsComponent implements OnInit {
   zoomScale = 1;
   transform = { scale: 1 };
   fileInputRef: HTMLInputElement | null = null;
+  private logoBlobUrl: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -132,11 +133,10 @@ export class DetailsComponent implements OnInit {
   }
 
   confirmCrop(): void {
-    if (!this.croppedImageBase64 || !this.croppedImageFile) {
-
-    this.logoPreviewUrl = this.croppedImageBase64;
-    this.previewLogoUrl = this.croppedImageBase64;
-    this.selectedLogoFile = this.croppedImageFile;
+    if (this.croppedImageBase64 && this.croppedImageFile) {
+      this.logoPreviewUrl = this.croppedImageBase64;
+      this.previewLogoUrl = this.croppedImageBase64;
+      this.selectedLogoFile = this.croppedImageFile;
     }
     this.closeCropModal();
   }
@@ -184,8 +184,7 @@ export class DetailsComponent implements OnInit {
           
           // Load existing logo if available
           if (details.logoUrl) {
-            this.logoPreviewUrl = details.logoUrl;
-            this.previewLogoUrl = details.logoUrl;
+            this.authService.getLogoUrl(this.userId).subscribe(url => this.setLogoUrl(url));
           }
           
           // Populate dependent lists while preserving the saved selections
@@ -200,6 +199,13 @@ export class DetailsComponent implements OnInit {
         this.userHasDetails = false;
       }
     );
+  }
+
+  private setLogoUrl(url: string): void {
+    if (this.logoBlobUrl) URL.revokeObjectURL(this.logoBlobUrl);
+    this.logoBlobUrl = url.startsWith('blob:') ? url : null;
+    this.logoPreviewUrl = url;
+    this.previewLogoUrl = url;
   }
 
   // --- Postal Service Integration ---
@@ -378,8 +384,7 @@ export class DetailsComponent implements OnInit {
             
             // Update logo preview if new logo URL is returned
             if (updated.logoUrl) {
-              this.logoPreviewUrl = updated.logoUrl;
-              this.previewLogoUrl = updated.logoUrl;
+              this.authService.getLogoUrl(this.userId).subscribe(url => this.setLogoUrl(url));
             }
           },
           (error) => {
@@ -402,8 +407,7 @@ export class DetailsComponent implements OnInit {
             
             // Update logo preview if new logo URL is returned
             if (created.logoUrl) {
-              this.logoPreviewUrl = created.logoUrl;
-              this.previewLogoUrl = created.logoUrl;
+              this.authService.getLogoUrl(this.userId).subscribe(url => this.setLogoUrl(url));
             }
           },
           (error) => {
@@ -454,5 +458,12 @@ export class DetailsComponent implements OnInit {
 
   get hasUpiId(): boolean {
     return !!this.detailsForm.get('upiId')?.value?.trim();
+  }
+
+  ngOnDestroy(): void {
+    if (this.logoBlobUrl) {
+      URL.revokeObjectURL(this.logoBlobUrl);
+      this.logoBlobUrl = null;
+    }
   }
 }

@@ -494,4 +494,17 @@ export class AuthService {
     });
   }
 
+  /* ---------------------- LOGO ---------------------- */
+  
+  getLogoUrl(userId: any): Observable<string> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get(
+      `${this.baseUrl}api/logo/${userId}`,
+      { headers, responseType: 'blob' }
+    ).pipe(
+      map(blob => URL.createObjectURL(blob)),
+      catchError(() => of('assets/images/default-gst-medicose.png'))
+    );
+  }
+
 }

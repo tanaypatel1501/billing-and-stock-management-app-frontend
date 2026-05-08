@@ -130,7 +130,14 @@
                     </span>
                   </th>
 
-                  <th scope="col" *ngIf="details.taxMode === 'IGST'">IGST</th>
+                  <th scope="col" *ngIf="details.taxMode === 'IGST'"
+                      (dblclick)="onDoubleClickSort('product.CGST')" class="sortable-header">
+                    IGST
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'product.CGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'product.CGST'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
                   <th scope="col" *ngIf="details.taxMode !== 'IGST'" 
                       (dblclick)="onDoubleClickSort('product.CGST')" class="sortable-header">
                     CGST

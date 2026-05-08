@@ -112,8 +112,9 @@
             <th>Free</th>
             <th>MRP</th>
             <th>Rate</th>
-            <th>CGST</th>
-            <th>SGST</th>
+            <th *ngIf="details.taxMode === 'IGST'">IGST</th>
+            <th *ngIf="details.taxMode !== 'IGST'">CGST</th>
+            <th *ngIf="details.taxMode !== 'IGST'">SGST</th>
             <th>Amount</th>
           </tr>
         </thead>
@@ -129,8 +130,9 @@
             <td data-label="Free">{{ item.free | number }}</td>
             <td data-label="MRP">₹{{ item.snapshotUnitPrice | number }}</td>
             <td data-label="Rate">₹{{ item.rate | number }}</td>
-            <td data-label="CGST">{{ item.snapshotCgst | number }}%</td>
-            <td data-label="SGST">{{ item.snapshotSgst | number }}%</td>
+            <td data-label="IGST" *ngIf="details.taxMode === 'IGST'"> {{ (item.snapshotCgst + item.snapshotSgst) | number }}%</td>
+            <td data-label="CGST" *ngIf="details.taxMode !== 'IGST'">{{ item.snapshotCgst | number }}%</td>
+            <td data-label="SGST" *ngIf="details.taxMode !== 'IGST'">{{ item.snapshotSgst | number }}%</td>
             <td data-label="Amount" class="amount">₹{{ item.amount | number:'1.2-2' }}</td>
           </tr>
         </tbody>

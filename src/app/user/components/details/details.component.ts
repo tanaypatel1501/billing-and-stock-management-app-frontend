@@ -42,6 +42,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
   transform = { scale: 1 };
   fileInputRef: HTMLInputElement | null = null;
   private logoBlobUrl: string | null = null;
+  
 
   constructor(
     private fb: FormBuilder,
@@ -69,6 +70,8 @@ export class DetailsComponent implements OnInit, OnDestroy {
       ifscCode: [null, [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
       upiId: [null, [Validators.pattern(/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/)]],
       showQrOnBill: [false],
+      taxMode: ['CGST_SGST']
+      
     });
 
     this.loadStates();
@@ -436,7 +439,8 @@ export class DetailsComponent implements OnInit, OnDestroy {
       accountNumber: details.accountNumber,
       ifscCode: details.ifscCode,
       upiId: details.upiId || null,
-      showQrOnBill: details.showQrOnBill || false
+      showQrOnBill: details.showQrOnBill || false,
+      taxMode: details.taxMode || 'CGST_SGST',
     }, { emitEvent: false });
     
     this.appState.setDetailsValid(!!this.detailsForm.valid);

@@ -58,6 +58,7 @@ export class DashboardComponent implements OnInit{
   suggestions: any[] = [];
   showDeleteModal = false;
   stockToDeleteId: number | null = null;
+  details: any = {};
 
   constructor(
     private authService: AuthService,
@@ -67,6 +68,9 @@ export class DashboardComponent implements OnInit{
 
   ngOnInit() {
     this.userId = UserStorageService.getUserId();
+     this.authService.getDetailsByUserId(this.userId).subscribe(
+      (response: any) => this.details = response
+    );
     this.loadInitialData();
   }
   get isInitialEmpty(): boolean {

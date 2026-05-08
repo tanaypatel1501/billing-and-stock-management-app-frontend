@@ -43,21 +43,31 @@ export class DashboardComponent implements OnInit{
   expandedIndex: number | null = null;
   sortColumn: string | null = 'expiryDate';
   sortDirection: 'asc' | 'desc' = 'asc';
-  filterColumns = [
-    { label: 'Product Name', value: 'product.name' },
-    { label: 'Packing', value: 'product.packing' },
-    { label: 'HSN', value: 'product.HSN' },
-    { label: 'Batch No.', value: 'batchNo' },
-    { label: 'Expiry Date', value: 'expiryDate' },
-    { label: 'Quantity', value: 'quantity' },
-    { label: 'MRP', value: 'product.MRP' },
-    { label: 'CGST', value: 'product.CGST' },
-    { label: 'SGST', value: 'product.SGST' },
-  ];
+  get filterColumns() {
+    const base = [
+      { label: 'Product Name', value: 'product.name' },
+      { label: 'Packing', value: 'product.packing' },
+      { label: 'HSN', value: 'product.HSN' },
+      { label: 'Batch No.', value: 'batchNo' },
+      { label: 'Expiry Date', value: 'expiryDate' },
+      { label: 'Quantity', value: 'quantity' },
+      { label: 'MRP', value: 'product.MRP' },
+    ];
+
+    if (this.details?.taxMode === 'IGST') {
+      base.push({ label: 'IGST', value: 'product.CGST' });
+    } else {
+      base.push({ label: 'CGST', value: 'product.CGST' });
+      base.push({ label: 'SGST', value: 'product.SGST' });
+    }
+
+    return base;
+  }
   searchText: string = '';
   suggestions: any[] = [];
   showDeleteModal = false;
   stockToDeleteId: number | null = null;
+  details: any = {};
 
   constructor(
     private authService: AuthService,
@@ -67,6 +77,9 @@ export class DashboardComponent implements OnInit{
 
   ngOnInit() {
     this.userId = UserStorageService.getUserId();
+    this.authService.getDetailsByUserId(this.userId).subscribe(
+      (response: any) => this.details = response || {}
+    );
     this.loadInitialData();
   }
   get isInitialEmpty(): boolean {

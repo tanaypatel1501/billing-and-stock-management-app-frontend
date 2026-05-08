@@ -130,15 +130,24 @@
                     </span>
                   </th>
 
-                  <th scope="col" (dblclick)="onDoubleClickSort('product.CGST')" class="sortable-header">
+                  <th scope="col" *ngIf="details.taxMode === 'IGST'"
+                      (dblclick)="onDoubleClickSort('product.CGST')" class="sortable-header">
+                    IGST
+                    <span class="sort-icon">
+                      <span *ngIf="sortColumn === 'product.CGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      <span *ngIf="sortColumn !== 'product.CGST'" class="neutral-sort">⇅</span>
+                    </span>
+                  </th>
+                  <th scope="col" *ngIf="details.taxMode !== 'IGST'" 
+                      (dblclick)="onDoubleClickSort('product.CGST')" class="sortable-header">
                     CGST
                     <span class="sort-icon">
                       <span *ngIf="sortColumn === 'product.CGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
                       <span *ngIf="sortColumn !== 'product.CGST'" class="neutral-sort">⇅</span>
                     </span>
                   </th>
-
-                  <th scope="col" (dblclick)="onDoubleClickSort('product.SGST')" class="sortable-header">
+                  <th scope="col" *ngIf="details.taxMode !== 'IGST'" 
+                      (dblclick)="onDoubleClickSort('product.SGST')" class="sortable-header">
                     SGST
                     <span class="sort-icon">
                       <span *ngIf="sortColumn === 'product.SGST'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
@@ -169,8 +178,15 @@
                   <td data-label="Expiry Date" [class.text-danger]="isExpired(item.expiryDate)">{{ item.expiryDate | date:'MM/yyyy' }}</td>
                   <td data-label="Quantity"><span class="quantity-badge">{{ item.quantity | number }}</span></td>
                   <td data-label="MRP" class="price">₹{{ (item.mrp ?? item.product.mrp) | number }}</td>
-                  <td class="expandable" data-label="CGST">{{ item.product?.cgst | number }}%</td>
-                  <td class="expandable" data-label="SGST">{{ item.product?.sgst | number }}%</td>
+                  <td class="expandable" data-label="IGST" *ngIf="details.taxMode === 'IGST'">
+                    {{ (item.product?.cgst + item.product?.sgst) | number }}%
+                  </td>
+                  <td class="expandable" data-label="CGST" *ngIf="details.taxMode !== 'IGST'">
+                    {{ item.product?.cgst | number }}%
+                  </td>
+                  <td class="expandable" data-label="SGST" *ngIf="details.taxMode !== 'IGST'">
+                    {{ item.product?.sgst | number }}%
+                  </td>
                   <td data-label="Actions" class="action-cell expandable">
                     <button class="icon-btn edit" (click)="edit(item.id)">
                       <fa-icon [icon]="faPencil"></fa-icon>

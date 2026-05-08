@@ -345,6 +345,15 @@
             <span class="qr-toggle-text">{{ detailsForm.get('showQrOnBill')?.value ? 'On' : 'Off' }}</span>
           </button>
         </div>
+        <div class="divider"></div>
+        <div class="section-title">Tax Mode</div>
+        <div class="form-group full-width">
+          <label for="taxMode">Tax Mode on Invoice</label>
+          <select id="taxMode" formControlName="taxMode">
+            <option value="CGST_SGST">CGST + SGST (Intra-state)</option>
+            <option value="IGST">IGST (Inter-state)</option>
+          </select>
+        </div>
         </div>
 
         <div class="details-footer">

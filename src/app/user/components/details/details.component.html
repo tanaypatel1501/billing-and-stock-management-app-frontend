@@ -354,6 +354,64 @@
             <option value="IGST">IGST (Inter-state)</option>
           </select>
         </div>
+        
+        <div class="divider"></div>
+        <!-- Template Selection -->
+        <div class="section-title">Invoice Template</div>
+
+        <div class="template-grid">
+          <div
+            *ngFor="let template of templates"
+            class="template-card"
+            [class.selected]="selectedTemplate === template.id"
+            (click)="selectTemplate(template.id)">
+
+            <!-- Template Preview Thumbnail -->
+            <div class="template-thumb" [style.border-color]="template.color">
+              <!-- Landscape preview -->
+              <div class="thumb-preview landscape" *ngIf="template.orientation === 'landscape'">
+                <div class="thumb-header-bar" [style.background]="'#f0f0f0'"></div>
+                <div class="thumb-body">
+                  <div class="thumb-row"></div>
+                  <div class="thumb-row short"></div>
+                  <div class="thumb-table">
+                    <div class="thumb-table-header"></div>
+                    <div class="thumb-table-row"></div>
+                    <div class="thumb-table-row"></div>
+                    <div class="thumb-table-row"></div>
+                  </div>
+                  <div class="thumb-footer"></div>
+                </div>
+              </div>
+              <!-- Portrait preview -->
+              <div class="thumb-preview portrait" *ngIf="template.orientation === 'portrait'">
+                <div class="thumb-header-bar colored" [style.background]="template.color"></div>
+                <div class="thumb-info-strip"></div>
+                <div class="thumb-body">
+                  <div class="thumb-parties">
+                    <div class="thumb-party-box"></div>
+                    <div class="thumb-party-box"></div>
+                  </div>
+                  <div class="thumb-table">
+                    <div class="thumb-table-header colored" [style.background]="template.color"></div>
+                    <div class="thumb-table-row"></div>
+                    <div class="thumb-table-row"></div>
+                    <div class="thumb-table-row"></div>
+                  </div>
+                  <div class="thumb-footer"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="template-info">
+              <span class="template-name">{{ template.name }}</span>
+              <span class="template-desc">{{ template.description }}</span>
+            </div>
+
+            <div class="template-check" *ngIf="selectedTemplate === template.id">✓</div>
+          </div>
+        </div>
+
         </div>
 
         <div class="details-footer">

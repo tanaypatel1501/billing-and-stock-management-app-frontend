@@ -1,0 +1,144 @@
+<div class="invoice-content">
+  <!-- Business Details Section -->
+  <div class="invoice-top-section">
+    <div class="logo-section">
+      <img [src]="data.logoUrl" alt="Business Logo" class="business-logo" />
+    </div>
+
+    <div class="business-info">
+      <h3 class="business-name">{{ data.details.name }}</h3>
+      <p class="business-address">
+        {{ data.details.addressLine1 }}, {{ data.details.addressLine2 }},
+        {{ data.details.city }}, {{ data.details.state }}, {{ data.details.pincode }}
+      </p>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">DL No.:</span>
+          <span>{{ data.details.dlNo1 }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">FSSAI Reg.:</span>
+          <span>{{ data.details.fssaiReg }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label empty"></span>
+          <span>{{ data.details.dlNo2 }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">GSTIN:</span>
+          <span>{{ data.details.gstin }}</span>
+        </div>
+      </div>
+      <p class="bank-name"><strong>BANK NAME: {{ data.details.bankName }}</strong></p>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">A/C No.:</span>
+          <span>{{ data.details.accountNumber }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">IFSC Code:</span>
+          <span>{{ data.details.ifscCode }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="purchaser-info">
+      <div class="purchaser-header-row">
+        <p class="purchaser-label"><strong>To:</strong></p>
+        <p class="purchaser-name">{{ data.bill.purchaserName }}</p>
+      </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">DL No.:</span>
+          <span>{{ data.bill.dl1 }}</span>
+        </div>
+        <div class="info-item" *ngIf="data.bill?.gstin">
+          <span class="info-label">{{ getIdentificationLabel(data.bill.gstin) }}:</span>
+          <span>
+            {{ getIdentificationLabel(data.bill.gstin) === 'Aadhaar'
+              ? (data.bill.gstin | slice:0:4) + ' ' + (data.bill.gstin | slice:4:8) + ' ' + (data.bill.gstin | slice:8:12)
+              : data.bill.gstin }}
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label empty"></span>
+          <span>{{ data.bill.dl2 }}</span>
+        </div>
+        <div class="info-item"></div>
+        <div class="info-item">
+          <span class="info-label">Invoice No:</span>
+          <span>{{ data.bill.id }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Invoice Date:</span>
+          <span>{{ data.bill.invoiceDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <div class="table-container">
+    <table class="invoice-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Product Name</th>
+          <th>Packing</th>
+          <th>HSN</th>
+          <th>Batch No.</th>
+          <th>Expiry Date</th>
+          <th>Qty</th>
+          <th>Free</th>
+          <th>MRP</th>
+          <th>Rate</th>
+          <th *ngIf="data.details.taxMode === 'IGST'">IGST</th>
+          <th *ngIf="data.details.taxMode !== 'IGST'">CGST</th>
+          <th *ngIf="data.details.taxMode !== 'IGST'">SGST</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of data.bill.billItems; index as i" class="item-row">
+          <td data-label="#">{{ i + 1 }}</td>
+          <td data-label="Product Name" class="product-name">{{ item.snapshotProductName }}</td>
+          <td data-label="Packing">{{ item.snapshotPacking }}</td>
+          <td data-label="HSN">{{ item.snapshotHsn }}</td>
+          <td data-label="Batch No.">{{ item.batchNo }}</td>
+          <td data-label="Expiry Date">{{ item.expiryDate | date:'MM/yyyy' }}</td>
+          <td data-label="Qty">{{ item.quantity | number }}</td>
+          <td data-label="Free">{{ item.free | number }}</td>
+          <td data-label="MRP">₹{{ item.snapshotUnitPrice | number }}</td>
+          <td data-label="Rate">₹{{ item.rate | number }}</td>
+          <td data-label="IGST" *ngIf="data.details.taxMode === 'IGST'">{{ (item.snapshotCgst + item.snapshotSgst) | number }}%</td>
+          <td data-label="CGST" *ngIf="data.details.taxMode !== 'IGST'">{{ item.snapshotCgst | number }}%</td>
+          <td data-label="SGST" *ngIf="data.details.taxMode !== 'IGST'">{{ item.snapshotSgst | number }}%</td>
+          <td data-label="Amount" class="amount">₹{{ item.amount | number:'1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="invoice-footer" [class.has-qr]="data.details.showQrOnBill && data.details.upiId">
+    <div class="footer-left">
+      <div class="footer-left-top">
+        <p class="amount-words"><strong>Amount in words:</strong> {{ data.totalAmountInWords }}</p>
+      </div>
+      <div class="footer-left-bottom">
+        <p class="subject-line">Subject to {{ data.details.city }} Jurisdiction only.</p>
+        <p class="signature-line">Authorized Signatory</p>
+      </div>
+    </div>
+    <div class="footer-right">
+      <div class="qr-half" *ngIf="data.details.showQrOnBill && data.details.upiId && data.upiQrData">
+        <span class="qr-label">Scan to Pay</span>
+        <qrcode [qrdata]="data.upiQrData" [width]="110" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
+        <span class="qr-label">{{ data.details.upiId }}</span>
+      </div>
+      <div class="total-half">
+        <p class="total-amount"><strong>Total:</strong> ₹{{ data.bill.totalAmount | number:'1.2-2' }}</p>
+      </div>
+    </div>
+  </div>
+</div>

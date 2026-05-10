@@ -6,6 +6,7 @@ import { faArrowLeft, faPrint, faDownload, faShare, faTimes, faEnvelope } from '
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { DatePipe } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { InvoiceData } from 'src/app/models/invoice-data.model';
 
 @Component({
   selector: 'app-bill-preview',
@@ -245,6 +246,15 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
       },
       (error) => console.error('Error loading bill:', error)
     );
+  }
+  get invoiceData(): InvoiceData {
+    return {
+      bill: this.bill,
+      details: this.details,
+      totalAmountInWords: this.totalAmountInWords,
+      upiQrData: this.upiQrData,
+      logoUrl: this.logoUrl
+    };
   }
 
   private buildQrIfReady(): void {

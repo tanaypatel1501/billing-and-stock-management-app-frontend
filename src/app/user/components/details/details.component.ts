@@ -41,6 +41,8 @@ export class DetailsComponent implements OnInit, OnDestroy {
   zoomScale = 1;
   transform = { scale: 1 };
   fileInputRef: HTMLInputElement | null = null;
+  templates: any[] = [];
+  selectedTemplate: string = 'template1';
   private logoBlobUrl: string | null = null;
   
 
@@ -78,6 +80,9 @@ export class DetailsComponent implements OnInit, OnDestroy {
     this.setupListeners();
     this.appState.setDetailsValid(!!this.detailsForm.valid);
     this.checkAndPopulateExistingDetails();
+    this.authService.getAvailableTemplates().subscribe(t => {
+      this.templates = t;
+    });
   }
 
   onLogoSelected(event: Event): void {
@@ -195,6 +200,9 @@ export class DetailsComponent implements OnInit, OnDestroy {
             this.loadCities(details.state, details.city);
             this.loadPincodes(details.city, details.state, details.pincode);
           }
+          if (details.preferredTemplate) {
+            this.selectedTemplate = details.preferredTemplate;
+          }
         }
       },
       (error) => {
@@ -202,6 +210,11 @@ export class DetailsComponent implements OnInit, OnDestroy {
         this.userHasDetails = false;
       }
     );
+  }
+
+  selectTemplate(templateId: string): void {
+    this.selectedTemplate = templateId;
+    this.detailsForm.markAsDirty();
   }
 
   private setLogoUrl(url: string): void {
@@ -373,6 +386,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
       ? { ...this.originalDetails, ...formValues } 
       : { ...formValues };
     details.userId = this.userId;
+    details.preferredTemplate = this.selectedTemplate;
 
     if (this.userHasDetails) {
       this.authService.editDetails(this.userId, details, this.selectedLogoFile || undefined)
@@ -441,6 +455,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
       upiId: details.upiId || null,
       showQrOnBill: details.showQrOnBill || false,
       taxMode: details.taxMode || 'CGST_SGST',
+      preferredTemplate: details.preferredTemplate || 'template1',
     }, { emitEvent: false });
     
     this.appState.setDetailsValid(!!this.detailsForm.valid);

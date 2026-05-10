@@ -70,6 +70,25 @@ export class AuthService {
     });
   }
 
+  getAvailableTemplates(): Observable<any[]> {
+    return of([
+      {
+        id: 'template1',
+        name: 'Classic Landscape',
+        description: 'Traditional horizontal layout',
+        orientation: 'landscape',
+        color: '#2c3e50'
+      },
+      {
+        id: 'template2',
+        name: 'Modern Portrait',
+        description: 'Contemporary vertical layout with colored header',
+        orientation: 'portrait',
+        color: '#1a3c5e'
+      }
+    ]);
+  }
+
   /* ---------------------- AUTH ---------------------- */
 
   login(username: string, password: string): any {

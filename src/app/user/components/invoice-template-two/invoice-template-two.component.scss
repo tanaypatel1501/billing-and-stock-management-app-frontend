@@ -1,0 +1,323 @@
+.t2-invoice {
+  background: #fff;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.85rem;
+}
+
+/* Header */
+.t2-header {
+  background: #1a3c5e;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 4px 4px 0 0;
+}
+
+.t2-header-logo { flex-shrink: 0; }
+
+.t2-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #fff;
+  padding: 2px;
+}
+
+.t2-header-info { flex: 1; }
+
+.t2-business-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.t2-business-address {
+  font-size: 0.75rem;
+  color: #b0c4de;
+  line-height: 1.4;
+}
+
+.t2-business-meta {
+  font-size: 0.72rem;
+  color: #b0c4de;
+  margin-top: 3px;
+}
+
+.t2-header-badge { flex-shrink: 0; }
+
+.t2-badge {
+  background: #fff;
+  color: #1a3c5e;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+/* Info Strip */
+.t2-info-strip {
+  display: flex;
+  background: #f0f4f8;
+  border: 1px solid #c8d8e8;
+  border-top: none;
+  margin-bottom: 12px;
+}
+
+.t2-strip-item {
+  flex: 1;
+  padding: 6px 10px;
+  border-right: 1px solid #c8d8e8;
+  font-size: 0.78rem;
+
+  &:last-child { border-right: none; }
+}
+
+.t2-strip-label {
+  display: block;
+  font-weight: 700;
+  color: #1a3c5e;
+  font-size: 0.7rem;
+  margin-bottom: 1px;
+}
+
+/* Parties */
+.t2-parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid #000;
+  margin-bottom: 8px;
+}
+
+.t2-party {
+  padding: 8px 10px;
+  border-right: 1px solid #000;
+  font-size: 0.78rem;
+
+  &:last-child { border-right: none; }
+}
+
+.t2-party-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #1a3c5e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #c8d8e8;
+  padding-bottom: 4px;
+  margin-bottom: 5px;
+}
+
+.t2-party-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.t2-party-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 2px;
+  font-size: 0.75rem;
+}
+
+.t2-party-label { font-weight: 700; color: #444; min-width: 60px; }
+
+/* Bank Strip */
+.t2-bank-strip {
+  display: flex;
+  justify-content: space-between;
+  background: #f8f9fa;
+  border: 1px solid #000;
+  border-top: none;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  margin-bottom: 10px;
+  gap: 20px;
+}
+
+.t2-bank-label { color: #1a3c5e; }
+
+/* Table */
+.t2-table-container {
+  margin-bottom: 10px;
+  overflow-x: auto;
+}
+
+.t2-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+
+  th {
+    background: #1a3c5e;
+    color: #fff;
+    padding: 6px 5px;
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    border: 1px solid #0d2a42;
+  }
+
+  td {
+    border: 1px solid #bbb;
+    padding: 5px;
+    vertical-align: top;
+  }
+
+  tbody tr:nth-child(even) { background: #f5f8fc; }
+}
+
+.t2-product-name { font-weight: 600; }
+.t2-amount { font-weight: 700; }
+
+/* Footer */
+.t2-footer {
+  display: flex;
+  border: 1px solid #000;
+  min-height: 90px;
+}
+
+.t2-footer-left {
+  flex: 1;
+  padding: 10px;
+  border-right: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.t2-amount-words {
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+}
+
+.t2-subject {
+  font-size: 0.72rem;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.t2-signature-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.t2-thank-you {
+  font-size: 0.72rem;
+  color: #555;
+}
+
+.t2-signature {
+  text-align: right;
+}
+
+.t2-sig-text {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.t2-sig-for {
+  display: block;
+  font-size: 0.7rem;
+  color: #555;
+  margin-top: 2px;
+}
+
+.t2-footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.t2-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.t2-qr-label {
+  font-size: 0.65rem;
+  color: #555;
+}
+
+.t2-total-box {
+  background: #1a3c5e;
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px 14px;
+  text-align: center;
+}
+
+.t2-total-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.t2-total-amount {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .t2-header { flex-wrap: wrap; gap: 10px; }
+  .t2-info-strip { flex-wrap: wrap; }
+  .t2-strip-item { flex: 0 0 50%; border-bottom: 1px solid #c8d8e8; }
+  .t2-parties { grid-template-columns: 1fr; }
+  .t2-party { border-right: none; border-bottom: 1px solid #000; }
+  .t2-bank-strip { flex-direction: column; gap: 4px; }
+  .t2-footer { flex-direction: column; }
+  .t2-footer-left { border-right: none; border-bottom: 1px solid #000; }
+  .t2-footer-right { flex-direction: row; justify-content: space-around; padding: 10px; }
+
+  .t2-table {
+    thead { display: none; }
+    &, tbody, tr, td { display: block; width: 100%; }
+    tbody tr {
+      margin-bottom: 12px;
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+    td {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border: none;
+      border-bottom: 1px solid #eee;
+      &:last-child { border-bottom: none; }
+    }
+  }
+}
+
+/* Print */
+@media print {
+  .t2-invoice { font-size: 9px; }
+  .t2-header { background: #1a3c5e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .t2-table th { background: #1a3c5e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .t2-total-box { background: #1a3c5e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .t2-table {
+    thead { display: table-header-group !important; }
+    tbody { display: table-row-group !important; }
+    tr { display: table-row !important; }
+    td, th { display: table-cell !important; }
+  }
+}

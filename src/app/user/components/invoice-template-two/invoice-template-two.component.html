@@ -1,0 +1,158 @@
+<div class="t2-invoice">
+
+  <!-- Header Band -->
+  <div class="t2-header">
+    <div class="t2-header-logo">
+      <img [src]="data.logoUrl" alt="Logo" class="t2-logo" />
+    </div>
+    <div class="t2-header-info">
+      <h2 class="t2-business-name">{{ data.details.name }}</h2>
+      <p class="t2-business-address">
+        {{ data.details.addressLine1 }}, {{ data.details.addressLine2 }},
+        {{ data.details.city }}, {{ data.details.state }} - {{ data.details.pincode }}
+      </p>
+      <p class="t2-business-meta">
+        GSTIN: {{ data.details.gstin }} &nbsp;|&nbsp; Ph: {{ data.details.phoneNumber }}
+      </p>
+    </div>
+    <div class="t2-header-badge">
+      <span class="t2-badge">INVOICE</span>
+    </div>
+  </div>
+
+  <!-- Info Strip -->
+  <div class="t2-info-strip">
+    <div class="t2-strip-item">
+      <span class="t2-strip-label">Invoice No.</span>
+      <span>{{ data.bill.id }}</span>
+    </div>
+    <div class="t2-strip-item">
+      <span class="t2-strip-label">Invoice Date</span>
+      <span>{{ data.bill.invoiceDate | date:'dd/MM/yyyy' }}</span>
+    </div>
+    <div class="t2-strip-item">
+      <span class="t2-strip-label">DL No. 1</span>
+      <span>{{ data.details.dlNo1 }}</span>
+    </div>
+    <div class="t2-strip-item">
+      <span class="t2-strip-label">DL No. 2</span>
+      <span>{{ data.details.dlNo2 }}</span>
+    </div>
+    <div class="t2-strip-item">
+      <span class="t2-strip-label">FSSAI</span>
+      <span>{{ data.details.fssaiReg }}</span>
+    </div>
+  </div>
+
+  <!-- Parties -->
+  <div class="t2-parties">
+    <div class="t2-party">
+      <div class="t2-party-title">Bill From</div>
+      <div class="t2-party-name">{{ data.details.name }}</div>
+      <div class="t2-party-row">
+        <span class="t2-party-label">GSTIN:</span>
+        <span>{{ data.details.gstin }}</span>
+      </div>
+      <div class="t2-party-row">
+        <span class="t2-party-label">Phone:</span>
+        <span>{{ data.details.phoneNumber }}</span>
+      </div>
+    </div>
+    <div class="t2-party">
+      <div class="t2-party-title">Bill To</div>
+      <div class="t2-party-name">{{ data.bill.purchaserName }}</div>
+      <div class="t2-party-row">
+        <span class="t2-party-label">DL No. 1:</span>
+        <span>{{ data.bill.dl1 }}</span>
+      </div>
+      <div class="t2-party-row">
+        <span class="t2-party-label">DL No. 2:</span>
+        <span>{{ data.bill.dl2 }}</span>
+      </div>
+      <div class="t2-party-row" *ngIf="data.bill?.gstin">
+        <span class="t2-party-label">{{ getIdentificationLabel(data.bill.gstin) }}:</span>
+        <span>
+          {{ getIdentificationLabel(data.bill.gstin) === 'Aadhaar'
+            ? (data.bill.gstin | slice:0:4) + ' ' + (data.bill.gstin | slice:4:8) + ' ' + (data.bill.gstin | slice:8:12)
+            : data.bill.gstin }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bank Strip -->
+  <div class="t2-bank-strip">
+    <span><strong class="t2-bank-label">Bank:</strong> {{ data.details.bankName }}</span>
+    <span><strong class="t2-bank-label">A/C No.:</strong> {{ data.details.accountNumber }}</span>
+    <span><strong class="t2-bank-label">IFSC:</strong> {{ data.details.ifscCode }}</span>
+  </div>
+
+  <!-- Table -->
+  <div class="t2-table-container">
+    <table class="t2-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Product Name</th>
+          <th>Pack</th>
+          <th>HSN</th>
+          <th>Batch</th>
+          <th>Expiry</th>
+          <th>Qty</th>
+          <th>Free</th>
+          <th>MRP</th>
+          <th>Rate</th>
+          <th *ngIf="data.details.taxMode === 'IGST'">IGST</th>
+          <th *ngIf="data.details.taxMode !== 'IGST'">CGST</th>
+          <th *ngIf="data.details.taxMode !== 'IGST'">SGST</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of data.bill.billItems; index as i">
+          <td>{{ i + 1 }}</td>
+          <td class="t2-product-name">{{ item.snapshotProductName }}</td>
+          <td>{{ item.snapshotPacking }}</td>
+          <td>{{ item.snapshotHsn }}</td>
+          <td>{{ item.batchNo }}</td>
+          <td>{{ item.expiryDate | date:'MM/yyyy' }}</td>
+          <td>{{ item.quantity | number }}</td>
+          <td>{{ item.free | number }}</td>
+          <td>₹{{ item.snapshotUnitPrice | number }}</td>
+          <td>₹{{ item.rate | number }}</td>
+          <td *ngIf="data.details.taxMode === 'IGST'">{{ (item.snapshotCgst + item.snapshotSgst) | number }}%</td>
+          <td *ngIf="data.details.taxMode !== 'IGST'">{{ item.snapshotCgst | number }}%</td>
+          <td *ngIf="data.details.taxMode !== 'IGST'">{{ item.snapshotSgst | number }}%</td>
+          <td class="t2-amount">₹{{ item.amount | number:'1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="t2-footer">
+    <div class="t2-footer-left">
+      <p class="t2-amount-words"><strong>Amount in words:</strong> {{ data.totalAmountInWords }}</p>
+      <p class="t2-subject">Subject to {{ data.details.city }} Jurisdiction only.</p>
+      <div class="t2-signature-row">
+        <span class="t2-thank-you">Thank you for your business!</span>
+        <div class="t2-signature">
+          <span class="t2-sig-text">Authorized Signatory</span>
+          <span class="t2-sig-for">For {{ data.details.name }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="t2-footer-right">
+      <div class="t2-qr" *ngIf="data.details.showQrOnBill && data.details.upiId && data.upiQrData">
+        <span class="t2-qr-label">Scan to Pay</span>
+        <qrcode [qrdata]="data.upiQrData" [width]="80" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
+        <span class="t2-qr-label">{{ data.details.upiId }}</span>
+      </div>
+      <div class="t2-total-box">
+        <span class="t2-total-label">Total Amount</span>
+        <span class="t2-total-amount">₹{{ data.bill.totalAmount | number:'1.2-2' }}</span>
+      </div>
+    </div>
+  </div>
+
+</div>

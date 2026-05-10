@@ -14,6 +14,8 @@ import { ImageCropperComponent } from 'ngx-image-cropper';
 import { EditStockComponent } from './components/stock/edit-stock/edit-stock.component';
 import { StockFormComponent } from './components/stock/stock-form/stock-form.component';
 import { QRCodeModule } from 'angularx-qrcode';
+import { InvoiceTemplateOneComponent } from './components/invoice-template-one/invoice-template-one.component';
+import { InvoiceTemplateTwoComponent } from './components/invoice-template-two/invoice-template-two.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +25,8 @@ import { QRCodeModule } from 'angularx-qrcode';
     BillPreviewComponent,
     EditStockComponent,
     StockFormComponent,
+    InvoiceTemplateOneComponent,
+    InvoiceTemplateTwoComponent,
   ],
   imports: [
     CommonModule,

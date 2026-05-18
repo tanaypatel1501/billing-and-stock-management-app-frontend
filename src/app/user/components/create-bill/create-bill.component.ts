@@ -328,7 +328,13 @@ export class CreateBillComponent implements OnInit, OnDestroy {
 
   addItem(): void {
     if (this.billForm2.valid) {
-      this.step2Data.push(this.billForm2.getRawValue());
+      const raw = this.billForm2.getRawValue();
+
+      const stockItem = this.stock.find(
+        s => s.product.name === raw.productName && s.batchNo === raw.batchNo
+      );
+
+      this.step2Data.push({ ...raw, stockItem }); 
       this.billForm2.reset({ free: 0 });
     } else {
       this.billForm2.markAllAsTouched();
@@ -412,14 +418,10 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       this.billForm2.markAllAsTouched();
       return;
     }
-    
+
     const invalidItems = this.step2Data.some(item => {
-      const stockItem = this.stock.find(
-        s => s.product.name === item.productName && s.batchNo === item.batchNo
-      );
-
+      const stockItem = item.stockItem; 
       if (!stockItem) return true;
-
       return (item.quantity + item.free) > stockItem.quantity;
     });
 
@@ -433,9 +435,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
         this.userStorageService.saveBillId(bill.id);
 
         const requests = this.step2Data.map(item => {
-          const stockItem = this.stock.find(
-            s => s.product.name === item.productName && s.batchNo === item.batchNo
-          );
+          const stockItem = item.stockItem;  
 
           if (!stockItem) {
             console.error('Stock item not found for:', item);
@@ -454,10 +454,10 @@ export class CreateBillComponent implements OnInit, OnDestroy {
                 productId: stockItem.product.id,
                 batchNo: stockItem.batchNo,
                 expiryDate: this.formatDate(stockItem.expiryDate),
-                quantity: stockItem.quantity - (item.quantity + item.free)
-              })
-            )
-          );
+                quantity: stockItem.quantity - (item.quantity + item.free)  
+              })  
+            )      
+          );       
         }).filter(req => req !== null);
 
         if (requests.length === 0) {
@@ -465,19 +465,12 @@ export class CreateBillComponent implements OnInit, OnDestroy {
           return;
         }
 
-        // Execute all API calls together
         forkJoin(requests).subscribe({
-          next: () => {
-            this.router.navigate(['user/bill-preview']);
-          },
-          error: (err) => {
-            console.error('Error in bill item processing:', err);
-          }
+          next: () => this.router.navigate(['user/bill-preview']),
+          error: (err) => console.error('Error in bill item processing:', err)
         });
       },
-      error: (err) => {
-        console.error('Error creating bill:', err);
-      }
+      error: (err) => console.error('Error creating bill:', err)
     });
   }
 

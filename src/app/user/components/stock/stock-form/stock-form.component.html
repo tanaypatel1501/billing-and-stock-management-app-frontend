@@ -51,6 +51,13 @@
             </ul>
           </div>
         </div>
+        <!-- Scan button — shown after product is selected -->
+      <div class="scan-trigger" *ngIf="selectedProductId && mode === 'add'">
+        <button type="button" class="scan-btn" (click)="openCamera()">
+          <span class="scan-icon">📷</span>
+          Scan Label to Auto-fill
+        </button>
+      </div>
 
         <!-- Batch No & Expiry Date Row -->
         <div class="form-row">
@@ -122,6 +129,81 @@
         <p class="auth-footer">
           Missing a product? <a routerLink="/products">Submit a request</a>
         </p>
+        <!-- ── CAMERA SCANNER OVERLAY ── -->
+        <div class="scanner-overlay" *ngIf="showScanner">
+          <div class="scanner-modal">
+
+            <div class="scanner-header">
+              <span>Point camera at the label</span>
+              <button type="button" class="close-btn" (click)="closeScanner()">✕</button>
+            </div>
+
+            <!-- Live viewfinder (hidden while scanning/done) -->
+            <div class="viewfinder-wrap" 
+                [class.hidden]="scanStatus === 'scanning' || scanStatus === 'success' || scanStatus === 'error'">
+              <video id="scanVideo" playsinline muted class="viewfinder"></video>
+              <div class="scan-frame">
+                <div class="corner tl"></div>
+                <div class="corner tr"></div>
+                <div class="corner bl"></div>
+                <div class="corner br"></div>
+                <div class="scan-line"></div>
+              </div>
+              <p class="viewfinder-hint">Hold steady, ensure label is fully visible</p>
+            </div>
+
+            <!-- Hidden canvas used for capture -->
+            <canvas id="scanCanvas" style="display:none"></canvas>
+
+            <!-- Scanning progress -->
+            <div class="scan-processing" *ngIf="scanStatus === 'scanning'">
+              <div class="ocr-animation">
+                <div class="ocr-bar">
+                  <div class="ocr-fill" [style.width.%]="scanProgress"></div>
+                </div>
+                <span class="ocr-label">{{ scanMessage }}</span>
+              </div>
+            </div>
+
+            <!-- Result message -->
+            <div class="scan-result" *ngIf="scanStatus === 'success' || scanStatus === 'error'">
+              <span [class.success-text]="scanStatus === 'success'"
+                    [class.error-text]="scanStatus === 'error'">
+                {{ scanMessage }}
+              </span>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="scanner-actions">
+
+              <!-- Auto-detecting state: pulsing ring + optional manual button -->
+              <ng-container *ngIf="scanStatus === 'detecting'">
+                <div class="auto-detect-ui">
+                  <div class="pulse-ring">
+                    <div class="pulse-dot"></div>
+                  </div>
+                  <p class="detect-label">
+                    {{ showManualCapture ? 'Hold steady or tap to capture' : 'Auto-detecting…' }}
+                  </p>
+                  <button type="button" class="capture-btn"
+                          *ngIf="showManualCapture"
+                          (click)="manualCapture()">
+                    <span class="shutter"></span>
+                  </button>
+                </div>
+              </ng-container>
+
+              <!-- Retry after error -->
+              <button type="button" class="retry-btn"
+                      *ngIf="scanStatus === 'error'"
+                      (click)="openCamera()">
+                Try Again
+              </button>
+
+            </div>
+
+          </div>
+        </div>
       </form>
     </div>
   </div>

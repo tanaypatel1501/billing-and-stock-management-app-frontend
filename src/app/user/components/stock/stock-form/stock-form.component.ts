@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
+import { LabelScannerService, ScannedLabelData } from 'src/app/services/label-scanner/label-scanner.service';
 
 @Component({
   selector: 'app-stock-form',
@@ -31,7 +32,23 @@ export class StockFormComponent implements OnInit {
   isLastPage = false;
   selectedMrp: number | null = null;
   selectedBatchMrp: number | null = null;
+  // ── Camera Scan ───────────────────────────────────────────
+  showScanner       = false;
+  scanStatus: 'idle' | 'detecting' | 'scanning' | 'success' | 'error' = 'idle';
+  scanMessage       = '';
+  scanProgress      = 0;
+  showManualCapture = false;   // fallback shutter shown after timeout
 
+  private stream:          MediaStream | null = null;
+  private videoEl!:        HTMLVideoElement;
+  private canvasEl!:       HTMLCanvasElement;
+  private autoScanLoop:    any = null;   // requestAnimationFrame id
+  private autoScanTimer:   any = null;   // fallback timeout
+  private isProcessing     = false;      // prevent overlapping OCR calls
+  private attemptCount     = 0;
+  private readonly MAX_ATTEMPTS       = 12;   // ~10s at one attempt per ~800ms
+  private readonly SHARPNESS_THRESHOLD = 180; // tune if needed (higher = stricter)
+  private readonly MIN_FIELDS_REQUIRED = 2;   // need at least 2/3 fields to accept
 
   private searchTimeout: any;
   private SEARCH_DEBOUNCE_MS = 200;
@@ -40,7 +57,8 @@ export class StockFormComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private labelScanner: LabelScannerService
   ) {}
 
   ngOnInit(): void {
@@ -241,5 +259,224 @@ export class StockFormComponent implements OnInit {
       this.selectProduct(this.products[this.highlightedIndex]);
       event.preventDefault();
     }
+  }
+
+  // ── OPEN CAMERA ──────────────────────────────────────────
+  async openCamera(): Promise<void> {
+    this.showScanner       = true;
+    this.scanStatus        = 'detecting';
+    this.scanMessage       = '';
+    this.scanProgress      = 0;
+    this.showManualCapture = false;
+    this.isProcessing      = false;
+    this.attemptCount      = 0;
+
+    await new Promise(r => setTimeout(r, 100));
+
+    this.videoEl  = document.getElementById('scanVideo')  as HTMLVideoElement;
+    this.canvasEl = document.getElementById('scanCanvas') as HTMLCanvasElement;
+
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 } }
+      });
+      this.videoEl.srcObject = this.stream;
+      await this.videoEl.play();
+      this.startAutoDetect();
+    } catch {
+      this.scanStatus  = 'error';
+      this.scanMessage = 'Camera access denied. Please allow camera permission.';
+    }
+  }
+
+  // ── AUTO DETECT LOOP ─────────────────────────────────────
+  private startAutoDetect(): void {
+    // Fallback: show manual button after MAX_ATTEMPTS
+    this.autoScanTimer = setTimeout(() => {
+      if (this.scanStatus === 'detecting') {
+        this.showManualCapture = true;
+        this.scanMessage = 'Hold the label steady or tap capture';
+      }
+    }, this.MAX_ATTEMPTS * 800);
+
+    const attempt = async () => {
+      if (this.scanStatus !== 'detecting' || this.isProcessing) return;
+
+      // Check sharpness before OCR — cheap canvas operation
+      const sharpness = this.measureSharpness();
+      if (sharpness >= this.SHARPNESS_THRESHOLD) {
+        this.attemptCount++;
+        this.isProcessing = true;
+        await this.runOcrAttempt();
+        this.isProcessing = false;
+      }
+
+      // Keep looping if still in detecting state
+      if (this.scanStatus === 'detecting') {
+        this.autoScanLoop = setTimeout(attempt, 800);
+      }
+    };
+
+    // Small initial delay to let camera warm up / focus
+    this.autoScanLoop = setTimeout(attempt, 1200);
+  }
+
+  // ── SHARPNESS CHECK (Laplacian variance on greyscale) ────
+  private measureSharpness(): number {
+    if (!this.videoEl || !this.canvasEl) return 0;
+    if (this.videoEl.readyState < 2) return 0;
+
+    // Use a small 200×150 sample for speed
+    const sampleW = 200, sampleH = 150;
+    const ctx = this.canvasEl.getContext('2d')!;
+    this.canvasEl.width  = sampleW;
+    this.canvasEl.height = sampleH;
+    ctx.drawImage(this.videoEl, 0, 0, sampleW, sampleH);
+
+    const { data } = ctx.getImageData(0, 0, sampleW, sampleH);
+    const grey: number[] = [];
+
+    for (let i = 0; i < data.length; i += 4) {
+      grey.push(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]);
+    }
+
+    // Laplacian: measure how much edges exist (blurry = low variance)
+    let sum = 0, sumSq = 0, count = 0;
+    for (let y = 1; y < sampleH - 1; y++) {
+      for (let x = 1; x < sampleW - 1; x++) {
+        const idx = y * sampleW + x;
+        const lap = Math.abs(
+          -grey[idx - sampleW - 1] - grey[idx - sampleW] - grey[idx - sampleW + 1]
+          - grey[idx - 1] + 8 * grey[idx] - grey[idx + 1]
+          - grey[idx + sampleW - 1] - grey[idx + sampleW] - grey[idx + sampleW + 1]
+        );
+        sum   += lap;
+        sumSq += lap * lap;
+        count++;
+      }
+    }
+    const mean     = sum / count;
+    const variance = sumSq / count - mean * mean;
+    return variance;
+  }
+
+  // ── SINGLE OCR ATTEMPT ───────────────────────────────────
+  private async runOcrAttempt(): Promise<void> {
+    // Capture full-res frame for OCR
+    const ctx = this.canvasEl.getContext('2d')!;
+    this.canvasEl.width  = this.videoEl.videoWidth;
+    this.canvasEl.height = this.videoEl.videoHeight;
+    ctx.drawImage(this.videoEl, 0, 0);
+
+    const imageData = this.canvasEl.toDataURL('image/jpeg', 0.92);
+
+    try {
+      const result = await this.labelScanner.scanLabel(imageData);
+      const filledCount = this.countFilledFields(result);
+
+      if (filledCount >= this.MIN_FIELDS_REQUIRED) {
+        // Confident enough — accept and close
+        this.stopAutoDetect();
+        this.stopStream();
+        this.applyScannedData(result);
+        this.scanStatus  = 'success';
+        this.scanMessage = this.buildSuccessMessage(result);
+        setTimeout(() => { this.showScanner = false; }, 2000);
+      }
+      // else: not enough fields found, keep trying silently
+    } catch {
+      // Silent fail — keep loop going
+    }
+  }
+
+  // ── MANUAL CAPTURE (fallback shutter) ───────────────────
+  async manualCapture(): Promise<void> {
+    if (this.isProcessing) return;
+    this.stopAutoDetect();
+
+    const ctx = this.canvasEl.getContext('2d')!;
+    this.canvasEl.width  = this.videoEl.videoWidth;
+    this.canvasEl.height = this.videoEl.videoHeight;
+    ctx.drawImage(this.videoEl, 0, 0);
+
+    this.stopStream();
+    this.scanStatus        = 'scanning';
+    this.scanMessage       = 'Reading label…';
+    this.scanProgress      = 0;
+    this.showManualCapture = false;
+
+    const progressInterval = setInterval(() => {
+      if (this.scanProgress < 85) this.scanProgress += 5;
+    }, 300);
+
+    try {
+      const imageData = this.canvasEl.toDataURL('image/jpeg', 0.92);
+      const result    = await this.labelScanner.scanLabel(imageData);
+
+      clearInterval(progressInterval);
+      this.scanProgress = 100;
+      this.applyScannedData(result);
+      this.scanStatus  = 'success';
+      this.scanMessage = this.buildSuccessMessage(result);
+      setTimeout(() => { this.showScanner = false; }, 2000);
+    } catch {
+      clearInterval(progressInterval);
+      this.scanStatus  = 'error';
+      this.scanMessage = 'Could not read label. Please try again in better lighting.';
+    }
+  }
+
+  // ── HELPERS ──────────────────────────────────────────────
+  private countFilledFields(data: ScannedLabelData): number {
+    let count = 0;
+    if (data.batchNo)     count++;
+    if (data.expiryDate)  count++;
+    if (data.mrp != null) count++;
+    return count;
+  }
+
+  private applyScannedData(data: ScannedLabelData): void {
+    const patch: any = {};
+    if (data.batchNo)     patch.batchNo    = data.batchNo;
+    if (data.expiryDate)  patch.expiryDate = data.expiryDate;
+    if (data.mrp != null) patch.mrp        = data.mrp;
+    this.productForm.patchValue(patch);
+  }
+
+  private buildSuccessMessage(data: ScannedLabelData): string {
+    const found: string[] = [];
+    if (data.batchNo)     found.push('Batch No');
+    if (data.expiryDate)  found.push('Expiry Date');
+    if (data.mrp != null) found.push('MRP');
+    return found.length > 0
+      ? `✓ Filled: ${found.join(', ')}`
+      : 'Scan done — please fill fields manually.';
+  }
+
+  private stopAutoDetect(): void {
+    clearTimeout(this.autoScanLoop);
+    clearTimeout(this.autoScanTimer);
+    this.autoScanLoop  = null;
+    this.autoScanTimer = null;
+  }
+
+  stopStream(): void {
+    this.stream?.getTracks().forEach(t => t.stop());
+    this.stream = null;
+  }
+
+  closeScanner(): void {
+    this.stopAutoDetect();
+    this.stopStream();
+    this.showScanner       = false;
+    this.scanStatus        = 'idle';
+    this.scanMessage       = '';
+    this.scanProgress      = 0;
+    this.showManualCapture = false;
+  }
+
+  ngOnDestroy(): void {
+    this.stopAutoDetect();
+    this.stopStream();
   }
 }

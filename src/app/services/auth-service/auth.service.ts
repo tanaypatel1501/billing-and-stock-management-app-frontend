@@ -526,4 +526,13 @@ export class AuthService {
     );
   }
 
+  /* ---------------------- OCR ---------------------- */
+
+  scanOcrLabel(formData: FormData): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}api/ocr/scan`,
+      formData,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
 }

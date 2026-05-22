@@ -174,33 +174,37 @@
             </div>
 
             <!-- Action buttons -->
-            <div class="scanner-actions">
+          <div class="scanner-actions">
 
-              <!-- Auto-detecting state: pulsing ring + optional manual button -->
-              <ng-container *ngIf="scanStatus === 'detecting'">
-                <div class="auto-detect-ui">
-                  <div class="pulse-ring">
-                    <div class="pulse-dot"></div>
-                  </div>
-                  <p class="detect-label">
-                    {{ showManualCapture ? 'Hold steady or tap to capture' : 'Auto-detecting…' }}
-                  </p>
-                  <button type="button" class="capture-btn"
-                          *ngIf="showManualCapture"
-                          (click)="manualCapture()">
-                    <span class="shutter"></span>
-                  </button>
-                </div>
-              </ng-container>
+            <!-- Auto-detecting: pulsing ring -->
+            <ng-container *ngIf="scanStatus === 'detecting' && !showManualCapture">
+              <div class="auto-detect-ui">
+                <div class="pulse-ring"><div class="pulse-dot"></div></div>
+                <p class="detect-label">Auto-detecting…</p>
+              </div>
+            </ng-container>
 
-              <!-- Retry after error -->
-              <button type="button" class="retry-btn"
-                      *ngIf="scanStatus === 'error'"
-                      (click)="openCamera()">
-                Try Again
-              </button>
+            <!-- Fallback: manual shutter appears after timeout -->
+            <ng-container *ngIf="scanStatus === 'detecting' && showManualCapture">
+              <div class="auto-detect-ui">
+                <p class="detect-label">{{ scanMessage }}</p>
+                <button type="button" class="capture-btn" (click)="manualCapture()">
+                  <span class="shutter"></span>
+                </button>
+              </div>
+            </ng-container>
 
-            </div>
+            <!-- Scanning in progress: progress bar only, no button -->
+            <!-- (UI is intentionally locked — request is in flight) -->
+
+            <!-- Error: retry button -->
+            <button type="button" class="retry-btn"
+                    *ngIf="scanStatus === 'error'"
+                    (click)="openCamera()">
+              Try Again
+            </button>
+
+          </div>
 
           </div>
         </div>

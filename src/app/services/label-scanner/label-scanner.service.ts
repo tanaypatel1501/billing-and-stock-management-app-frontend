@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 
 export interface ScannedLabelData {
@@ -19,13 +19,18 @@ export class LabelScannerService {
   // Converts to a Blob, sends to Spring Boot /api/ocr/scan via AuthService,
   // returns the parsed { batchNo, expiryDate, mrp }.
   async scanLabel(imageData: string): Promise<ScannedLabelData> {
-    const blob     = this.base64ToBlob(imageData);
+    // Compress image to max 800px wide BEFORE sending
+    // This is the single biggest speed improvement — reduces payload from ~3MB to ~150KB
+    const compressed = await this.compressImage(imageData, 800);
+
+    const blob     = this.base64ToBlob(compressed);
     const formData = new FormData();
     formData.append('image', blob, 'label.jpg');
 
-    // Route the API call through AuthService
     const result = await firstValueFrom(
-      this.authService.scanOcrLabel(formData)
+      this.authService.scanOcrLabel(formData).pipe(
+        timeout(45000) // 45s client timeout — longer than Cloudflare's 30s so CF error shows first
+      )
     );
 
     return {
@@ -35,7 +40,25 @@ export class LabelScannerService {
     };
   }
 
-  // Convert base64 data URL → Blob for FormData upload
+  // Resize image to maxWidth, keeping aspect ratio, output as JPEG quality 0.85
+  private compressImage(dataUrl: string, maxWidth: number): Promise<string> {
+    return new Promise(resolve => {
+      const img    = new Image();
+      img.onload   = () => {
+        const scale  = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width  = Math.round(img.width  * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d')!;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = dataUrl;
+    });
+  }
+
   private base64ToBlob(dataUrl: string): Blob {
     const [header, data] = dataUrl.split(',');
     const mime           = header.match(/:(.*?);/)![1];

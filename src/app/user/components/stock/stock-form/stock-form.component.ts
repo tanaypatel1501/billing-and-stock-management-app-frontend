@@ -291,7 +291,7 @@ export class StockFormComponent implements OnInit {
 
   // ── AUTO DETECT LOOP ─────────────────────────────────────
   private startAutoDetect(): void {
-    // Fallback: show manual button after MAX_ATTEMPTS
+    // Show manual capture button after ~10s regardless
     this.autoScanTimer = setTimeout(() => {
       if (this.scanStatus === 'detecting') {
         this.showManualCapture = true;
@@ -307,13 +307,20 @@ export class StockFormComponent implements OnInit {
       if (sharpness >= this.SHARPNESS_THRESHOLD) {
         this.attemptCount++;
         this.isProcessing = true;
-        await this.runOcrAttempt();
-        this.isProcessing = false;
-      }
 
-      // Keep looping if still in detecting state
-      if (this.scanStatus === 'detecting') {
-        this.autoScanLoop = setTimeout(attempt, 800);
+        // Show scanning state in UI immediately — don't leave user wondering
+        this.scanStatus  = 'scanning';
+        this.scanMessage = 'Reading label…';
+        this.scanProgress = 0;
+        this.stopStream(); // stop camera — frame is captured
+
+        await this.runOcrAttempt();
+        // runOcrAttempt sets status to success/error, no need to reset isProcessing
+      } else {
+        // Not sharp enough — keep looping
+        if (this.scanStatus === 'detecting') {
+          this.autoScanLoop = setTimeout(attempt, 800);
+        }
       }
     };
 
@@ -362,11 +369,17 @@ export class StockFormComponent implements OnInit {
 
   // ── SINGLE OCR ATTEMPT ───────────────────────────────────
   private async runOcrAttempt(): Promise<void> {
-    // Capture full-res frame for OCR
+    const progressInterval = setInterval(() => {
+      if (this.scanProgress < 85) this.scanProgress += 3;
+    }, 600);
+
     const ctx = this.canvasEl.getContext('2d')!;
-    this.canvasEl.width  = this.videoEl.videoWidth;
-    this.canvasEl.height = this.videoEl.videoHeight;
-    ctx.drawImage(this.videoEl, 0, 0);
+    this.canvasEl.width  = this.videoEl.videoWidth  || this.canvasEl.width;
+    this.canvasEl.height = this.videoEl.videoHeight || this.canvasEl.height;
+    // Don't redraw if stream already stopped — canvas still has the last frame
+    if (this.videoEl.readyState >= 2) {
+      ctx.drawImage(this.videoEl, 0, 0);
+    }
 
     const imageData = this.canvasEl.toDataURL('image/jpeg', 0.92);
 
@@ -374,19 +387,34 @@ export class StockFormComponent implements OnInit {
       const result = await this.labelScanner.scanLabel(imageData);
       const filledCount = this.countFilledFields(result);
 
+      clearInterval(progressInterval);
+      this.scanProgress = 100;
+
       if (filledCount >= this.MIN_FIELDS_REQUIRED) {
-        // Confident enough — accept and close
-        this.stopAutoDetect();
-        this.stopStream();
         this.applyScannedData(result);
         this.scanStatus  = 'success';
         this.scanMessage = this.buildSuccessMessage(result);
         setTimeout(() => { this.showScanner = false; }, 2000);
+      } else {
+        // Got a response but not enough fields — show retry
+        this.scanStatus  = 'error';
+        this.scanMessage = 'Label unclear — try better lighting or tap retry';
       }
-      // else: not enough fields found, keep trying silently
-    } catch {
-      // Silent fail — keep loop going
+    } catch (err: any) {
+      clearInterval(progressInterval);
+      if (err?.status === 403) {
+        this.scanStatus  = 'error';
+        this.scanMessage = 'Session expired — please log in again';
+      } else if (err?.name === 'TimeoutError') {
+        this.scanStatus  = 'error';
+        this.scanMessage = 'Server took too long — please try again';
+      } else {
+        this.scanStatus  = 'error';
+        this.scanMessage = 'Could not read label. Try better lighting.';
+      }
     }
+
+    this.isProcessing = false;
   }
 
   // ── MANUAL CAPTURE (fallback shutter) ───────────────────
@@ -404,26 +432,9 @@ export class StockFormComponent implements OnInit {
     this.scanMessage       = 'Reading label…';
     this.scanProgress      = 0;
     this.showManualCapture = false;
+    this.isProcessing      = true;
 
-    const progressInterval = setInterval(() => {
-      if (this.scanProgress < 85) this.scanProgress += 5;
-    }, 300);
-
-    try {
-      const imageData = this.canvasEl.toDataURL('image/jpeg', 0.92);
-      const result    = await this.labelScanner.scanLabel(imageData);
-
-      clearInterval(progressInterval);
-      this.scanProgress = 100;
-      this.applyScannedData(result);
-      this.scanStatus  = 'success';
-      this.scanMessage = this.buildSuccessMessage(result);
-      setTimeout(() => { this.showScanner = false; }, 2000);
-    } catch {
-      clearInterval(progressInterval);
-      this.scanStatus  = 'error';
-      this.scanMessage = 'Could not read label. Please try again in better lighting.';
-    }
+    await this.runOcrAttempt();
   }
 
   // ── HELPERS ──────────────────────────────────────────────

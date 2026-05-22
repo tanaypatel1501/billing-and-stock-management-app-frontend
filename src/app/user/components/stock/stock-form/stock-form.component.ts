@@ -46,7 +46,7 @@ export class StockFormComponent implements OnInit {
   private autoScanTimer:   any = null;   // fallback timeout
   private isProcessing     = false;      // prevent overlapping OCR calls
   private attemptCount     = 0;
-  private readonly CONFIDENCE_THRESHOLD = 0.60; // trigger OCR when label clearly detected
+  private readonly CONFIDENCE_THRESHOLD = 0.50; // trigger OCR when label clearly detected
   private readonly MAX_ATTEMPTS = 20;   // ~16s of attempts at 800ms each
   private lastCentroid: { x: number; y: number } | null = null;
 
@@ -379,8 +379,8 @@ export class StockFormComponent implements OnInit {
       }
   
     // Find the densest contiguous row band
-    const rowThresh = W * 0.35; // row must be 35% white to count
-    const colThresh = H * 0.30;
+    const rowThresh = W * 0.25; // row must be 35% white to count
+    const colThresh = H * 0.20;
   
     let denseRows = 0, denseCols = 0;
     for (let y = 0; y < H; y++) if (rowDensity[y] > rowThresh) denseRows++;
@@ -430,7 +430,11 @@ export class StockFormComponent implements OnInit {
   
     // ── Combined confidence ───────────────────────────────────────────────
     // Weight: rect shape 30%, text presence 40%, stability 30%
-    const confidence = rectScore * 0.30 + textScore * 0.40 + stabilityScore * 0.30;
+    const stabilityWeight = this.lastCentroid ? 0.20 : 0.0; // ignore stability on first frame
+    const baseScore = rectScore * 0.35 + textScore * 0.65;
+    const confidence = this.lastCentroid
+      ? rectScore * 0.35 + textScore * 0.45 + stabilityScore * 0.20
+      : baseScore;
   
     console.log(`[LabelDetect] white=${whiteFraction.toFixed(2)} rect=${rectScore.toFixed(2)} text=${textScore.toFixed(2)} stability=${stabilityScore.toFixed(2)} → ${confidence.toFixed(2)}`);
   

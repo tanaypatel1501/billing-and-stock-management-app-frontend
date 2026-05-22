@@ -46,8 +46,8 @@ export class StockFormComponent implements OnInit {
   private autoScanTimer:   any = null;   // fallback timeout
   private isProcessing     = false;      // prevent overlapping OCR calls
   private attemptCount     = 0;
-  private readonly MAX_ATTEMPTS       = 12;   // ~10s at one attempt per ~800ms
-  private readonly SHARPNESS_THRESHOLD = 180; // tune if needed (higher = stricter)
+  private readonly MAX_ATTEMPTS       = 15;   // ~10s at one attempt per ~800ms
+  private readonly SHARPNESS_THRESHOLD = 400; // tune if needed (higher = stricter)
   private readonly MIN_FIELDS_REQUIRED = 2;   // need at least 2/3 fields to accept
 
   private searchTimeout: any;
@@ -325,7 +325,7 @@ export class StockFormComponent implements OnInit {
     };
 
     // Small initial delay to let camera warm up / focus
-    this.autoScanLoop = setTimeout(attempt, 1200);
+    this.autoScanLoop = setTimeout(attempt, 2500);
   }
 
   // ── SHARPNESS CHECK (Laplacian variance on greyscale) ────

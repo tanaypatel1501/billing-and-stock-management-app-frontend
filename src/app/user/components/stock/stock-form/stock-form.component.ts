@@ -46,8 +46,10 @@ export class StockFormComponent implements OnInit {
   private autoScanTimer:   any = null;   // fallback timeout
   private isProcessing     = false;      // prevent overlapping OCR calls
   private attemptCount     = 0;
-  private readonly MAX_ATTEMPTS       = 15;   // ~10s at one attempt per ~800ms
-  private readonly SHARPNESS_THRESHOLD = 400; // tune if needed (higher = stricter)
+  private readonly CONFIDENCE_THRESHOLD = 0.60; // trigger OCR when label clearly detected
+  private readonly MAX_ATTEMPTS = 20;   // ~16s of attempts at 800ms each
+  private lastCentroid: { x: number; y: number } | null = null;
+
   private readonly MIN_FIELDS_REQUIRED = 2;   // need at least 2/3 fields to accept
 
   private searchTimeout: any;
@@ -291,80 +293,148 @@ export class StockFormComponent implements OnInit {
 
   // ── AUTO DETECT LOOP ─────────────────────────────────────
   private startAutoDetect(): void {
-    // Show manual capture button after ~10s regardless
+    this.lastCentroid = null;
+  
     this.autoScanTimer = setTimeout(() => {
       if (this.scanStatus === 'detecting') {
         this.showManualCapture = true;
         this.scanMessage = 'Hold the label steady or tap capture';
       }
     }, this.MAX_ATTEMPTS * 800);
-
+  
     const attempt = async () => {
       if (this.scanStatus !== 'detecting' || this.isProcessing) return;
-
-      // Check sharpness before OCR — cheap canvas operation
-      const sharpness = this.measureSharpness();
-      if (sharpness >= this.SHARPNESS_THRESHOLD) {
-        this.attemptCount++;
+  
+      const confidence = this.detectLabel();
+  
+      if (confidence >= this.CONFIDENCE_THRESHOLD) {
+        // Label detected with sufficient confidence — capture and OCR
         this.isProcessing = true;
-
-        // Show scanning state in UI immediately — don't leave user wondering
-        this.scanStatus  = 'scanning';
-        this.scanMessage = 'Reading label…';
+        this.scanStatus   = 'scanning';
+        this.scanMessage  = 'Label detected — reading…';
         this.scanProgress = 0;
-        this.stopStream(); // stop camera — frame is captured
+        const ctx = this.canvasEl.getContext('2d')!;
+        this.canvasEl.width  = this.videoEl.videoWidth;
+        this.canvasEl.height = this.videoEl.videoHeight;
+        ctx.drawImage(this.videoEl, 0, 0); // full res captured
 
-        await this.runOcrAttempt();
-        // runOcrAttempt sets status to success/error, no need to reset isProcessing
+        this.stopStream(); // now safe to stop
+        await this.runOcrAttempt(); // canvas already has full frame
       } else {
-        // Not sharp enough — keep looping
+        // Not confident enough — keep looping
         if (this.scanStatus === 'detecting') {
           this.autoScanLoop = setTimeout(attempt, 800);
         }
       }
     };
-
-    // Small initial delay to let camera warm up / focus
-    this.autoScanLoop = setTimeout(attempt, 2500);
+  
+    // 1.5s initial delay — let camera open, focus, and expose properly
+    this.autoScanLoop = setTimeout(attempt, 1500);
   }
 
-  // ── SHARPNESS CHECK (Laplacian variance on greyscale) ────
-  private measureSharpness(): number {
+
+  private detectLabel(): number {
     if (!this.videoEl || !this.canvasEl) return 0;
-    if (this.videoEl.readyState < 2) return 0;
-
-    // Use a small 200×150 sample for speed
-    const sampleW = 200, sampleH = 150;
+    if (this.videoEl.readyState < 2)     return 0;
+  
+    // Work on a small downscaled frame for speed (~5ms on mobile)
+    const W = 320, H = 240;
     const ctx = this.canvasEl.getContext('2d')!;
-    this.canvasEl.width  = sampleW;
-    this.canvasEl.height = sampleH;
-    ctx.drawImage(this.videoEl, 0, 0, sampleW, sampleH);
-
-    const { data } = ctx.getImageData(0, 0, sampleW, sampleH);
-    const grey: number[] = [];
-
+    this.canvasEl.width  = W;
+    this.canvasEl.height = H;
+    ctx.drawImage(this.videoEl, 0, 0, W, H);
+  
+    const { data } = ctx.getImageData(0, 0, W, H);
+  
+    // Build greyscale + brightness maps
+    const grey  = new Uint8Array(W * H);
+    const white = new Uint8Array(W * H); // 1 if pixel is "white"
+  
+    const WHITE_MIN = 200; // pixel brightness > this = white
+  
     for (let i = 0; i < data.length; i += 4) {
-      grey.push(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]);
+      const r = data[i], g = data[i+1], b = data[i+2];
+      const g8 = (0.299 * r + 0.587 * g + 0.114 * b) | 0;
+      grey[i >> 2]  = g8;
+      white[i >> 2] = g8 > WHITE_MIN ? 1 : 0;
     }
-
-    // Laplacian: measure how much edges exist (blurry = low variance)
-    let sum = 0, sumSq = 0, count = 0;
-    for (let y = 1; y < sampleH - 1; y++) {
-      for (let x = 1; x < sampleW - 1; x++) {
-        const idx = y * sampleW + x;
-        const lap = Math.abs(
-          -grey[idx - sampleW - 1] - grey[idx - sampleW] - grey[idx - sampleW + 1]
-          - grey[idx - 1] + 8 * grey[idx] - grey[idx + 1]
-          - grey[idx + sampleW - 1] - grey[idx + sampleW] - grey[idx + sampleW + 1]
-        );
-        sum   += lap;
-        sumSq += lap * lap;
-        count++;
+  
+    // ── Score 1: White region density ────────────────────────────────────
+    // A label sticker = dense band of white pixels occupying 15-70% of frame
+    let whiteCount = 0;
+    for (let i = 0; i < white.length; i++) whiteCount += white[i];
+    const whiteFraction = whiteCount / (W * H);
+  
+    // Too little white = no sticker visible
+    // Too much white = pointing at a white wall/sky, not a label
+    if (whiteFraction < 0.12 || whiteFraction > 0.75) return 0;
+  
+    // ── Score 2: White region is RECTANGULAR (not scattered) ─────────────
+    // Row and column projections — a rectangle has a contiguous dense band
+    const rowDensity = new Float32Array(H);
+    const colDensity = new Float32Array(W);
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        if (white[y * W + x]) { rowDensity[y]++; colDensity[x]++; }
+      }
+  
+    // Find the densest contiguous row band
+    const rowThresh = W * 0.35; // row must be 35% white to count
+    const colThresh = H * 0.30;
+  
+    let denseRows = 0, denseCols = 0;
+    for (let y = 0; y < H; y++) if (rowDensity[y] > rowThresh) denseRows++;
+    for (let x = 0; x < W; x++) if (colDensity[x] > colThresh) denseCols++;
+  
+    // Rectangle score: dense rows and cols must both exist
+    const rectScore = Math.min(denseRows / H, denseCols / W);
+    if (rectScore < 0.10) return 0; // no clear rectangle
+  
+    // ── Score 3: Text inside the white region (pixel variance) ───────────
+    // A blank white wall has near-zero variance. A label with printed text
+    // has high variance because dark characters sit on white background.
+    let sum = 0, sumSq = 0, textPixels = 0;
+    for (let i = 0; i < grey.length; i++) {
+      // Only sample pixels that are "near white" (inside the sticker region)
+      if (grey[i] > 160) {
+        sum   += grey[i];
+        sumSq += grey[i] * grey[i];
+        textPixels++;
       }
     }
-    const mean     = sum / count;
-    const variance = sumSq / count - mean * mean;
-    return variance;
+    const mean     = sum / (textPixels || 1);
+    const variance = sumSq / (textPixels || 1) - mean * mean;
+  
+    // Low variance = blank white surface (no text)
+    // High variance inside white region = printed text present
+    const textScore = Math.min(variance / 300, 1.0); // normalise to 0-1
+    if (textScore < 0.15) return 0; // no text detected
+  
+    // ── Score 4: Stability check ──────────────────────────────────────────
+    // Compare this frame's white centroid to last frame's.
+    // If centroid moved a lot = phone is still moving.
+    let cx = 0, cy = 0, wc = 0;
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++)
+        if (white[y * W + x]) { cx += x; cy += y; wc++; }
+  
+    if (wc > 0) { cx /= wc; cy /= wc; }
+  
+    const moved = this.lastCentroid
+      ? Math.sqrt((cx - this.lastCentroid.x) ** 2 + (cy - this.lastCentroid.y) ** 2)
+      : 999;
+    this.lastCentroid = { x: cx, y: cy };
+  
+    // If centroid moved more than 15px between frames = still moving
+    const stabilityScore = moved < 15 ? 1.0 : Math.max(0, 1 - (moved - 15) / 50);
+  
+    // ── Combined confidence ───────────────────────────────────────────────
+    // Weight: rect shape 30%, text presence 40%, stability 30%
+    const confidence = rectScore * 0.30 + textScore * 0.40 + stabilityScore * 0.30;
+  
+    console.log(`[LabelDetect] white=${whiteFraction.toFixed(2)} rect=${rectScore.toFixed(2)} text=${textScore.toFixed(2)} stability=${stabilityScore.toFixed(2)} → ${confidence.toFixed(2)}`);
+  
+    return confidence;
   }
 
   // ── SINGLE OCR ATTEMPT ───────────────────────────────────
@@ -372,14 +442,6 @@ export class StockFormComponent implements OnInit {
     const progressInterval = setInterval(() => {
       if (this.scanProgress < 85) this.scanProgress += 3;
     }, 600);
-
-    const ctx = this.canvasEl.getContext('2d')!;
-    this.canvasEl.width  = this.videoEl.videoWidth  || this.canvasEl.width;
-    this.canvasEl.height = this.videoEl.videoHeight || this.canvasEl.height;
-    // Don't redraw if stream already stopped — canvas still has the last frame
-    if (this.videoEl.readyState >= 2) {
-      ctx.drawImage(this.videoEl, 0, 0);
-    }
 
     const imageData = this.canvasEl.toDataURL('image/jpeg', 0.92);
 

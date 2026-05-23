@@ -71,6 +71,9 @@ export class StockFormComponent implements OnInit {
       this.stockId = Number(this.route.snapshot.paramMap.get('stockId'));
       this.loadStock();
     }
+    if (this.mode === 'add') {
+      this.warmupOcr();
+    }
   }
 
   private initForm() {
@@ -528,6 +531,30 @@ export class StockFormComponent implements OnInit {
     return found.length > 0
       ? `✓ Filled: ${found.join(', ')}`
       : 'Scan done — please fill fields manually.';
+  }
+
+  // ── OCR WARMUP ───────────────────────────────────────────
+  private warmupOcr(): void {
+    // Create a tiny 10x10 white canvas and send it silently
+    // This keeps EasyOCR model hot in memory
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width  = 10;
+      canvas.height = 10;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 10, 10);
+
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const fd = new FormData();
+        fd.append('image', blob, 'warmup.jpg');
+        // Fire and forget — ignore response and errors completely
+        this.authService.scanOcrLabel(fd).subscribe({ error: () => {} });
+      }, 'image/jpeg');
+    } catch {
+      // Silent fail — warmup is best-effort only
+    }
   }
 
   private stopAutoDetect(): void {

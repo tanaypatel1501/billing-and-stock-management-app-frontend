@@ -529,10 +529,11 @@ export class AuthService {
   /* ---------------------- OCR ---------------------- */
 
   scanOcrLabel(formData: FormData): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.post<any>(
       `${this.baseUrl}api/ocr/scan`,
       formData,
-      { headers: this.createAuthorizationHeader() }
+      { headers }
     );
   }
 }

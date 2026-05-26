@@ -54,6 +54,7 @@ export class StockFormComponent implements OnInit {
 
   private searchTimeout: any;
   private SEARCH_DEBOUNCE_MS = 200;
+  private scanCancelled = false;
 
   constructor(
     private fb: FormBuilder,
@@ -268,6 +269,7 @@ export class StockFormComponent implements OnInit {
 
   // ── OPEN CAMERA ──────────────────────────────────────────
   async openCamera(): Promise<void> {
+    this.scanCancelled = false;
     this.showScanner       = true;
     this.scanStatus        = 'detecting';
     this.scanMessage       = '';
@@ -459,6 +461,8 @@ export class StockFormComponent implements OnInit {
       clearInterval(progressInterval);
       this.scanProgress = 100;
 
+      if (this.scanCancelled) return;
+
       if (filledCount >= this.MIN_FIELDS_REQUIRED) {
         this.applyScannedData(result);
         this.scanStatus  = 'success';
@@ -467,20 +471,13 @@ export class StockFormComponent implements OnInit {
       } else {
         // Got a response but not enough fields — show retry
         this.scanStatus  = 'error';
-        this.scanMessage = 'Label unclear — try better lighting or tap retry';
+        this.scanMessage = 'Could not read label. Please try again.';
       }
     } catch (err: any) {
       clearInterval(progressInterval);
-      if (err?.status === 403) {
-        this.scanStatus  = 'error';
-        this.scanMessage = 'Session expired — please log in again';
-      } else if (err?.name === 'TimeoutError') {
-        this.scanStatus  = 'error';
-        this.scanMessage = 'Server took too long — please try again';
-      } else {
-        this.scanStatus  = 'error';
-        this.scanMessage = 'Could not read label. Try better lighting.';
-      }
+      if (this.scanCancelled) return;
+      this.scanStatus  = 'error';
+      this.scanMessage = 'Could not read label. Please try again.';
     }
 
     this.isProcessing = false;
@@ -572,6 +569,7 @@ export class StockFormComponent implements OnInit {
   closeScanner(): void {
     this.stopAutoDetect();
     this.stopStream();
+    this.scanCancelled     = true; 
     this.showScanner       = false;
     this.scanStatus        = 'idle';
     this.scanMessage       = '';

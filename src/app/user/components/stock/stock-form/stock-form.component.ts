@@ -341,7 +341,7 @@ export class StockFormComponent implements OnInit {
     if (this.videoEl.readyState < 2)     return 0;
   
     // Work on a small downscaled frame for speed (~5ms on mobile)
-    const W = 320, H = 240;
+    const W = 160, H = 120;
     const ctx = this.canvasEl.getContext('2d')!;
     this.canvasEl.width  = W;
     this.canvasEl.height = H;

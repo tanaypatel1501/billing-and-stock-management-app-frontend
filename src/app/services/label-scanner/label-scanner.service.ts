@@ -21,7 +21,7 @@ export class LabelScannerService {
   async scanLabel(imageData: string): Promise<ScannedLabelData> {
     // Compress image to max 800px wide BEFORE sending
     // This is the single biggest speed improvement — reduces payload from ~3MB to ~150KB
-    const compressed = await this.compressImage(imageData, 800);
+    const compressed = await this.compressImage(imageData, 1200);
 
     const blob     = this.base64ToBlob(compressed);
     const formData = new FormData();

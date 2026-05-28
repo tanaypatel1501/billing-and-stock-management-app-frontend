@@ -188,6 +188,9 @@
                     {{ item.product?.sgst | number }}%
                   </td>
                   <td data-label="Actions" class="action-cell expandable">
+                    <button class="icon-btn info" (click)="openLogModal(item.id, $event)" title="View History">
+                      <fa-icon [icon]="faCircleInfo"></fa-icon>
+                    </button>
                     <button class="icon-btn edit" (click)="edit(item.id)">
                       <fa-icon [icon]="faPencil"></fa-icon>
                     </button>
@@ -269,3 +272,38 @@
   (confirm)="deleteStock()"
   (cancel)="closeDeleteModal()">
 </app-confirm-delete-modal>
+<div class="custom-modal-overlay" *ngIf="showLogModal" (click)="closeLogModal()">
+  <div class="custom-modal-content" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <h3>Stock History</h3>
+      <button class="close-btn" (click)="closeLogModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="isLoadingLogs" class="log-loader">
+        <div class="spinner"></div>
+        <p>Fetching history...</p>
+      </div>
+
+      <div *ngIf="!isLoadingLogs && currentStockLogs.length === 0" class="no-logs">
+        <div class="empty-icon">⏳</div>
+        <p>No history found for this item.</p>
+      </div>
+
+      <ul class="timeline" *ngIf="!isLoadingLogs && currentStockLogs.length > 0" (click)="handleLogClick($event)">
+        <li class="timeline-item" *ngFor="let log of currentStockLogs" [ngClass]="log.action.toLowerCase()">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <span class="log-date">{{ log.timestamp | date:'MMM d, y, h:mm a' }}</span>
+            <h4 class="log-action">{{ log.action }}</h4>
+            
+            <p class="log-notes" *ngIf="log.notes" [innerHTML]="getSafeHtml(log.notes)"></p>
+            
+          </div>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</div>

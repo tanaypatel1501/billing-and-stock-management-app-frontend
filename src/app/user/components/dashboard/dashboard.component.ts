@@ -3,13 +3,13 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { Router } from '@angular/router';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
-import { faPencil,faArrowLeft,faCartFlatbed } from '@fortawesome/free-solid-svg-icons';
+import { faPencil, faArrowLeft, faCartFlatbed, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { CommonModule } from '@angular/common'; 
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-button.component';
 import { ConfirmDeleteModalComponent } from 'src/app/shared/confirm-delete-modal/confirm-delete-modal.component';
-
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,11 +24,12 @@ import { ConfirmDeleteModalComponent } from 'src/app/shared/confirm-delete-modal
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit{
+export class DashboardComponent implements OnInit {
   faTrashCan = faTrashCan;
   faPencil = faPencil;
   faArrowLeft = faArrowLeft;
   faCartFlatbed = faCartFlatbed;
+  faCircleInfo = faCircleInfo;
   stock: any[] = [];
   isSearchActive: boolean = false;
   currentPage: number = 0;
@@ -43,6 +44,16 @@ export class DashboardComponent implements OnInit{
   expandedIndex: number | null = null;
   sortColumn: string | null = 'expiryDate';
   sortDirection: 'asc' | 'desc' = 'asc';
+  
+  showLogModal = false;
+  isLoadingLogs = false;
+  currentStockLogs: any[] = [];
+  searchText: string = '';
+  suggestions: any[] = [];
+  showDeleteModal = false;
+  stockToDeleteId: number | null = null;
+  details: any = {};
+
   get filterColumns() {
     const base = [
       { label: 'Product Name', value: 'product.name' },
@@ -63,16 +74,12 @@ export class DashboardComponent implements OnInit{
 
     return base;
   }
-  searchText: string = '';
-  suggestions: any[] = [];
-  showDeleteModal = false;
-  stockToDeleteId: number | null = null;
-  details: any = {};
 
   constructor(
     private authService: AuthService,
     private userStorageService: UserStorageService,
-    private router: Router
+    private router: Router,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit() {
@@ -82,9 +89,11 @@ export class DashboardComponent implements OnInit{
     );
     this.loadInitialData();
   }
+
   get isInitialEmpty(): boolean {
     return !this.isLoading && this.stock.length === 0 && !this.isSearchActive;
   }
+
   toggleCard(index: number): void {
     this.expandedIndex = this.expandedIndex === index ? null : index;
   }
@@ -94,100 +103,95 @@ export class DashboardComponent implements OnInit{
   }
 
   loadData(page: number = 0, append: boolean = false) {
-  // if (this.isLoading) return;
-  this.isLoading = true;
+    this.isLoading = true;
     if (!append && page === 0) {
       this.stock = [];
     }
-  const searchRequest = {
-    page: page,
-    size: this.pageSize,
-    sortBy: this.sortColumn || 'id', 
-    direction: this.sortDirection,
-    searchText: this.searchText,   
-    filters: { "user.id": this.userId.toString() }
-  };
+    const searchRequest = {
+      page: page,
+      size: this.pageSize,
+      sortBy: this.sortColumn || 'id', 
+      direction: this.sortDirection,
+      searchText: this.searchText,   
+      filters: { "user.id": this.userId.toString() }
+    };
 
-  this.authService.searchStock(searchRequest).subscribe({
-    next: (data: any) => {
-      this.totalPages = data.totalPages;
-      this.isLastPage = data.last;
-      this.currentPage = data.number;
-      this.totalElements = data.totalElements; 
-      this.stock = append ? [...this.stock, ...data.content] : data.content;
-      this.initialLoadComplete = true;
-      this.isLoading = false;
-      this.suggestions = []; 
-    },
-    error: (err) => {
-      console.error(err);
-      this.initialLoadComplete = true;
-      this.isLoading = false;
-    }
-  });
-}
-
-// Handler for typing (Live Suggestions)
-handleTyping(text: string) {
-  if (text.length > 1) {
-    this.isSuggestionLoading = true;
-    const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
-    this.authService.searchStock(req).subscribe({
-      next: (data) => { this.suggestions = data.content; this.isSuggestionLoading = false; },
-      error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
+    this.authService.searchStock(searchRequest).subscribe({
+      next: (data: any) => {
+        this.totalPages = data.totalPages;
+        this.isLastPage = data.last;
+        this.currentPage = data.number;
+        this.totalElements = data.totalElements; 
+        this.stock = append ? [...this.stock, ...data.content] : data.content;
+        this.initialLoadComplete = true;
+        this.isLoading = false;
+        this.suggestions = []; 
+      },
+      error: (err) => {
+        console.error(err);
+        this.initialLoadComplete = true;
+        this.isLoading = false;
+      }
     });
-  } else {
-    this.suggestions = [];
-    this.isSuggestionLoading = false;
   }
-}
 
-// Handler for executing search (Enter or Selection)
-handleSearch(eventData: any) {
-  this.currentPage = 0;
-  if (typeof eventData === 'string') {
-    this.searchText = eventData;
-  } else {
-    this.searchText = eventData.product.name;
+  handleTyping(text: string) {
+    if (text.length > 1) {
+      this.isSuggestionLoading = true;
+      const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
+      this.authService.searchStock(req).subscribe({
+        next: (data) => { this.suggestions = data.content; this.isSuggestionLoading = false; },
+        error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
+      });
+    } else {
+      this.suggestions = [];
+      this.isSuggestionLoading = false;
+    }
   }
-  this.isSearchActive = this.searchText.trim().length > 0;
-  this.isLoading = true;
-  this.loadData(0, false);
-}
 
-// Refactor existing triggers to use loadData
-loadInitialData() {
-  this.currentPage = 0;
-  this.stock = [];
-  this.isLastPage = false;
-  this.loadData(0, false);
-}
-
-handleFilterSort(event: { sortBy: string | null, direction: 'asc' | 'desc' }) {
-  this.sortColumn = event.sortBy;
-  this.sortDirection = event.direction;
-  // this.isSearchActive = true;
-  this.loadInitialData(); 
-}
-
-onDoubleClickSort(column: string) {
-  if (this.sortColumn === column) {
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
+  handleSearch(eventData: any) {
+    this.currentPage = 0;
+    if (typeof eventData === 'string') {
+      this.searchText = eventData;
+    } else {
+      this.searchText = eventData.product.name;
+    }
+    this.isSearchActive = this.searchText.trim().length > 0;
+    this.isLoading = true;
+    this.loadData(0, false);
   }
-  this.loadInitialData();
-}
 
-goToPage(page: number) {
-  if (page >= 0 && page < this.totalPages && page !== this.currentPage) {
-    this.loadData(page, false);
-    window.scrollTo(0, 0);
+  loadInitialData() {
+    this.currentPage = 0;
+    this.stock = [];
+    this.isLastPage = false;
+    this.loadData(0, false);
   }
-}
 
-getVisiblePages(): number[] {
+  handleFilterSort(event: { sortBy: string | null, direction: 'asc' | 'desc' }) {
+    this.sortColumn = event.sortBy;
+    this.sortDirection = event.direction;
+    this.loadInitialData(); 
+  }
+
+  onDoubleClickSort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.loadInitialData();
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPages && page !== this.currentPage) {
+      this.loadData(page, false);
+      window.scrollTo(0, 0);
+    }
+  }
+
+  getVisiblePages(): number[] {
     const pages = [];
     let start = Math.max(0, this.currentPage - 1);
     let end = Math.min(this.totalPages - 1, start + 2);
@@ -200,17 +204,18 @@ getVisiblePages(): number[] {
       pages.push(i);
     }
     return pages;
-}
+  }
 
-@HostListener('window:scroll', [])
-onWindowScroll() {
-  if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading) {
-    const pos = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.offsetHeight;
-    if (pos > document.documentElement.scrollHeight - 100) {
-      this.loadData(this.currentPage + 1, true);
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading) {
+      const pos = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.offsetHeight;
+      if (pos > document.documentElement.scrollHeight - 100) {
+        this.loadData(this.currentPage + 1, true);
+      }
     }
   }
-}
+
   resetView() {
     this.sortColumn = 'expiryDate';
     this.sortDirection = 'asc';
@@ -220,8 +225,8 @@ onWindowScroll() {
     this.loadInitialData(); 
   }
 
-  edit(stockId: number){
-    this.router.navigate(['user/stock/edit',stockId]);
+  edit(stockId: number) {
+    this.router.navigate(['user/stock/edit', stockId]);
   }
 
   openDeleteModal(stockId: number) {
@@ -257,5 +262,53 @@ onWindowScroll() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return expiryDate < today;
+  }
+
+  getSafeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  // 4. Update your click handler to use .closest() for bulletproof element matching
+  handleLogClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const billLink = target.closest('.bill-link');
+
+    if (billLink) {
+      const billId = billLink.getAttribute('data-bill-id');
+      if (billId) {
+        this.openBill(billId);
+      }
+    }
+  }
+
+  openBill(billId: any): void {
+    this.userStorageService.saveBillId(billId);
+    this.router.navigate(['user/bill-preview']);
+  }
+
+  openLogModal(stockId: number, event?: Event) {
+    if (event) event.stopPropagation(); // Prevents grid/row expansion behaviors
+    
+    this.showLogModal = true;
+    this.isLoadingLogs = true;
+    document.body.classList.add('modal-open');
+
+    this.authService.getStockHistory(stockId).subscribe({
+      next: (logs: any[]) => {
+        this.currentStockLogs = logs || [];
+        this.isLoadingLogs = false;
+      },
+      error: (err) => {
+        console.error('Failed to fetch stock timeline history tracking:', err);
+        this.currentStockLogs = [];
+        this.isLoadingLogs = false;
+      }
+    });
+  }
+
+  closeLogModal() {
+    this.showLogModal = false;
+    this.currentStockLogs = [];
+    document.body.classList.remove('modal-open');
   }
 }

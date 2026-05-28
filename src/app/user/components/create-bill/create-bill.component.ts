@@ -405,6 +405,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   onPurchaserBlur(): void {
     setTimeout(() => (this.showPurchaserDropdown = false), 200);
   }
+
   /* ---------------- Submit ---------------- */
 
   submitBill(): void {
@@ -442,6 +443,8 @@ export class CreateBillComponent implements OnInit, OnDestroy {
             return null;
           }
 
+          const totalQuantitySold = item.quantity + item.free;
+
           return this.authService.addBillItem({
             ...item,
             billId: bill.id,
@@ -454,9 +457,16 @@ export class CreateBillComponent implements OnInit, OnDestroy {
                 productId: stockItem.product.id,
                 batchNo: stockItem.batchNo,
                 expiryDate: this.formatDate(stockItem.expiryDate),
-                quantity: stockItem.quantity - (item.quantity + item.free)  
+                quantity: stockItem.quantity - totalQuantitySold  
               })  
-            )      
+            ),
+            switchMap(() =>
+              this.authService.addStockLog({
+                stockId: stockItem.id,
+                action: 'SOLD',
+                notes: `Sold ${item.quantity}${item.free > 0 ? ` + ${item.free} free` : ''} quantity to ${this.step1Data.purchaserName} via <a class="bill-link" data-bill-id="${bill.id}">Bill #${bill.id}</a>`
+              })
+            )
           );       
         }).filter(req => req !== null);
 

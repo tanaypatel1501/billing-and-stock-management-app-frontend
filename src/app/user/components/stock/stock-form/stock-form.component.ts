@@ -1,16 +1,18 @@
-import { Component, HostListener, Input, OnInit } from '@angular/core';
+import { Component, HostListener, Input, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { LabelScannerService, ScannedLabelData } from 'src/app/services/label-scanner/label-scanner.service';
+import { switchMap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-stock-form',
   templateUrl: './stock-form.component.html',
   styleUrls: ['./stock-form.component.scss']
 })
-export class StockFormComponent implements OnInit {
+export class StockFormComponent implements OnInit, OnDestroy {
 
   @Input() mode: 'add' | 'edit' = 'add';
 
@@ -32,6 +34,7 @@ export class StockFormComponent implements OnInit {
   isLastPage = false;
   selectedMrp: number | null = null;
   selectedBatchMrp: number | null = null;
+  originalStockValues: any = null;
   // ── Camera Scan ───────────────────────────────────────────
   showScanner       = false;
   scanStatus: 'idle' | 'detecting' | 'scanning' | 'success' | 'error' = 'idle';
@@ -139,6 +142,7 @@ export class StockFormComponent implements OnInit {
           quantity: res.quantity,
           mrp: res.mrp ?? null
         });
+        this.originalStockValues = this.productForm.getRawValue();
         this.fetchProductName(res.productId);
         this.productForm.get('name')?.disable();
       },
@@ -223,6 +227,14 @@ export class StockFormComponent implements OnInit {
       return;
     }
 
+    if (this.productForm.invalid) {
+      this.productForm.markAllAsTouched();
+      this.errorMessage = 'Please fill out all required fields correctly.';
+      return;
+    }
+
+    this.errorMessage = null; // Clear any previous errors
+
     const payload: any = {
       userId: UserStorageService.getUserId(),
       productId: this.selectedProductId,
@@ -234,15 +246,54 @@ export class StockFormComponent implements OnInit {
 
     if (this.mode === 'edit') {
       payload.id = this.stockId;
-      this.authService.updateStock(payload).subscribe(
-        () => this.router.navigate(['user/dashboard']),
-        () => this.errorMessage = 'Update failed'
-      );
+      
+      const dynamicNotes = this.generateUpdateNotes(payload);
+      
+      this.authService.updateStock(payload).pipe(
+        switchMap(() => 
+          this.authService.addStockLog({
+            stockId: this.stockId,
+            action: 'UPDATE',
+            notes: dynamicNotes
+          }).pipe(
+            catchError(logError => {
+              // Log the error locally, but let the user proceed since the stock update succeeded
+              console.error('Stock saved successfully, but log creation failed:', logError);
+              return of(null); 
+            })
+          )
+        )
+      ).subscribe({
+        next: () => this.router.navigate(['user/dashboard']),
+        error: () => this.errorMessage = 'Update failed'
+      });
+
     } else {
-      this.authService.addStock(payload).subscribe(
-        () => this.router.navigate(['user/dashboard']),
-        () => this.errorMessage = 'Add failed'
-      );
+      this.authService.addStock(payload).pipe(
+        switchMap((savedStock: any) => {
+          // Safe extraction check depending on backend return structure (direct object vs wrapped data)
+          const generatedId = savedStock?.id || savedStock?.data?.id;
+          console.log('--- ACTUAL BACKEND RESPONSE ---', savedStock);
+          if (!generatedId) {
+            console.warn('Could not extract stockId from backend response wrapper:', savedStock);
+            return of(null); // Bypass log creation gracefully if ID cannot be parsed
+          }
+
+          return this.authService.addStockLog({
+            stockId: generatedId,
+            action: 'ADD',
+            notes: `Added ${payload.quantity} quantity of ${this.productForm.value.name} | Batch: ${payload.batchNo} | MRP: ₹${payload.mrp}`
+          }).pipe(
+            catchError(logError => {
+              console.error('Stock created successfully, but log creation failed:', logError);
+              return of(null); // Prevent logging failures from breaking navigation
+            })
+          );
+        })
+      ).subscribe({
+        next: () => this.router.navigate(['user/dashboard']),
+        error: () => this.errorMessage = 'Add failed'
+      });
     }
   }
 
@@ -435,7 +486,6 @@ export class StockFormComponent implements OnInit {
   
     // ── Combined confidence ───────────────────────────────────────────────
     // Weight: rect shape 30%, text presence 40%, stability 30%
-    const stabilityWeight = this.lastCentroid ? 0.20 : 0.0; // ignore stability on first frame
     const baseScore = rectScore * 0.35 + textScore * 0.65;
     const confidence = this.lastCentroid
       ? rectScore * 0.35 + textScore * 0.45 + stabilityScore * 0.20
@@ -530,10 +580,45 @@ export class StockFormComponent implements OnInit {
       : 'Scan done — please fill fields manually.';
   }
 
+  private generateUpdateNotes(payload: any): string {
+    // Fallback if the component didn't load a snapshot for any reason
+    if (!this.originalStockValues) {
+      return `Stock updated manually | Qty: ${payload.quantity} | Batch: ${payload.batchNo} | MRP: ₹${payload.mrp}`;
+    }
+
+    const changes: string[] = [];
+    const oldVal = this.originalStockValues;
+
+    // 1. Check Quantity
+    if (Number(oldVal.quantity) !== Number(payload.quantity)) {
+      changes.push(`Quantity changed from ${oldVal.quantity} to ${payload.quantity}`);
+    }
+
+    // 2. Check Batch Number
+    if (oldVal.batchNo !== payload.batchNo) {
+      changes.push(`Batch No changed from '${oldVal.batchNo}' to '${payload.batchNo}'`);
+    }
+
+    // 3. Check MRP
+    if (oldVal.mrp !== payload.mrp) {
+      const oldMrpStr = oldVal.mrp != null ? `₹${Number(oldVal.mrp).toFixed(2)}` : 'None';
+      const newMrpStr = payload.mrp != null ? `₹${Number(payload.mrp).toFixed(2)}` : 'None';
+      changes.push(`MRP changed from ${oldMrpStr} to ${newMrpStr}`);
+    }
+
+    // 4. Check Expiry Date
+    if (oldVal.expiryDate !== payload.expiryDate) {
+      changes.push(`Expiry Date changed from ${oldVal.expiryDate} to ${payload.expiryDate}`);
+    }
+
+    // Build final message
+    return changes.length > 0 
+      ? `Stock updated manually | ${changes.join(', ')}` 
+      : 'Stock updated manually (Form submitted with no field changes)';
+  }
+
   // ── OCR WARMUP ───────────────────────────────────────────
   private warmupOcr(): void {
-    // Create a tiny 10x10 white canvas and send it silently
-    // This keeps EasyOCR model hot in memory
     try {
       const canvas = document.createElement('canvas');
       canvas.width  = 10;
@@ -546,7 +631,6 @@ export class StockFormComponent implements OnInit {
         if (!blob) return;
         const fd = new FormData();
         fd.append('image', blob, 'warmup.jpg');
-        // Fire and forget — ignore response and errors completely
         this.authService.scanOcrLabel(fd).subscribe({ error: () => {} });
       }, 'image/jpeg');
     } catch {

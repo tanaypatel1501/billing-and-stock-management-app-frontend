@@ -469,3 +469,208 @@ body.modal-open {
   color: var(--gstm-danger) !important;
   font-weight: 700;
 }
+/* --- New Info Button Styling --- */
+.icon-btn.info { 
+  color: #339af0; // Modern blue 
+  &:hover { 
+    background: rgba(51, 154, 240, 0.1); 
+    color: #1864ab; 
+  } 
+}
+
+/* --- Stock History Modal Styling --- */
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050; // Above standard elements
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.custom-modal-content {
+  background: var(--gstm-card-bg);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  background: var(--gstm-card-bg);
+  border-bottom: 1px solid var(--gstm-input-border);
+  z-index: 2;
+
+  h3 { 
+    margin: 0; 
+    font: 700 1.25rem sans-serif; 
+    color: var(--gstm-text-main); 
+  }
+  
+  .close-btn {
+    background: var(--gstm-input-bg);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--gstm-text-muted);
+    transition: 0.2s;
+    
+    &:hover { 
+      background: var(--gstm-danger-bg, #ffe3e3); 
+      color: var(--gstm-danger, #c92a2a); 
+    }
+  }
+}
+
+.modal-body {
+  padding: 25px;
+  overflow-y: auto;
+  flex: 1;
+  background: var(--gstm-bg);
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--gstm-primary-color); border-radius: 10px; }
+}
+
+.log-loader {
+  text-align: center; 
+  padding: 50px 0;
+  p { margin-top: 15px; color: var(--gstm-text-muted); font-weight: 600; font-size: 0.9rem; letter-spacing: 0.5px;}
+}
+
+::ng-deep .bill-link {
+  color: #36c5b0; /* Matches your GST Medicose theme teal gradient */
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #48e3cc; /* Lighter teal on hover focus */
+    text-decoration: underline;
+  }
+}
+
+.no-logs {
+  text-align: center; 
+  padding: 40px 0; 
+  color: var(--gstm-text-muted);
+  .empty-icon { font-size: 3rem; margin-bottom: 10px; opacity: 0.5; }
+  p { font-weight: 500; margin: 0; }
+}
+
+/* --- Timeline Design --- */
+.timeline {
+  list-style: none; 
+  padding: 0; 
+  margin: 0;
+  position: relative;
+  
+  &::before {
+    content: ''; 
+    position: absolute; 
+    top: 5px; 
+    bottom: 0; 
+    left: 7px;
+    width: 2px; 
+    background: var(--gstm-input-border);
+  }
+}
+
+.timeline-item {
+  position: relative; 
+  padding-left: 30px; 
+  padding-bottom: 24px;
+  
+  &:last-child { 
+    padding-bottom: 0; 
+    &::before { display: none; } // Cuts off the line for the last item
+  }
+
+  .timeline-marker {
+    position: absolute; 
+    left: 0; 
+    top: 4px; 
+    width: 16px; 
+    height: 16px;
+    border-radius: 50%; 
+    background: var(--gstm-input-bg);
+    border: 3px solid var(--gstm-card-bg);
+    box-shadow: 0 0 0 2px var(--gstm-input-border);
+    z-index: 2;
+  }
+
+  /* Color coding by action type */
+  &.added .timeline-marker { background: var(--gstm-success-text, #2b8a3e); box-shadow: 0 0 0 2px rgba(43, 138, 62, 0.2); }
+  &.edited .timeline-marker { background: #e67700; box-shadow: 0 0 0 2px rgba(230, 119, 0, 0.2); }
+  &.sold .timeline-marker { background: #339af0; box-shadow: 0 0 0 2px rgba(51, 154, 240, 0.2); }
+
+  .timeline-content {
+    background: var(--gstm-card-bg); 
+    padding: 14px 18px;
+    border-radius: 12px; 
+    border: 1px solid var(--gstm-input-border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+
+  .log-date { 
+    display: block; 
+    font-size: 0.75rem; 
+    color: var(--gstm-text-muted); 
+    margin-bottom: 6px; 
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .log-action { 
+    margin: 0 0 6px 0; 
+    font-size: 0.95rem; 
+    font-weight: 800; 
+    color: var(--gstm-text-main); 
+  }
+  .log-notes { 
+    margin: 0; 
+    font-size: 0.85rem; 
+    color: var(--gstm-text-dark, #555); 
+    line-height: 1.4;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(30px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+
+/* Mobile Adjustment */
+@media (max-width: 480px) {
+  .custom-modal-content {
+    border-radius: 16px 16px 0 0;
+    max-height: 90vh;
+    margin-top: auto; // Bottom sheet style on mobile
+  }
+  .custom-modal-overlay {
+    align-items: flex-end; // Bottom sheet style on mobile
+    padding: 0;
+  }
+  .modal-header { padding: 16px 20px; }
+  .modal-body { padding: 20px; }
+}

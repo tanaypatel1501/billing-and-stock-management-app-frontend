@@ -309,6 +309,18 @@ export class AuthService {
     );
   }
 
+  /* ---------------------- STOCK LOGS ---------------------- */
+
+  getStockHistory(stockId: number) {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<any[]>(`${this.baseUrl}api/stock-logs/${stockId}`, { headers });
+  }
+
+  addStockLog(logData: { stockId: number, action: string, notes: string }) {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post(`${this.baseUrl}api/stock-logs`, logData, { headers });
+  }
+
   /* ---------------------- DETAILS ---------------------- */
 
   addDetails(userId: number, details: any, logoFile?: File): Observable<any> {
@@ -526,4 +538,14 @@ export class AuthService {
     );
   }
 
+  /* ---------------------- OCR ---------------------- */
+
+  scanOcrLabel(formData: FormData): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post<any>(
+      `${this.baseUrl}api/ocr/scan`,
+      formData,
+      { headers }
+    );
+  }
 }

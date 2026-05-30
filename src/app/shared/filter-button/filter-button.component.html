@@ -12,7 +12,7 @@
       <div class="modal-header">
         <div class="header-content">
           <fa-icon [icon]="faFilter"></fa-icon>
-          <h3>Sort Settings</h3>
+          <h3>{{ showSort ? 'Sort Settings' : 'Filter Settings' }}</h3>
         </div>
         <button type="button" class="modal-close" (click)="toggleModal()">×</button>
       </div>
@@ -20,40 +20,52 @@
       <!-- Body -->
       <div class="modal-body">
         
-        <!-- Sort By Column -->
-        <div class="form-group">
-          <label>Sort By Column</label>
+        <div class="form-group" *ngIf="availableActions && availableActions.length > 0">
+          <label>Filter By Action</label>
           <div class="select-wrapper">
-          <select class="custom-select" [(ngModel)]="selectedColumn">
-            <option value="" disabled>Select Column</option>
-            <option *ngFor="let col of columns" [value]="col.value">{{ col.label }}</option>
-          </select>
-          <span class="select-arrow">⌄</span>
+            <select class="custom-select" [(ngModel)]="selectedAction">
+              <option value="">All Actions</option>
+              <option *ngFor="let action of availableActions" [value]="action">{{ action }}</option>
+            </select>
+            <span class="select-arrow">⌄</span>
           </div>
         </div>
 
+        <ng-container *ngIf="showSort">
+          <div class="form-group" *ngIf="columns && columns.length > 0">
+            <label>Sort By Column</label>
+            <div class="select-wrapper">
+              <select class="custom-select" [(ngModel)]="selectedColumn">
+                <option value="">None / Default</option>
+                <option *ngFor="let col of columns" [value]="col.value">{{ col.label }}</option>
+              </select>
+              <span class="select-arrow">⌄</span>
+            </div>
+          </div>
+
         <!-- Direction Toggle -->
         <div class="form-group">
-          <label>Sort Direction</label>
-          <div class="direction-toggle">
-            <button 
-              type="button" 
-              class="direction-btn"
-              [class.active]="selectedDirection === 'asc'" 
-              (click)="selectedDirection = 'asc'">
-              <fa-icon [icon]="faSortUp"></fa-icon>
-              <span>Ascending</span>
-            </button>
-            <button 
-              type="button" 
-              class="direction-btn"
-              [class.active]="selectedDirection === 'desc'" 
-              (click)="selectedDirection = 'desc'">
-              <fa-icon [icon]="faSortDown"></fa-icon>
-              <span>Descending</span>
-            </button>
+            <label>Sort Direction</label>
+            <div class="direction-toggle">
+              <button 
+                type="button" 
+                class="direction-btn"
+                [class.active]="selectedDirection === 'asc'" 
+                (click)="selectedDirection = 'asc'">
+                <fa-icon [icon]="faSortUp"></fa-icon>
+                <span>Ascending</span>
+              </button>
+              <button 
+                type="button" 
+                class="direction-btn"
+                [class.active]="selectedDirection === 'desc'" 
+                (click)="selectedDirection = 'desc'">
+                <fa-icon [icon]="faSortDown"></fa-icon>
+                <span>Descending</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </ng-container>
 
       </div>
 
@@ -70,9 +82,8 @@
           <button 
             type="button" 
             class="modal-btn primary" 
-            (click)="apply()" 
-            [disabled]="!selectedColumn">
-            Apply Sort
+            (click)="apply()">
+            Apply Settings
           </button>
         </div>
       </div>

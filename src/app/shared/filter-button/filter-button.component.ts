@@ -15,10 +15,20 @@ export class FilterButtonComponent {
   @Input() columns: { label: string, value: string }[] = [];
   @Input() currentSortBy: string | null = null;
   @Input() currentDirection: 'asc' | 'desc' = 'asc';
-  @Output() onApplySort = new EventEmitter<{ sortBy: string | null, direction: 'asc' | 'desc' }>();
+  @Input() availableActions: string[] = [];
+  @Input() currentAction: string = '';
+  @Input() showSort: boolean = true;
+  @Output() onApplySort = new EventEmitter<{ 
+    sortBy: string | null; 
+    direction: 'asc' | 'desc'; 
+    action?: string; 
+  }>();
+
   showModal = false;
   selectedColumn = '';
   selectedDirection: 'asc' | 'desc' = 'asc';
+  selectedAction = ''; 
+
   faFilter = faFilter;
   faSortUp = faSortUp;
   faSortDown = faSortDown;
@@ -29,19 +39,23 @@ export class FilterButtonComponent {
     if (this.showModal) {
       this.selectedColumn = this.currentSortBy || '';
       this.selectedDirection = this.currentDirection;
+      this.selectedAction = this.currentAction || ''; // Initialize action state
     }
   }
+
   clearFilters() {
     this.selectedColumn = '';
     this.selectedDirection = 'asc';
-    this.onApplySort.emit({ sortBy: null, direction: 'asc' });
+    this.selectedAction = '';
+    this.onApplySort.emit({ sortBy: null, direction: 'asc', action: '' });
     this.showModal = false;
   }
 
   apply() {
     this.onApplySort.emit({
-      sortBy: this.selectedColumn,
-      direction: this.selectedDirection
+      sortBy: this.selectedColumn || null,
+      direction: this.selectedDirection,
+      action: this.selectedAction
     });
     this.showModal = false;
   }

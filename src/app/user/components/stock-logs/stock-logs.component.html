@@ -1,0 +1,115 @@
+<div class="logs-page-wrapper">
+
+  <!-- Header -->
+  <div class="logs-header">
+    <div class="header-left">
+
+      <button
+        class="back-btn"
+        (click)="resetView()"
+        title="Reset Filters & Search"
+        *ngIf="searchText.length > 0">
+        <fa-icon [icon]="faArrowLeft"></fa-icon>
+      </button>
+
+      <div class="header-title-wrapper">
+        <h1 class="header-title">
+          <span class="title-text">Stock History</span>
+          <fa-icon [icon]="faClockRotateLeft" class="title-icon"></fa-icon>
+        </h1>
+        <span class="stock-count">
+          {{ totalElements }} {{ isSearchActive || selectedAction ? 'item(s) found' : 'item(s)' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="header-right">
+      <app-search-bar
+        [suggestions]="suggestions"
+        [isLoading]="isSuggestionLoading"
+        [labelKey]="'product.name'"
+        [subLabelKey]="'product.packing'"
+        (onType)="handleTyping($event)"
+        (onSelect)="handleSearch($event)"
+        (onSearch)="handleSearch($event)"
+        notFoundText="logs">
+      </app-search-bar>
+
+      <app-filter-button 
+        [showSort]="false"
+        [availableActions]="availableActions"
+        [currentAction]="selectedAction"
+        (onApplySort)="handleFilterSort($any($event))">
+      </app-filter-button>
+    </div>
+  </div>
+
+  <!-- Loading — matches dashboard spinner -->
+  <div *ngIf="isLoading && filteredLogs.length === 0" class="loading-screen">
+    <div class="spinner-wrapper">
+      <div class="spinner-ring"></div>
+      <div class="loading-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <p class="loading-text">Loading History</p>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && filteredLogs.length === 0" class="empty-state-wrapper">
+    <div class="empty-state-card">
+      <div class="empty-state-icon">⏳</div>
+      <h2>No Logs Found</h2>
+      <p>{{ isSearchActive || selectedAction ? 'Try adjusting your search or filter.' : 'Stock activity will appear here.' }}</p>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="logs-container" *ngIf="!isLoading && filteredLogs.length > 0">
+    <ul class="timeline" (click)="handleLogClick($event)">
+      <li class="timeline-item" *ngFor="let log of filteredLogs" [ngClass]="log.action.toLowerCase()">
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">
+          <div class="log-meta">
+            <span class="log-date">{{ log.timestamp | date:'MMM d, y, h:mm a' }}</span>
+            <span class="log-product" *ngIf="log.productName">{{ log.productName }}</span>
+          </div>
+          <h4 class="log-action">{{ log.action }}</h4>
+          <p class="log-notes" *ngIf="log.notes" [innerHTML]="getSafeHtml(log.notes)"></p>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Desktop Pagination -->
+<div class="modern-pagination d-none d-md-flex" *ngIf="totalPages > 1">
+  <nav aria-label="Log page navigation">
+    <ul class="pagination-list">
+      <li class="page-item" [class.disabled]="currentPage === 0">
+        <a class="page-link" (click)="goToPage(0)"><span>«</span></a>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === 0">
+        <a class="page-link" (click)="goToPage(currentPage - 1)"><span>‹</span></a>
+      </li>
+      <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+        <a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
+      </li>
+      <li class="page-item" [class.disabled]="isLastPage">
+        <a class="page-link" (click)="goToPage(currentPage + 1)"><span>›</span></a>
+      </li>
+      <li class="page-item" [class.disabled]="isLastPage">
+        <a class="page-link" (click)="goToPage(totalPages - 1)"><span>»</span></a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<!-- Mobile infinite scroll loader -->
+<div *ngIf="isLoading && filteredLogs.length > 0" class="mobile-loader d-md-none">
+  <div class="spinner"></div>
+</div>

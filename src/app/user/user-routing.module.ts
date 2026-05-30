@@ -9,6 +9,7 @@ import { DetailsComponent } from './components/details/details.component';
 import { BillPreviewComponent } from './components/bill-preview/bill-preview.component';
 import { BillsComponent } from './components/bills/bills.component';
 import { SalesComponent } from './components/sales/sales.component';
+import { StockLogsComponent } from './components/stock-logs/stock-logs.component';
 
 const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent ,canActivate:[UserGuard],title: 'Dashboard | GST Medicose'},
@@ -19,6 +20,7 @@ const routes: Routes = [
   { path: 'bill-preview', component: BillPreviewComponent ,canActivate:[UserGuard],title: 'Bill Preview | GST Medicose'},
   { path: 'bills', component: BillsComponent ,canActivate:[UserGuard],title: 'Bills | GST Medicose'},
   { path: 'sales', component: SalesComponent ,canActivate:[UserGuard],title: 'Sales | GST Medicose'},
+  { path: 'stock-logs', component: StockLogsComponent ,canActivate:[UserGuard],title: 'Stock Logs | GST Medicose'}
 ];
 
 @NgModule({

@@ -321,6 +321,14 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}api/stock-logs`, logData, { headers });
   }
 
+  getAllStockLogsByUser(userId: any, search: string, page = 0, size = 30): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    let params = `?page=${page}&size=${size}`;
+    if (search) params += `&search=${encodeURIComponent(search)}`;
+    return this.http.get(`${this.baseUrl}api/stock-logs/user/${userId}${params}`,
+      { headers: headers });
+  }
+
   /* ---------------------- DETAILS ---------------------- */
 
   addDetails(userId: number, details: any, logoFile?: File): Observable<any> {

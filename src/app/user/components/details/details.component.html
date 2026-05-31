@@ -1,4 +1,18 @@
-<div class="details-wrapper">
+<div *ngIf="isLoading" class="loading-screen">
+  <div class="spinner-wrapper">
+    <div class="spinner-ring"></div>
+
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <p class="loading-text">Loading Business Details</p>
+  </div>
+</div>
+
+<div *ngIf="!isLoading" class="details-wrapper">
   <div class="details-container">
     
     <!-- Alerts -->

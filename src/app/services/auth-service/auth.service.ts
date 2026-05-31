@@ -169,34 +169,39 @@ export class AuthService {
   /* ---------------------- POSTAL APIs ---------------------- */
 
   lookupPincode(pincode: string): Observable<AddressLookupDTO | null> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get<AddressLookupDTO>(`${this.baseUrl}api/postal/${pincode}`, {
-      headers: this.createAuthorizationHeader()
+      headers
     }).pipe(catchError(() => of(null)));
   }
 
   getAllStates(): Observable<string[]> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get<string[]>(`${this.baseUrl}api/postal/states`, {
-      headers: this.createAuthorizationHeader()
+      headers
     });
   }
 
   getCitiesByState(state: string): Observable<string[]> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get<string[]>(`${this.baseUrl}api/postal/cities?state=${state}`, {
-      headers: this.createAuthorizationHeader()
+      headers
     });
   }
 
   findStateByDistrict(district: string): Observable<string | null> {
     const encoded = encodeURIComponent(district || '');
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     const url = `${this.baseUrl}api/postal/lookup-state?district=${encoded}`;
     return this.http.get<string>(url, {
-      headers: this.createAuthorizationHeader()
+      headers
     }).pipe(catchError(() => of(null)));
   }
 
   getAddressesByDistrictAndState(district: string, state: string): Observable<AddressLookupDTO[]> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get<AddressLookupDTO[]>(`${this.baseUrl}api/postal/addresses?district=${district}&state=${state}`, {
-      headers: this.createAuthorizationHeader()
+      headers
     });
   }
 
@@ -351,8 +356,9 @@ export class AuthService {
   }
 
   getDetailsByUserId(userId: any): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get(`${this.baseUrl}api/details/${userId}`,
-      { headers: this.createAuthorizationHeader() }
+      { headers }
     );
   }
 
@@ -457,10 +463,11 @@ export class AuthService {
   }
 
   savePurchaser(data: any): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.post(
       `${this.baseUrl}api/purchaser/save`,
       data,
-      { headers: this.createAuthorizationHeader() }
+      { headers }
     );
   }
 
@@ -516,8 +523,9 @@ export class AuthService {
   /* ---------------------- PROFILE ---------------------- */
 
   getProfile(): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get(`${this.baseUrl}api/user/profile`, {
-      headers: this.createAuthorizationHeader()
+      headers: headers
     });
   }
 
@@ -572,9 +580,10 @@ export class AuthService {
 
   /** Get all requests submitted by the current user */
   getMyProductRequests(userId: number): Observable<ProductRequestDTO[]> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get<ProductRequestDTO[]>(
       `${this.baseUrl}api/product-requests/my?userId=${userId}`,
-      { headers: this.createAuthorizationHeader() }
+      { headers }
     );
   }
 
@@ -582,35 +591,39 @@ export class AuthService {
 
   /** Get all PENDING product requests (admin only) */
   getPendingProductRequests(): Observable<ProductRequestDTO[]> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get<ProductRequestDTO[]>(
       `${this.baseUrl}api/product-requests/pending`,
-      { headers: this.createAuthorizationHeader() }
+      { headers }
     );
   }
 
   /** Get all product requests regardless of status (admin only) */
   getAllProductRequests(): Observable<ProductRequestDTO[]> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get<ProductRequestDTO[]>(
       `${this.baseUrl}api/product-requests/all`,
-      { headers: this.createAuthorizationHeader() }
+      { headers }
     );
   }
 
   /** Approve a product request (admin only) */
   approveProductRequest(requestId: number, adminNotes = ''): Observable<ProductRequestDTO> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.post<ProductRequestDTO>(
       `${this.baseUrl}api/product-requests/${requestId}/approve`,
       { adminNotes },
-      { headers: this.createAuthorizationHeader() }
+      { headers }
     );
   }
 
   /** Reject a product request (admin only) */
   rejectProductRequest(requestId: number, adminNotes = ''): Observable<ProductRequestDTO> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.post<ProductRequestDTO>(
       `${this.baseUrl}api/product-requests/${requestId}/reject`,
       { adminNotes },
-      { headers: this.createAuthorizationHeader() }
+      { headers }
     );
   }
 }

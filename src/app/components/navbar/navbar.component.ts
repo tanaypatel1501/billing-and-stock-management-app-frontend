@@ -1,33 +1,36 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthService } from 'src/app/services/auth-service/auth.service'; // <-- Inject this
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
+import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { Observable, Subscription } from 'rxjs';
 import { AppStateService } from 'src/app/services/app-state.service';
 import { ThemeService } from 'src/app/services/theme/theme.service';
-import { 
-  faUserPlus, 
-  faSignInAlt, 
-  faSignOutAlt, 
-  faUser, 
-  faChartLine, 
-  faBoxOpen, 
-  faBoxes, 
-  faFileInvoice, 
-  faMoneyBillWave, 
+
+import {
+  faUserPlus,
+  faSignInAlt,
+  faSignOutAlt,
+  faUser,
+  faChartLine,
+  faBoxOpen,
+  faBoxes,
+  faFileInvoice,
+  faMoneyBillWave,
   faBuilding,
   faGear,
   faChartBar,
   faClockRotateLeft,
-  faClipboardList
+  faClipboardList,
+  faBars
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
-  selector: 'app-navbar',
-  templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss']
+  selector: 'app-navbar',
+  templateUrl: './navbar.component.html',
+  styleUrls: ['./navbar.component.scss']
 })
-export class NavbarComponent implements OnInit, OnDestroy { 
+export class NavbarComponent implements OnInit, OnDestroy {
   isAuthenticated$!: Observable<boolean>;
   detailsValid$!: Observable<boolean>;
   detailsValid = false;
@@ -49,20 +52,21 @@ export class NavbarComponent implements OnInit, OnDestroy {
   faChartBar = faChartBar;
   faClockRotateLeft = faClockRotateLeft;
   faClipboardList = faClipboardList;
+  faBars = faBars;
 
-  pendingRequestCount = 0;  
+  pendingRequestCount = 0;
   // optionally poll: authService.getPendingProductRequests().subscribe(r => this.pendingRequestCount = r.length)
 
   constructor(
-    private router: Router, 
-    private authService: AuthService, 
+    private router: Router,
+    private authService: AuthService,
     private appState: AppStateService,
     public themeService: ThemeService
-  ) {}
+  ) { }
 
-  ngOnInit() {
+  ngOnInit() {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
-    this.authService.updateNavBar(); 
+    this.authService.updateNavBar();
     this.detailsValid$ = this.appState.detailsValid$;
     this.detailsSub = this.detailsValid$.subscribe(v => {
       this.detailsValid = !!v;
@@ -80,8 +84,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
         if (id) this.appState.refreshDetailsValidity(id);
       }
     });
-    
-  }
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.mobileMenuOpen = false;
+      });
+  }
 
   ngOnDestroy(): void {
     if (this.detailsSub) this.detailsSub.unsubscribe();
@@ -90,19 +98,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   // These getters are synchronous checks used only to determine role for specific links
   // The 'async' pipe on isAuthenticated$ handles the main login/logout display switch.
-  get isUserLoggedIn(): boolean {
-    return UserStorageService.isUserLoggedIn();
-  }
+  get isUserLoggedIn(): boolean {
+    return UserStorageService.isUserLoggedIn();
+  }
 
-  get isAdminLoggedIn(): boolean {
-    return UserStorageService.isAdminLoggedIn();
-  }
+  get isAdminLoggedIn(): boolean {
+    return UserStorageService.isAdminLoggedIn();
+  }
 
-  logout() {
+  logout() {
     this.closeMobileMenu();
-    this.authService.signOut(); 
-    this.router.navigateByUrl('login');
-  }
+    this.authService.signOut();
+    this.router.navigateByUrl('login');
+  }
   toggleMobileMenu(): void {
     this.mobileMenuOpen = !this.mobileMenuOpen;
   }
@@ -121,6 +129,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
     // allowed — navigate to create bill
     this.router.navigateByUrl('/user/create-bill');
+  }
+  get isCreateBillActive(): boolean {
+    return this.router.url === '/user/create-bill';
   }
 
   openSettings() {

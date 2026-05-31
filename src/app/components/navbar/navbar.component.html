@@ -214,3 +214,61 @@
     {{ errorMessage }}
   </div>
 </div>
+<div class="bottom-dock" *ngIf="(isAuthenticated$ | async)">
+  
+  <a class="dock-item" 
+     [routerLink]="isAdminLoggedIn ? 'admin/dashboard' : 'user/dashboard'" 
+     routerLinkActive="active" 
+     [routerLinkActiveOptions]="{exact: true}">
+    <fa-icon [icon]="faChartLine"></fa-icon>
+    <span class="dock-label">Home</span>
+  </a>
+
+  <a class="dock-item" *ngIf="isAdminLoggedIn"
+     routerLink="/admin/add-product" 
+     routerLinkActive="active">
+    <fa-icon [icon]="faBoxOpen"></fa-icon>
+    <span class="dock-label">Add Product</span>
+  </a>
+  <a class="dock-item" *ngIf="!isAdminLoggedIn"
+     routerLink="/user/stock/add" 
+     routerLinkActive="active">
+    <fa-icon [icon]="faBoxes"></fa-icon>
+    <span class="dock-label">Add Stock</span>
+  </a>
+
+  <a class="dock-item" *ngIf="isAdminLoggedIn"
+     routerLink="/admin/product-requests" 
+     routerLinkActive="active">
+    <div class="dock-fab">
+      <fa-icon [icon]="faClipboardList"></fa-icon>
+      <span class="dock-badge" *ngIf="pendingRequestCount > 0">{{ pendingRequestCount }}</span>
+    </div>
+    <span class="dock-label dock-label-fab">Requests</span>
+  </a>
+  <a class="dock-item" *ngIf="!isAdminLoggedIn"
+     [class.active]="isCreateBillActive"
+     [class.disabled]="!detailsValid"
+     [attr.aria-disabled]="!detailsValid"
+     (click)="onCreateBill($event)">
+    <div class="dock-fab" [class.fab-disabled]="!detailsValid">
+      <fa-icon [icon]="faFileInvoice"></fa-icon>
+    </div>
+    <span class="dock-label dock-label-fab">Create Bill</span>
+  </a>
+
+  <a class="dock-item" 
+     routerLink="/profile" 
+     routerLinkActive="active">
+    <fa-icon [icon]="faUser"></fa-icon>
+    <span class="dock-label">Profile</span>
+  </a>
+
+  <button class="dock-item dock-menu-btn" 
+          (click)="toggleMobileMenu()" 
+          [class.active]="mobileMenuOpen">
+    <fa-icon [icon]="faBars"></fa-icon>
+    <span class="dock-label">Menu</span>
+  </button>
+
+</div>

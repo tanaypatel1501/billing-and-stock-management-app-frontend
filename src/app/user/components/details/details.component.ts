@@ -6,6 +6,7 @@ import { UserStorageService } from 'src/app/services/storage/user-storage.servic
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AppStateService } from 'src/app/services/app-state.service';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
+
 import { ImageCropperComponent } from 'ngx-image-cropper';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 
@@ -44,8 +45,8 @@ export class DetailsComponent implements OnInit, OnDestroy {
   templates: any[] = [];
   selectedTemplate: string = 'template1';
   private logoBlobUrl: string | null = null;
+  isLoading = true;
   
-
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -83,6 +84,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
     this.authService.getAvailableTemplates().subscribe(t => {
       this.templates = t;
     });
+    this.isLoading = false;
   }
 
   onLogoSelected(event: Event): void {
@@ -206,6 +208,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
         }
       },
       (error) => {
+        this.isLoading = false;
         console.error("Error fetching user details:", error);
         this.userHasDetails = false;
       }
@@ -405,6 +408,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
             }
           },
           (error) => {
+            this.isLoading = false;
             this.errorMessage = 'Updating details failed.';
             this.clearMessageAfterDelay();
             this.isUploadingLogo = false;
@@ -428,6 +432,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
             }
           },
           (error) => {
+            this.isLoading = false;
             this.errorMessage = 'Adding details failed.';
             this.clearMessageAfterDelay();
             this.isUploadingLogo = false;

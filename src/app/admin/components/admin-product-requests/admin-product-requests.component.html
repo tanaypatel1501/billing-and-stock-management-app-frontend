@@ -1,0 +1,121 @@
+<div class="requests-page">
+
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Product Requests</h1>
+      <p class="page-subtitle">Review and manage user-submitted product requests</p>
+    </div>
+    <div class="header-right">
+      <div class="filter-tabs">
+        <button class="tab-btn" [class.active]="activeFilter === 'PENDING'" (click)="setFilter('PENDING')">
+          Pending
+          <span class="count-badge pending" *ngIf="pendingCount > 0">{{ pendingCount }}</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeFilter === 'ALL'" (click)="setFilter('ALL')">All</button>
+        <button class="tab-btn" [class.active]="activeFilter === 'APPROVED'" (click)="setFilter('APPROVED')">Approved</button>
+        <button class="tab-btn" [class.active]="activeFilter === 'REJECTED'" (click)="setFilter('REJECTED')">Rejected</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading requests…</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && filteredRequests.length === 0">
+    <div class="empty-icon">📭</div>
+    <h3>No requests found</h3>
+    <p *ngIf="activeFilter === 'PENDING'">No pending product requests at the moment.</p>
+    <p *ngIf="activeFilter !== 'PENDING' && activeFilter !== 'ALL'">No {{ activeFilter.toLowerCase() }} requests found.</p>
+    <p *ngIf="activeFilter === 'ALL'">No product requests found.</p>
+  </div>
+
+  <div class="requests-list" *ngIf="!isLoading && filteredRequests.length > 0">
+    <div class="request-card" *ngFor="let req of filteredRequests" [class.expanded]="expandedId === req.id">
+
+      <div class="card-header" (click)="toggleExpand(req.id)">
+        <div class="header-info">
+          <div class="status-dot" [class]="'dot-' + req.status.toLowerCase()"></div>
+          <div class="product-info">
+            <span class="product-name">{{ req.name }}</span>
+            <span class="product-packing" *ngIf="req.packing"> · {{ req.packing }}</span>
+          </div>
+        </div>
+        <div class="header-meta">
+          <span class="requester-name">{{ req.requestedByName }}</span>
+          <span class="request-date">{{ req.createdAt | date:'dd MMM, HH:mm' }}</span>
+          <span class="status-badge" [class]="'badge-' + req.status.toLowerCase()">
+            {{ req.status | titlecase }}
+          </span>
+          <span class="expand-icon">{{ expandedId === req.id ? '▲' : '▼' }}</span>
+        </div>
+      </div>
+
+      <div class="card-body" *ngIf="expandedId === req.id">
+        <div class="detail-grid">
+          <div class="detail-item" *ngIf="req.hsn">
+            <span class="detail-label">HSN Code</span>
+            <span class="detail-value">{{ req.hsn }}</span>
+          </div>
+          <div class="detail-item" *ngIf="req.mrp">
+            <span class="detail-label">MRP</span>
+            <span class="detail-value">₹{{ req.mrp | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="detail-item" *ngIf="req.cgst !== undefined && req.cgst !== null">
+            <span class="detail-label">CGST</span>
+            <span class="detail-value">{{ req.cgst }}%</span>
+          </div>
+
+          <div class="detail-item" *ngIf="req.sgst !== undefined && req.sgst !== null">
+            <span class="detail-label">SGST</span>
+            <span class="detail-value">{{ req.sgst }}%</span>
+          </div>
+
+          <div class="detail-item full-width" *ngIf="req.notes">
+            <span class="detail-label">User Note</span>
+            <span class="detail-value note-text">{{ req.notes }}</span>
+          </div>
+          <div class="detail-item" *ngIf="req.requestedByEmail">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{ req.requestedByEmail }}</span>
+          </div>
+          <div class="detail-item" *ngIf="req.reviewedAt">
+            <span class="detail-label">Reviewed at</span>
+            <span class="detail-value">{{ req.reviewedAt | date:'dd MMM yyyy, HH:mm' }}</span>
+          </div>
+          <div class="detail-item full-width" *ngIf="req.adminNotes">
+            <span class="detail-label">Admin note</span>
+            <span class="detail-value">{{ req.adminNotes }}</span>
+          </div>
+        </div>
+
+        <div class="card-actions" *ngIf="req.status === 'PENDING'">
+          <div class="admin-note-row">
+            <input
+              type="text"
+              class="note-input"
+              placeholder="Optional note (sent to user in email)"
+              [(ngModel)]="adminNotes[req.id]" />
+          </div>
+          <div class="action-buttons">
+            <button class="action-btn approve-btn"
+                    [disabled]="processingId === req.id"
+                    (click)="approve(req)">
+              <span *ngIf="processingId !== req.id">✓ Approve</span>
+              <span *ngIf="processingId === req.id">Processing…</span>
+            </button>
+            <button class="action-btn reject-btn"
+                    [disabled]="processingId === req.id"
+                    (click)="reject(req)">
+              ✕ Reject
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

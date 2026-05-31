@@ -73,6 +73,16 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link"
+            routerLink="/admin/product-requests"
+            routerLinkActive="active"
+            (click)="closeMobileMenu()">
+            <fa-icon [icon]="faClipboardList"></fa-icon>
+            <span>Requests</span>
+            <span class="pending-dot" *ngIf="pendingRequestCount > 0">{{ pendingRequestCount }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" 
              routerLink="/profile" 
              routerLinkActive="active"

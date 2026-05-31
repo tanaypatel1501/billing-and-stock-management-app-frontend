@@ -556,4 +556,78 @@ export class AuthService {
       { headers }
     );
   }
+
+  /* ---------------------- PRODUCT REQUESTS ---------------------- */
+
+  // ── User methods ──────────────────────────────────────────────
+
+  /** Submit a new product request */
+  submitProductRequest(dto: ProductRequestDTO, userId: number): Observable<ProductRequestDTO> {
+    return this.http.post<ProductRequestDTO>(
+      `${this.baseUrl}api/product-requests/submit?userId=${userId}`,
+      dto,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  /** Get all requests submitted by the current user */
+  getMyProductRequests(userId: number): Observable<ProductRequestDTO[]> {
+    return this.http.get<ProductRequestDTO[]>(
+      `${this.baseUrl}api/product-requests/my?userId=${userId}`,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  // ── Admin methods ─────────────────────────────────────────────
+
+  /** Get all PENDING product requests (admin only) */
+  getPendingProductRequests(): Observable<ProductRequestDTO[]> {
+    return this.http.get<ProductRequestDTO[]>(
+      `${this.baseUrl}api/product-requests/pending`,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  /** Get all product requests regardless of status (admin only) */
+  getAllProductRequests(): Observable<ProductRequestDTO[]> {
+    return this.http.get<ProductRequestDTO[]>(
+      `${this.baseUrl}api/product-requests/all`,
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  /** Approve a product request (admin only) */
+  approveProductRequest(requestId: number, adminNotes = ''): Observable<ProductRequestDTO> {
+    return this.http.post<ProductRequestDTO>(
+      `${this.baseUrl}api/product-requests/${requestId}/approve`,
+      { adminNotes },
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+
+  /** Reject a product request (admin only) */
+  rejectProductRequest(requestId: number, adminNotes = ''): Observable<ProductRequestDTO> {
+    return this.http.post<ProductRequestDTO>(
+      `${this.baseUrl}api/product-requests/${requestId}/reject`,
+      { adminNotes },
+      { headers: this.createAuthorizationHeader() }
+    );
+  }
+}
+
+  export interface ProductRequestDTO {
+  id?: number;
+  name: string;
+  packing?: string;
+  hsn?: string | null;
+  mrp?: number | null;
+  cgst?: number | null;
+  sgst?: number | null;
+  notes?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  requestedByName?: string;
+  requestedByEmail?: string;
+  createdAt?: string;
+  reviewedAt?: string;
+  adminNotes?: string;
 }

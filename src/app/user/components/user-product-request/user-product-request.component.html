@@ -1,0 +1,145 @@
+<div class="auth-wrapper">
+  <div class="auth-container">
+    <div class="auth-card">
+
+      <!-- Back link -->
+      <a class="back-link" routerLink="/user/stock/add">
+        ← Back to Add Stock
+      </a>
+
+      <div class="auth-header">
+        <h1>Request a Product</h1>
+        <p>Can't find what you need? Submit a request and we'll add it to the catalogue.</p>
+      </div>
+
+      <!-- Success State -->
+      <div class="success-panel" *ngIf="submitted">
+        <div class="success-icon">✅</div>
+        <h2>Request Submitted!</h2>
+        <p>We've received your request for <strong>{{ lastSubmittedName }}</strong>. You'll get an email once it's added.</p>
+        <div class="success-actions">
+          <button class="submit-btn" (click)="resetForm()">Submit Another</button>
+          <a class="secondary-btn" routerLink="/user/stock/add">Back to Add Stock</a>
+        </div>
+
+        <!-- My past requests -->
+        <div class="my-requests" *ngIf="myRequests.length > 0">
+          <h3 class="section-label">Your requests</h3>
+          <div class="request-row" *ngFor="let r of myRequests">
+            <span class="req-name">{{ r.name }}<span class="req-packing" *ngIf="r.packing"> · {{ r.packing }}</span></span>
+            <span class="req-badge" [class]="'badge-' + r.status.toLowerCase()">{{ r.status | titlecase }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form State -->
+      <ng-container *ngIf="!submitted">
+
+        <!-- Error Alert -->
+        <div class="alert alert-danger" *ngIf="errorMessage" (click)="errorMessage = null">
+          <span class="alert-icon">⚠</span> {{ errorMessage }}
+        </div>
+
+        <form [formGroup]="requestForm" (ngSubmit)="onSubmit()">
+
+          <!-- Product Name -->
+          <div class="form-group">
+            <label for="name">Product Name <span class="required">*</span></label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              placeholder="e.g. Paracetamol 500mg"
+              [class.error]="requestForm.get('name')?.invalid && requestForm.get('name')?.touched" />
+            <div class="error-msg" *ngIf="requestForm.get('name')?.hasError('required') && requestForm.get('name')?.touched">
+              Product name is required.
+            </div>
+          </div>
+
+          <!-- Packing & HSN Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="packing">Packing</label>
+              <input type="text" id="packing" formControlName="packing" placeholder="e.g. 10×10 Strip" />
+            </div>
+            <div class="form-group">
+              <label for="HSN">HSN Code</label>
+              <input type="text" id="HSN" formControlName="HSN" placeholder="e.g. 3004" />
+            </div>
+          </div>
+
+          <div class="form-group tax-mode-container">
+            <label>Tax Structure</label>
+            <div class="tax-toggle-group">
+              <label class="toggle-option" [class.active]="requestForm.get('taxMode')?.value === 'cgst_sgst'">
+                <input type="radio" formControlName="taxMode" value="cgst_sgst" (change)="onTaxModeChange()">
+                CGST + SGST
+              </label>
+              <label class="toggle-option" [class.active]="requestForm.get('taxMode')?.value === 'igst'">
+                <input type="radio" formControlName="taxMode" value="igst" (change)="onTaxModeChange()">
+                IGST
+              </label>
+            </div>
+          </div>
+
+          <!-- MRP & Tax Row -->
+          <div class="form-row">
+            <div class="form-group mrp-column">
+              <label for="MRP">MRP (₹)</label>
+              <input type="number" id="MRP" formControlName="MRP" step="0.01" min="0" placeholder="0.00" />
+            </div>
+
+            <ng-container *ngIf="requestForm.get('taxMode')?.value === 'cgst_sgst'">
+              <div class="form-group">
+                <label for="CGST">CGST (%)</label>
+                <input type="number" id="CGST" formControlName="CGST" step="0.5" min="0" max="100" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label for="SGST">SGST (%)</label>
+                <input type="number" id="SGST" formControlName="SGST" step="0.5" min="0" max="100" placeholder="0" />
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="requestForm.get('taxMode')?.value === 'igst'">
+              <div class="form-group igst-column">
+                <label for="IGST">IGST (%)</label>
+                <input type="number" id="IGST" formControlName="IGST" step="0.5" min="0" max="100" placeholder="0" />
+              </div>
+            </ng-container>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group">
+            <label for="notes">Additional Notes</label>
+            <textarea
+              id="notes"
+              formControlName="notes"
+              rows="3"
+              placeholder="Any extra info that helps identify this product (brand, manufacturer, etc.)">
+            </textarea>
+          </div>
+
+          <button
+            type="submit"
+            class="submit-btn"
+            [disabled]="requestForm.invalid || isSubmitting">
+            <span *ngIf="!isSubmitting">Submit Request</span>
+            <span *ngIf="isSubmitting">Submitting…</span>
+          </button>
+
+        </form>
+
+        <!-- My past requests (shown below form if they exist) -->
+        <div class="my-requests" *ngIf="myRequests.length > 0">
+          <h3 class="section-label">Your past requests</h3>
+          <div class="request-row" *ngFor="let r of myRequests">
+            <span class="req-name">{{ r.name }}<span class="req-packing" *ngIf="r.packing"> · {{ r.packing }}</span></span>
+            <span class="req-badge" [class]="'badge-' + r.status.toLowerCase()">{{ r.status | titlecase }}</span>
+          </div>
+        </div>
+
+      </ng-container>
+
+    </div>
+  </div>
+</div>

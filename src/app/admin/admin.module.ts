@@ -8,6 +8,7 @@ import { AddProductComponent } from './components/add-product/add-product.compon
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { EditProductComponent } from './components/edit-product/edit-product.component';
 import { BulkUploadModalComponent } from './components/bulk-upload-modal/bulk-upload-modal.component';
+import { AdminProductRequestsComponent } from './components/admin-product-requests/admin-product-requests.component';
 
 
 
@@ -16,6 +17,7 @@ import { BulkUploadModalComponent } from './components/bulk-upload-modal/bulk-up
     AddProductComponent,
     EditProductComponent,
     BulkUploadModalComponent,
+    AdminProductRequestsComponent,
   ],
   imports: [
     CommonModule,

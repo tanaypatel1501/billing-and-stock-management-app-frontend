@@ -4,11 +4,13 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AdminGuard } from '../guards/admin-guard/admin.guard';
 import { AddProductComponent } from './components/add-product/add-product.component';
 import { EditProductComponent } from './components/edit-product/edit-product.component';
+import { AdminProductRequestsComponent } from './components/admin-product-requests/admin-product-requests.component';
 
 const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate:[AdminGuard], title: 'Dashboard | GST Medicose' },
   { path: 'add-product', component: AddProductComponent, canActivate:[AdminGuard], title: 'Add Product | GST Medicose' },
   { path: 'edit-product', component: EditProductComponent, canActivate:[AdminGuard], title: 'Edit Product | GST Medicose' },
+  { path: 'product-requests', component: AdminProductRequestsComponent, canActivate:[AdminGuard], title: 'Product Requests | GST Medicose' }
 ];
 
 @NgModule({

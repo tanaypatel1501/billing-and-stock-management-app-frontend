@@ -84,7 +84,6 @@ export class DetailsComponent implements OnInit, OnDestroy {
     this.authService.getAvailableTemplates().subscribe(t => {
       this.templates = t;
     });
-    this.isLoading = false;
   }
 
   onLogoSelected(event: Event): void {
@@ -206,6 +205,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
             this.selectedTemplate = details.preferredTemplate;
           }
         }
+        this.isLoading = false;
       },
       (error) => {
         this.isLoading = false;

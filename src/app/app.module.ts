@@ -9,6 +9,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { LoadingInterceptor } from './interceptors/loading.interceptor';
 import { LoadingComponent } from './loading/loading.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -56,6 +57,7 @@ import { QRCodeModule } from 'angularx-qrcode';
     QRCodeModule,
   ],
   providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, 
     {
       provide: HTTP_INTERCEPTORS,
       useClass: LoadingInterceptor,

@@ -346,8 +346,8 @@
 }
 
 @media (max-width: 769px) {
-  .navbar-toggle {
-    display: none !important; 
+  .navbar-toggle.hide-on-mobile {
+    display: none !important;  
   }
 
   .bottom-dock {

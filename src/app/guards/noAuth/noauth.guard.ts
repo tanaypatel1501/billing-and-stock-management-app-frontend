@@ -1,27 +1,21 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Route, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { Observable } from 'rxjs';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class NoauthGuard implements CanActivate {
+  constructor(private router: Router) {}
 
-  constructor(private router: Router) { }
-
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): boolean | UrlTree { // Updated return type
-
-    if (UserStorageService.hasToken() && UserStorageService.isUserLoggedIn()) {
-      // Redirect to user dashboard if logged in
-      return this.router.parseUrl("/user/dashboard");
-    } else if (UserStorageService.hasToken() && UserStorageService.isAdminLoggedIn()) {
-      // Redirect to admin dashboard if logged in
-      return this.router.parseUrl("/admin/dashboard");
-    }
-    return true;
-  }
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): boolean | UrlTree {
+    if (UserStorageService.hasToken() && !UserStorageService.isTokenExpired()) {
+      if (UserStorageService.isUserLoggedIn()) return this.router.parseUrl('/user/dashboard');
+      if (UserStorageService.isAdminLoggedIn()) return this.router.parseUrl('/admin/dashboard');
+    }
+    // Expired or no token — clear storage and allow through to login/register
+    if (UserStorageService.hasToken()) UserStorageService.signOut();
+    return true;
+  }
 }

@@ -1,39 +1,34 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router'; // <-- Added UrlTree
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
+import { AlertService } from 'src/app/services/alert-service/alert.service';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AdminGuard implements CanActivate {
+  constructor(private router: Router, private alertService: AlertService) {}
 
-  // Removed the unused userStorageService dependency from the constructor
-  constructor(private router: Router) { } 
-
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | (boolean | UrlTree) { 
-        // Updated return type to include UrlTree for safe redirection
-
-    // Logic 1: If a standard user is logged in, redirect them away from the admin page
-    if (UserStorageService.isUserLoggedIn()) {
-      alert("ERROR: You don't have access to this page.");
-      // FIX: Use UrlTree for safe redirection
-      return this.router.parseUrl('/user/dashboard'); 
-    } 
-    
-    // Logic 2: If no token exists (logged out), redirect to login
-    else if (!UserStorageService.hasToken()) {
-      UserStorageService.signOut();
-      alert("ERROR: You are not logged in. Please login first.");
-      // FIX: Use UrlTree for safe redirection
-      return this.router.parseUrl('/login');
-    }
-
-    // THE BLANK SCREEN FIX: Return a resolved Promise instead of raw true.
-    // This ensures the router stabilizes before completing the navigation.
-    return Promise.resolve(true); 
-  }
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | (boolean | UrlTree) {
+    if (!UserStorageService.hasToken() || UserStorageService.isTokenExpired()) {
+      UserStorageService.signOut();
+      this.alertService.error(
+        'Your session has expired. Please log in again.',
+        'Session Expired',
+        0
+      );
+      return this.router.parseUrl('/login');
+    }
+    if (UserStorageService.isUserLoggedIn()) {
+      this.alertService.error(
+        "You don't have access to this page.",
+        'Access Denied',
+        4000
+      );
+      return this.router.parseUrl('/user/dashboard');
+    }
+    return Promise.resolve(true);
+  }
 }

@@ -83,6 +83,17 @@ export class UserStorageService {
     window.localStorage.removeItem(BILL);
   }
 
+  static isTokenExpired(): boolean {
+    const token = UserStorageService.getToken();
+    if (!token) return true;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp * 1000 < Date.now();
+    } catch {
+      return true;
+    }
+  }
+  
   public saveProductId(productId :any){
     this.productId = productId;
   }

@@ -310,3 +310,43 @@
     width: 100%;
   }
 }
+.custom-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-main);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: var(--gstm-primary-color);
+    background: var(--gstm-card-bg);
+    box-shadow: 0 0 0 4px var(--gstm-border-subtle);
+  }
+
+  // Fix date picker icon color in dark mode
+  &::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+  }
+}
+
+// Date range row — show both side by side on wider modals
+.date-range-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  .form-group {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 360px) {
+    grid-template-columns: 1fr;
+  }
+}

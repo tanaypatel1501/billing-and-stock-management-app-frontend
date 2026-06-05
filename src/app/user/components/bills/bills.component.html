@@ -33,7 +33,7 @@
               class="back-btn"
               (click)="resetView()"
               title="Reset Filters & Search"
-              *ngIf="isSearchActive || sortColumn">
+              *ngIf="isSearchActive || sortColumn || isDateFilterActive">
               <fa-icon [icon]="faArrowLeft"></fa-icon>
             </button>
             
@@ -61,14 +61,48 @@
               [columns]="filterColumns" 
               [currentSortBy]="sortColumn" 
               [currentDirection]="sortDirection"
+              [showDateFilter]="true"   
+              [currentFromDate]="fromDate"
+              [currentToDate]="toDate"
               (onApplySort)="handleFilterSort($any($event))">
             </app-filter-button>
           </div>
         </div>
+        <div class="export-toolbar" *ngIf="selectedBillIds.size > 0 || selectAllPages">
+          <div class="select-all-wrapper">
+            <input type="checkbox" id="selectAll"
+              [checked]="allSelected || allCurrentPageSelected"
+              (change)="toggleSelectAll()" />
+            <label for="selectAll">
+              <ng-container *ngIf="selectAllPages">
+                All {{ totalElements }} bills selected
+              </ng-container>
+              <ng-container *ngIf="!selectAllPages && allCurrentPageSelected">
+                Select all {{ totalElements }} bills?
+              </ng-container>
+              <ng-container *ngIf="!selectAllPages && !allCurrentPageSelected">
+                {{ selectedBillIds.size }} selected
+              </ng-container>
+            </label>
+          </div>
+          <button class="export-btn" [disabled]="isExporting" (click)="exportSelectedAsPdf()">
+            <fa-icon [icon]="isExporting ? faSpinner : faDownload"></fa-icon>
+            <span>{{ isExporting ? 'Exporting...' : 'Export PDF' }}</span>
+          </button>
+        </div>
 
         <!-- Bills List -->
         <div class="bills-container">
-          <div *ngFor="let bill of bills" class="bill-card" (click)="openBill(bill.id)">
+          <div *ngFor="let bill of bills" class="bill-card"
+            [class.selected]="isSelected(bill.id)"
+            (click)="openBill(bill.id)">
+            <div class="bill-select-circle"
+              [class.checked]="isSelected(bill.id)"
+              (click)="toggleBillSelection(bill.id, $event)"
+              title="Select bill">
+              <fa-icon *ngIf="isSelected(bill.id)" [icon]="faCircleCheck"></fa-icon>
+              <span *ngIf="!isSelected(bill.id)" class="empty-circle"></span>
+            </div>
             <div class="bill-header">
               <div class="bill-icon">
                 <fa-icon [icon]="faFileInvoice"></fa-icon>

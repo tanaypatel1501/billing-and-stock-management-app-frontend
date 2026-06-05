@@ -30,6 +30,19 @@
             <span class="select-arrow">⌄</span>
           </div>
         </div>
+        <!-- Date Range Filter — only shown when parent opts in -->
+        <ng-container *ngIf="showDateFilter">
+          <div class="date-range-group">
+            <div class="form-group">
+              <label>From Date</label>
+              <input type="date" class="custom-input" [(ngModel)]="fromDate" />
+            </div>
+            <div class="form-group">
+              <label>To Date</label>
+              <input type="date" class="custom-input" [(ngModel)]="toDate" />
+            </div>
+          </div>
+        </ng-container>
 
         <ng-container *ngIf="showSort">
           <div class="form-group" *ngIf="columns && columns.length > 0">

@@ -7,6 +7,7 @@ export interface AlertMessage {
   message: string;
   duration?: number;
   onClose?: () => void; 
+  onConfirm?: () => void;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -40,5 +41,9 @@ export class AlertService {
 
   info(message: string, title = 'Info', duration = 4000, onClose?: () => void) {
     this.show({ type: 'info', title, message, duration, onClose });
+  }
+
+  confirm(message: string, onConfirm: () => void, title = 'Confirm', onClose?: () => void) {
+    this.show({ type: 'warning', title, message, duration: 0, onConfirm, onClose });
   }
 }

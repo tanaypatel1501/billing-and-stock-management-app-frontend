@@ -6,6 +6,7 @@ import { UserStorageService } from 'src/app/services/storage/user-storage.servic
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { switchMap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { AlertService } from 'src/app/services/alert-service/alert.service';
 
 const PATTERNS = {
   GST: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/i,
@@ -63,6 +64,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private authService: AuthService,
     private userStorageService: UserStorageService,
+    private alertService: AlertService,
     private router: Router
   ) {}
 
@@ -329,13 +331,17 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   addItem(): void {
     if (this.billForm2.valid) {
       const raw = this.billForm2.getRawValue();
-
       const stockItem = this.stock.find(
         s => s.product.name === raw.productName && s.batchNo === raw.batchNo
       );
-
-      this.step2Data.push({ ...raw, stockItem }); 
+      this.step2Data.push({ ...raw, stockItem });
       this.billForm2.reset({ free: 0 });
+      this.billForm2.markAsPristine(); 
+      this.billForm2.markAsUntouched();
+      this.displayProductName = '';
+      this.filteredStock = [];
+      this.selectedMrp = null;
+      this.quantityPlaceholder = 'Quantity';
     } else {
       this.billForm2.markAllAsTouched();
     }
@@ -410,18 +416,26 @@ export class CreateBillComponent implements OnInit, OnDestroy {
 
   submitBill(): void {
     if (this.step2Data.length === 0) {
-      this.showError = true;
-      setTimeout(() => (this.showError = false), 3000);
+      this.alertService.error('Bill cannot be empty. Add items to the bill inorder to submit.', 'Empty Bill', 3000);
       return;
     }
 
-    if (this.billForm2.dirty && this.billForm2.invalid) {
-      this.billForm2.markAllAsTouched();
+    if (this.billForm2.dirty) {
+      this.alertService.confirm(
+        'You have an unsaved item in the form. Submit the bill without it?',
+        () => this.processBillSubmit(),   
+        'Unsaved Item',
+        () => {}                         
+      );
       return;
     }
 
+    this.processBillSubmit();
+  }
+
+  private processBillSubmit(): void {
     const invalidItems = this.step2Data.some(item => {
-      const stockItem = item.stockItem; 
+      const stockItem = item.stockItem;
       if (!stockItem) return true;
       return (item.quantity + item.free) > stockItem.quantity;
     });

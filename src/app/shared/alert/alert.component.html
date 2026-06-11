@@ -14,7 +14,13 @@
 
     <!-- Close Button -->
     <div class="alert-footer">
-      <button class="alert-btn" (click)="close()">OK</button>
+      <ng-container *ngIf="alert?.onConfirm; else singleBtn">
+        <button class="alert-btn secondary" (click)="cancel()">Cancel</button>
+        <button class="alert-btn" (click)="confirm()">Confirm</button>
+      </ng-container>
+      <ng-template #singleBtn>
+        <button class="alert-btn" (click)="close()">OK</button>
+      </ng-template>
     </div>
 
   </div>

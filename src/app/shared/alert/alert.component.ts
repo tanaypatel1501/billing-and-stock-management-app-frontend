@@ -66,17 +66,26 @@ export class AlertComponent implements OnInit, OnDestroy {
   }
 
   close(): void {
+    if (this.alert?.onConfirm) return;
+
     const currentAlert = this.alert;
     this.alert = null;
-    
-    if (this.dismissTimeout) {
-      clearTimeout(this.dismissTimeout);
-    }
+    if (this.dismissTimeout) clearTimeout(this.dismissTimeout);
+    currentAlert?.onClose?.();
+  }
 
-    // Execute onClose callback if it exists
-    if (currentAlert?.onClose) {
-      currentAlert.onClose();
-    }
+  confirm(): void {
+    const currentAlert = this.alert;
+    this.alert = null;
+    if (this.dismissTimeout) clearTimeout(this.dismissTimeout);
+    currentAlert?.onConfirm?.();
+  }
+
+  cancel(): void {
+    const currentAlert = this.alert;
+    this.alert = null;
+    if (this.dismissTimeout) clearTimeout(this.dismissTimeout);
+    currentAlert?.onClose?.();
   }
 
   ngOnDestroy(): void {

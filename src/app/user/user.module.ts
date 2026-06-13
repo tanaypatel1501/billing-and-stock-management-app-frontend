@@ -17,6 +17,7 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { InvoiceTemplateOneComponent } from './components/invoice-template-one/invoice-template-one.component';
 import { InvoiceTemplateTwoComponent } from './components/invoice-template-two/invoice-template-two.component';
 import { UserProductRequestComponent } from './components/user-product-request/user-product-request.component';
+import { PurchasersComponent } from './components/purchasers/purchasers.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,7 @@ import { UserProductRequestComponent } from './components/user-product-request/u
     StockFormComponent,
     InvoiceTemplateOneComponent,
     InvoiceTemplateTwoComponent,
-    UserProductRequestComponent
+    UserProductRequestComponent,
   ],
   imports: [
     CommonModule,
@@ -40,6 +41,7 @@ import { UserProductRequestComponent } from './components/user-product-request/u
     BillsComponent,
     ImageCropperComponent,
     QRCodeModule,
+    PurchasersComponent
   ]
 })
 export class UserModule { }

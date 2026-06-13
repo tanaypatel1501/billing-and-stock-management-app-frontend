@@ -22,7 +22,8 @@ import {
   faChartBar,
   faClockRotateLeft,
   faClipboardList,
-  faBars
+  faBars,
+  faUsers
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -53,9 +54,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   faClockRotateLeft = faClockRotateLeft;
   faClipboardList = faClipboardList;
   faBars = faBars;
+  faUsers = faUsers;
 
   pendingRequestCount = 0;
   // optionally poll: authService.getPendingProductRequests().subscribe(r => this.pendingRequestCount = r.length)
+  hasPurchasers = false;
+  private purchasersSub?: Subscription;
 
   constructor(
     private router: Router,
@@ -76,12 +80,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
     const uid = UserStorageService.getUserId();
     if (uid) {
       this.appState.refreshDetailsValidity(uid);
+      this.appState.refreshHasPurchasers(uid);
     }
 
     this.authSub = this.isAuthenticated$.subscribe(auth => {
       if (auth) {
         const id = UserStorageService.getUserId();
         if (id) this.appState.refreshDetailsValidity(id);
+        if (id) this.appState.refreshHasPurchasers(id);
       }
     });
     this.router.events
@@ -89,11 +95,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.mobileMenuOpen = false;
       });
+    this.purchasersSub = this.appState.hasPurchasers$.subscribe(v => {
+      this.hasPurchasers = v;
+    });
   }
 
   ngOnDestroy(): void {
     if (this.detailsSub) this.detailsSub.unsubscribe();
     if (this.authSub) this.authSub.unsubscribe();
+    if (this.purchasersSub) this.purchasersSub.unsubscribe();
   }
 
   // These getters are synchronous checks used only to determine role for specific links

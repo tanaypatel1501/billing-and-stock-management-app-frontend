@@ -36,12 +36,20 @@
 /* Modal Icon */
 .modal-icon {
   padding: 30px 20px 15px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  fa-icon {
-    font-size: 3.5rem;
-    color: var(--gstm-danger);
-  }
+.icon-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-icon fa-icon {
+  font-size: 3.5rem;
+  color: var(--gstm-danger);
 }
 
 /* Modal Content */

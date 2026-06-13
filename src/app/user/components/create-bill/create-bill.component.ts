@@ -301,7 +301,8 @@ export class CreateBillComponent implements OnInit, OnDestroy {
         dl1: raw.dl1?.trim() || 'N/A',
         dl2: raw.dl2?.trim() || 'N/A',
         gstin: raw.gstin?.trim() || 'N/A',
-        userId: this.userId
+        userId: this.userId,
+        purchaserId: this.selectedPurchaserId ?? undefined
       };
 
       this.authService.savePurchaser({

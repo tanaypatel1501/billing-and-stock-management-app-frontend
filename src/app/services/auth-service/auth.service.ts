@@ -478,6 +478,15 @@ export class AuthService {
     );
   }
 
+  getAllPurchasers(userId: number, params: { page?: number; size?: number; searchText?: string } = {}): Observable<PageResponse<any>> {
+    const { page = 0, size = 20, searchText = '' } = params;
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<PageResponse<any>>(
+      `${this.baseUrl}api/purchaser/page?userId=${userId}&search=${encodeURIComponent(searchText)}&page=${page}&size=${size}`,
+      { headers }
+    );
+  }
+
   /* ---------------------- SALES ---------------------- */
 
   getSalesSummary(userId: any, paidOnly: boolean = false): Observable<any> {

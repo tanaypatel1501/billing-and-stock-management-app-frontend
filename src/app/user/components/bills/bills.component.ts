@@ -1,5 +1,5 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute,Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import {
@@ -23,6 +23,8 @@ export class BillsComponent implements OnInit {
   bills: any[] = [];
   userId!: any;
   billId!: any;
+  purchaserId: number | null = null;
+  purchaserName: string = '';
 
   faArrowLeft = faArrowLeft;
   faMoneyBillTrendUp = faMoneyBillTrendUp;
@@ -67,11 +69,24 @@ export class BillsComponent implements OnInit {
     private authService: AuthService,
     private userStorageService: UserStorageService,
     private router: Router,
+    private route: ActivatedRoute,
     private datePipe: DatePipe
   ) {}
 
   ngOnInit() {
     this.userId = UserStorageService.getUserId();
+    const paramPurchaserId = this.route.snapshot.queryParamMap.get('purchaserId');
+    const paramPurchaserName = this.route.snapshot.queryParamMap.get('purchaserName');
+    const paramSearch = this.route.snapshot.queryParamMap.get('searchText');
+    if (paramPurchaserId) {
+      this.purchaserId   = +paramPurchaserId;
+      this.purchaserName = paramPurchaserName ?? '';
+      this.searchText    = this.purchaserName;  
+      this.isSearchActive = true;
+    } else if (paramSearch) {
+      this.searchText    = paramSearch;
+      this.isSearchActive = true;
+    }
     this.loadInitialData();
   }
 
@@ -112,7 +127,8 @@ export class BillsComponent implements OnInit {
       size: this.pageSize,
       sortBy: this.sortColumn || 'id',
       direction: this.sortDirection,
-      searchText: this.searchText,
+      searchText: this.purchaserId ? '' : this.searchText,
+      purchaserId: this.purchaserId ?? undefined, 
       filters: {
         'user.id': this.userId.toString(),
         ...(this.fromDate ? { 'invoiceDate.from': this.fromDate } : {}),
@@ -214,6 +230,8 @@ export class BillsComponent implements OnInit {
     this.isSearchActive = false;
     this.fromDate = '';
     this.toDate = '';
+    this.purchaserId   = null;   
+    this.purchaserName = '';
     this.loadInitialData();
   }
 

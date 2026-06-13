@@ -11,6 +11,7 @@ import { BillsComponent } from './components/bills/bills.component';
 import { SalesComponent } from './components/sales/sales.component';
 import { StockLogsComponent } from './components/stock-logs/stock-logs.component';
 import { UserProductRequestComponent } from './components/user-product-request/user-product-request.component';
+import { PurchasersComponent } from './components/purchasers/purchasers.component';
 
 const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent ,canActivate:[UserGuard],title: 'Dashboard | GST Medicose'},
@@ -22,7 +23,8 @@ const routes: Routes = [
   { path: 'bills', component: BillsComponent ,canActivate:[UserGuard],title: 'Bills | GST Medicose'},
   { path: 'sales', component: SalesComponent ,canActivate:[UserGuard],title: 'Sales | GST Medicose'},
   { path: 'stock-logs', component: StockLogsComponent ,canActivate:[UserGuard],title: 'Stock Logs | GST Medicose'},
-  { path: 'product-request', component: UserProductRequestComponent, canActivate:[UserGuard], title: 'Product Request | GST Medicose' }
+  { path: 'product-request', component: UserProductRequestComponent, canActivate:[UserGuard], title: 'Product Request | GST Medicose' },
+  { path: 'purchasers', component: PurchasersComponent, canActivate: [UserGuard], title: 'Purchasers | GST Medicose' },
 ];
 
 @NgModule({

@@ -243,17 +243,6 @@
     right: 0;
   }
 
-  /* FIX: Hide redundant items inside the sidebar menu that are already visible on the bottom dock */
-  .navbar-menu .nav-item:has(a[routerLink="/admin/dashboard"]),
-  .navbar-menu .nav-item:has(a[routerLink="/admin/add-product"]),
-  .navbar-menu .nav-item:has(a[routerLink="/admin/product-requests"]),
-  .navbar-menu .nav-item:has(a[routerLink="/user/dashboard"]),
-  .navbar-menu .nav-item:has(a[routerLink="/user/stock/add"]),
-  .navbar-menu .nav-item:has(a[routerLink="/profile"]),
-  .navbar-menu .nav-item:has(a:not([routerLink]):not(.settings-trigger)) {
-    display: none !important;
-  }
-
   .nav-list {
     flex-direction: column;
     gap: 6px; /* Spacing between items instead of borders */
@@ -348,6 +337,16 @@
 @media (max-width: 769px) {
   .navbar-toggle.hide-on-mobile {
     display: none !important;  
+  }
+
+  .navbar-menu .nav-item:has(a[routerLink="/admin/dashboard"]),
+  .navbar-menu .nav-item:has(a[routerLink="/admin/add-product"]),
+  .navbar-menu .nav-item:has(a[routerLink="/admin/product-requests"]),
+  .navbar-menu .nav-item:has(a[routerLink="/user/dashboard"]),
+  .navbar-menu .nav-item:has(a[routerLink="/user/stock/add"]),
+  .navbar-menu .nav-item:has(a[routerLink="/profile"]),
+  .navbar-menu .nav-item:has(a:not([routerLink]):not(.settings-trigger)) {
+    display: none !important;
   }
 
   .bottom-dock {

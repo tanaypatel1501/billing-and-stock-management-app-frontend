@@ -46,6 +46,11 @@
             </div>
           </div>
 
+          <div class="inventory-value-chip">
+            <span class="chip-label">Inventory Value</span>
+            <span class="chip-amount">₹{{ totalInventoryValue | number:'1.2-2' }}</span>
+          </div>
+
           <div class="header-right">
             <app-search-bar
               [suggestions]="suggestions"

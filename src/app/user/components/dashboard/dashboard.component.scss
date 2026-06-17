@@ -364,6 +364,27 @@ body.modal-open {
   * { animation-play-state: paused !important; }
   .modal-overlay, .modal-overlay * { pointer-events: auto; }
 }
+.inventory-value-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, var(--gstm-primary-color) 0%, var(--gstm-primary-hover) 100%);
+  padding: 10px 20px;
+  border-radius: 12px;
+  white-space: nowrap;
+
+  .chip-label {
+    font: 700 0.65rem sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(0,0,0,0.6);
+  }
+
+  .chip-amount {
+    font: 800 1.1rem sans-serif;
+    color: #000;
+  }
+}
 
 /* Media Queries */
 @media (max-width: 768px) {
@@ -426,6 +447,15 @@ body.modal-open {
   }
   .empty-state-content { min-height: 40vh; }
   .empty-icon { font-size: 3rem; }
+  .inventory-value-chip {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: 10px;
+
+    .chip-amount { font-size: 1rem; }
+  }
 }
 
 @media (max-width: 480px) {

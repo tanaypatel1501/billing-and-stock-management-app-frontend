@@ -60,7 +60,7 @@
       </div>
 
         <!-- Batch No & Expiry Date Row -->
-        <div class="form-row">
+        <div class="form-row-batch-expiry">
           <div class="form-group">
             <label for="batchNo">Batch No</label>
             <input 
@@ -72,12 +72,54 @@
           </div>
 
           <div class="form-group">
-            <label for="expiryDate">Expiry Date</label>
-            <input 
-              type="date" 
-              id="expiryDate" 
-              formControlName="expiryDate"
-              [class.error]="productForm.get('expiryDate')?.invalid && productForm.get('expiryDate')?.touched">
+            <label>Expiry Date</label>
+            <div class="month-year-picker">
+
+              <!-- Month custom dropdown -->
+              <div class="custom-picker-container" (clickOutside)="showMonthDropdown = false">
+                <div class="picker-trigger"
+                    [class.error]="productForm.get('expiryDate')?.invalid && productForm.get('expiryDate')?.touched"
+                    [class.active]="showMonthDropdown"
+                    (click)="showMonthDropdown = !showMonthDropdown">
+                  <span [class.picker-placeholder]="!expiryMonth">{{ expiryMonth ? months[+expiryMonth - 1] : 'Month' }}</span>
+                  <span class="picker-arrow">
+                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                      <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </div>
+                <ul class="picker-dropdown" *ngIf="showMonthDropdown">
+                  <li *ngFor="let m of months; let i = index"
+                      [class.selected]="expiryMonth === i + 1"
+                      (mousedown)="expiryMonth = i + 1; onMonthYearChange(); showMonthDropdown = false">
+                    {{ m }}
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Year custom dropdown -->
+              <div class="custom-picker-container" (clickOutside)="showYearDropdown = false">
+                <div class="picker-trigger"
+                    [class.error]="productForm.get('expiryDate')?.invalid && productForm.get('expiryDate')?.touched"
+                    [class.active]="showYearDropdown"
+                    (click)="showYearDropdown = !showYearDropdown">
+                  <span [class.picker-placeholder]="!expiryYear">{{ expiryYear || 'Year' }}</span>
+                  <span class="picker-arrow">
+                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                      <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </div>
+                <ul class="picker-dropdown" *ngIf="showYearDropdown">
+                  <li *ngFor="let y of years"
+                      [class.selected]="expiryYear === y"
+                      (mousedown)="expiryYear = y; onMonthYearChange(); showYearDropdown = false">
+                    {{ y }}
+                  </li>
+                </ul>
+              </div>
+
+            </div>
           </div>
         </div>
 

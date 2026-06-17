@@ -113,7 +113,7 @@
 }
 
 /* Auth/Form Card Styles */
-.auth-container { max-width: 600px; margin: 0 auto; }
+.auth-container { width: min(600px, 100%); margin: 0 auto; }
 
 .auth-card {
   background: var(--gstm-card-bg);
@@ -185,6 +185,12 @@
 
 /* Form Controls */
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.form-row-batch-expiry { display: grid; grid-template-columns: 3fr 2fr; gap: 15px;}
+#batchNo[readonly] {
+  cursor: pointer;
+  color: var(--gstm-text-main);
+  background: var(--gstm-input-bg);
+}
 .form-group { 
   margin-bottom: 18px; 
   & > label { display: flex; justify-content: space-between; align-items: center; }
@@ -346,5 +352,6 @@ select {
 
   .auth-card { padding: 30px 20px; }
   .form-row, .button-group { grid-template-columns: 1fr; gap: 0; }
+  .form-row-batch-expiry { grid-template-columns: 1fr; gap: 0; }
   .submit-btn { margin: 5px 0; }
 }

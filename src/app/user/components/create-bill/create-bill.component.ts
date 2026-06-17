@@ -54,6 +54,9 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   showPurchaserDropdown = false;
   isPurchaserLoading = false;
   selectedPurchaserId: number | null = null;
+  selectedExpiryRaw: string = '';
+  showBatchDropdown = false;
+  selectedBatchDisplay = '';
 
   private searchSubject = new Subject<string>();
   private lastStockSearch = '';
@@ -82,6 +85,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     this.billForm2 = this.fb.group({
       productName: [null, Validators.required],
       productId: [null],
+      stockId: [null, Validators.required],
       batchNo: [null, Validators.required],
       quantity: [null, [Validators.required, Validators.min(1)]], 
       free: [0, [Validators.required, Validators.min(0)]],
@@ -134,6 +138,26 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       control.setValidators([Validators.pattern(PATTERNS[type])]);
       control.updateValueAndValidity(); // Refresh validation state
     }
+  }
+
+  toggleBatchDropdown(): void {
+    if (this.filteredStock.length > 0) {
+      this.showBatchDropdown = !this.showBatchDropdown;
+    }
+  }
+
+  selectBatch(item: any): void {
+    this.selectedBatchDisplay = item.batchNo;
+    this.showBatchDropdown = false;
+    this.billForm2.patchValue({ stockId: item.id });
+    this.updateQuantityPlaceholder();
+  }
+
+  formatDateDisplay(date: string | Date): string {
+    const d = new Date(date);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${month}/${year}`;
   }
 
   /* ---------------- Product search (RESTORED) ---------------- */
@@ -202,65 +226,53 @@ export class CreateBillComponent implements OnInit, OnDestroy {
 
     this.filteredStock = this.stock.filter(s => {
       if (s.product.name !== p.name) return false;
-      
       const used = this.step2Data
-        .filter(i => i.productName === s.product.name && i.batchNo === s.batchNo)
+        .filter(i => i.stockId === s.id)  
         .reduce((sum, i) => sum + i.quantity + i.free, 0);
-
       return (s.quantity - used) > 0;
     });
 
     this.selectedMrp = null;
     this.quantityPlaceholder = 'Quantity';
     this.showDropdown = false;
+    this.selectedBatchDisplay = '';    
+    this.showBatchDropdown = false; 
   }
 
   /* ---------------- Calculations ---------------- */
 
   calculateAmount(): void {
-    const { productName, batchNo, rate, quantity } =
-      this.billForm2.getRawValue();
-
-    if (!productName || !batchNo || !rate || !quantity) {
+    const { productName, stockId, rate, quantity } = this.billForm2.getRawValue();
+    if (!productName || !stockId || !rate || !quantity) {
       this.billForm2.get('amount')?.setValue(null);
       return;
     }
 
-    const stockItem = this.stock.find(
-      s => s.product.name === productName && s.batchNo === batchNo
-    );
-
+    const stockItem = this.filteredStock.find(s => s.id === Number(stockId));
     if (!stockItem) return;
 
     const base = Number(rate) * Number(quantity);
-    const tax =
-      (base * (Number(stockItem.product.cgst) + Number(stockItem.product.sgst))) / 100;
-
+    const tax = (base * (Number(stockItem.product.cgst) + Number(stockItem.product.sgst))) / 100;
     this.billForm2.get('amount')?.setValue(Math.round((base + tax) * 100) / 100);
   }
 
   updateQuantityPlaceholder(): void {
-    const productName = this.billForm2.get('productName')?.value;
-    const batchNo = this.billForm2.get('batchNo')?.value;
-
-    const item = this.stock.find(
-      s => s.product.name === productName && s.batchNo === batchNo
-    );
-
+    const stockId = this.billForm2.get('stockId')?.value;
+    const item = this.filteredStock.find(s => s.id === Number(stockId));
     if (!item) return;
 
     const used = this.step2Data
-      .filter(i => i.productName === productName && i.batchNo === batchNo)
+      .filter(i => i.stockId === item.id)
       .reduce((sum, i) => sum + i.quantity + i.free, 0);
 
     const remaining = item.quantity - used;
-
     this.quantityPlaceholder = `Available quantity: ${remaining}`;
     this.selectedMrp = item.mrp ?? item.product.mrp;
 
     this.billForm2.patchValue({
       productId: item.product.id,
-      expiryDate: this.formatDate(item.expiryDate)
+      batchNo: item.batchNo,           
+      expiryDate: this.formatDateDisplay(item.expiryDate)
     });
   }
 
@@ -269,26 +281,17 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   validateQuantity(group: AbstractControl): { [key: string]: boolean } | null {
     const quantity = Number(group.get('quantity')?.value || 0);
     const free = Number(group.get('free')?.value || 0);
-    const productName = group.get('productName')?.value;
-    const batchNo = group.get('batchNo')?.value;
+    const stockId = group.get('stockId')?.value;
 
-    const item = this.stock.find(
-      s => s.product.name === productName && s.batchNo === batchNo
-    );
 
+    const item = this.filteredStock.find(s => s.id === Number(stockId));
     if (!item) return null;
 
     const used = this.step2Data
-      .filter(i => i.productName === productName && i.batchNo === batchNo)
+      .filter(i => i.stockId === item.id)
       .reduce((sum, i) => sum + i.quantity + i.free, 0);
 
-    const remaining = item.quantity - used;
-
-    if (quantity + free > remaining) {
-      return { invalidQuantity: true };
-    }
-
-    return null;
+    return (quantity + free) > (item.quantity - used) ? { invalidQuantity: true } : null;
   }
 
   /* ---------------- Navigation ---------------- */
@@ -332,10 +335,8 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   addItem(): void {
     if (this.billForm2.valid) {
       const raw = this.billForm2.getRawValue();
-      const stockItem = this.stock.find(
-        s => s.product.name === raw.productName && s.batchNo === raw.batchNo
-      );
-      this.step2Data.push({ ...raw, stockItem });
+      const stockItem = this.filteredStock.find(s => s.id === Number(raw.stockId));
+      this.step2Data.push({ ...raw, expiryDate: this.selectedExpiryRaw, stockItem });
       this.billForm2.reset({ free: 0 });
       this.billForm2.markAsPristine(); 
       this.billForm2.markAsUntouched();
@@ -343,6 +344,8 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       this.filteredStock = [];
       this.selectedMrp = null;
       this.quantityPlaceholder = 'Quantity';
+      this.selectedBatchDisplay = '';    
+      this.showBatchDropdown = false; 
     } else {
       this.billForm2.markAllAsTouched();
     }

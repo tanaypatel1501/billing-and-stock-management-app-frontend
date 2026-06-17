@@ -273,6 +273,12 @@ export class AuthService {
 
   /* ---------------------- STOCK ---------------------- */
 
+  getInventoryValue(userId: number): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}api/stock/user/${userId}/inventory-value`, {
+      headers: this.createAuthorizationHeader().set('X-Skip-Loader', 'true')
+    });
+  }
+  
   addStock(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}api/stock/add`, data,
       { headers: this.createAuthorizationHeader() }

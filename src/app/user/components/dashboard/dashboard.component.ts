@@ -53,6 +53,7 @@ export class DashboardComponent implements OnInit {
   showDeleteModal = false;
   stockToDeleteId: number | null = null;
   details: any = {};
+  totalInventoryValue: number = 0;
 
   get filterColumns() {
     const base = [
@@ -88,6 +89,14 @@ export class DashboardComponent implements OnInit {
       (response: any) => this.details = response || {}
     );
     this.loadInitialData();
+    this.loadInventoryValue();
+  }
+
+  loadInventoryValue() {
+    this.authService.getInventoryValue(this.userId).subscribe({
+      next: (value: number) => this.totalInventoryValue = value,
+      error: () => this.totalInventoryValue = 0
+    });
   }
 
   get isInitialEmpty(): boolean {
@@ -248,6 +257,7 @@ export class DashboardComponent implements OnInit {
       next: () => {
         this.stock = this.stock.filter(s => s.id !== this.stockToDeleteId);
         this.closeDeleteModal();
+        this.loadInventoryValue();
       },
       error: () => {
         alert('Failed to delete stock');

@@ -226,26 +226,36 @@
             </div>     
           </div>
 
-          <div class="form-row">
+          <div class="form-row-batch-expiry">
             <div class="form-group">
               <label for="batchNo">Batch No.</label>
-              <select 
-                id="batchNo" 
-                formControlName="batchNo" 
-                (change)="updateQuantityPlaceholder()"
-                [class.error]="billForm2.get('batchNo')?.invalid && billForm2.get('batchNo')?.touched">
-                <option value="" disabled>Select a batch</option>
-                <option *ngFor="let item of filteredStock" [value]="item.batchNo">{{ item.batchNo }}</option>
-              </select>  
-              <div class="error-msg" *ngIf="billForm2.get('batchNo')?.hasError('required') && billForm2.get('batchNo')?.touched">
+              <div class="custom-dropdown-container">
+                <input
+                  type="text"
+                  id="batchNo"
+                  [value]="selectedBatchDisplay"
+                  placeholder="Select a batch"
+                  readonly
+                  (click)="toggleBatchDropdown()"
+                  [class.error]="billForm2.get('stockId')?.invalid && billForm2.get('stockId')?.touched" />
+
+                <ul class="suggestion-dropdown" *ngIf="showBatchDropdown && filteredStock.length > 0">
+                  <li *ngFor="let item of filteredStock"
+                      (mousedown)="selectBatch(item)">
+                    {{ item.batchNo }}
+                    <span class="sub-label">| {{ item.expiryDate | date:'MM/yyyy' }} | ₹{{ item.mrp | number:'1.2-2' }}</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="error-msg" *ngIf="billForm2.get('stockId')?.hasError('required') && billForm2.get('stockId')?.touched">
                 Batch Number is required.
-              </div>            
+              </div>
             </div>
 
             <div class="form-group">
               <label for="expiryDate">Expiry Date</label>
               <input 
-                type="date" 
+                type="text" 
                 id="expiryDate" 
                 formControlName="expiryDate" 
                 [readonly]="true"

@@ -35,6 +35,21 @@ export class StockFormComponent implements OnInit, OnDestroy {
   selectedMrp: number | null = null;
   selectedBatchMrp: number | null = null;
   originalStockValues: any = null;
+  expiryMonth: number | '' = '';
+  expiryYear: number | '' = '';
+  showMonthDropdown = false;
+  showYearDropdown = false;
+
+  readonly months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  years: number[] = (() => {
+    const current = new Date().getFullYear();
+    return Array.from({ length: 11 }, (_, i) => current + i);
+  })();
+
   // ── Camera Scan ───────────────────────────────────────────
   showScanner       = false;
   scanStatus: 'idle' | 'detecting' | 'scanning' | 'success' | 'error' = 'idle';
@@ -93,10 +108,15 @@ export class StockFormComponent implements OnInit, OnDestroy {
   private formatDateForDisplay(date: string): string {
     if (!date) return '';
     const d = new Date(date);
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    const lastDay = new Date(year, d.getMonth() + 1, 0).getDate();
-    return `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+    this.expiryMonth = d.getMonth() + 1;
+    this.expiryYear = d.getFullYear();
+
+    if (!(this.years as number[]).includes(this.expiryYear)) {
+      (this.years as number[]).unshift(this.expiryYear);
+    }
+
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
   }
 
   private toLastDayOfMonth(dateStr: string): string {
@@ -564,9 +584,14 @@ export class StockFormComponent implements OnInit, OnDestroy {
 
   private applyScannedData(data: ScannedLabelData): void {
     const patch: any = {};
-    if (data.batchNo)     patch.batchNo    = data.batchNo;
-    if (data.expiryDate)  patch.expiryDate = data.expiryDate;
-    if (data.mrp != null) patch.mrp        = data.mrp;
+    if (data.batchNo)    patch.batchNo    = data.batchNo;
+    if (data.mrp != null) patch.mrp       = data.mrp;
+    if (data.expiryDate) {
+      const d = new Date(data.expiryDate);
+      this.expiryMonth = d.getMonth() + 1;
+      this.expiryYear  = d.getFullYear();
+      this.onMonthYearChange(); 
+    }
     this.productForm.patchValue(patch);
   }
 
@@ -615,6 +640,22 @@ export class StockFormComponent implements OnInit, OnDestroy {
     return changes.length > 0 
       ? `Stock updated manually | ${changes.join(', ')}` 
       : 'Stock updated manually (Form submitted with no field changes)';
+  }
+
+  onMonthYearChange(): void {
+    if (!this.expiryMonth || !this.expiryYear) return;
+    const lastDay = new Date(Number(this.expiryYear), Number(this.expiryMonth), 0).getDate();
+    const formatted = `${this.expiryYear}-${String(this.expiryMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    this.productForm.patchValue({ expiryDate: formatted }, { emitEvent: false });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.custom-picker-container')) {
+      this.showMonthDropdown = false;
+      this.showYearDropdown = false;
+    }
   }
 
   // ── OCR WARMUP ───────────────────────────────────────────

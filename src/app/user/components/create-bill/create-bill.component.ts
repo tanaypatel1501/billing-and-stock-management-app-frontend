@@ -106,6 +106,22 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     );
   }
 
+  get totalQuantity(): number {
+    return this.step2Data.reduce((sum, i) => sum + Number(i.quantity) + Number(i.free), 0);
+  }
+
+  get totalAmount(): number {
+    return this.step2Data.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+  }
+
+  get documentTypeLabel(): string {
+    switch (this.documentType) {
+      case 'PAN': return 'PAN';
+      case 'AADHAAR': return 'Aadhaar';
+      default: return 'GSTIN';
+    }
+  }
+
   /* ---------------- UI helpers ---------------- */
 
   toggleCard(index: number): void {
@@ -148,6 +164,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
 
   selectBatch(item: any): void {
     this.selectedBatchDisplay = item.batchNo;
+    this.selectedExpiryRaw = item.expiryDate; 
     this.showBatchDropdown = false;
     this.billForm2.patchValue({ stockId: item.id });
     this.updateQuantityPlaceholder();
@@ -233,6 +250,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     });
 
     this.selectedMrp = null;
+    this.selectedExpiryRaw = ''; 
     this.quantityPlaceholder = 'Quantity';
     this.showDropdown = false;
     this.selectedBatchDisplay = '';    
@@ -327,7 +345,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   }
 
   prevStep(): void {
-    this.currentStep = 1;
+    if (this.currentStep > 1) this.currentStep--;
   }
 
   /* ---------------- Bill items ---------------- */
@@ -343,12 +361,32 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       this.displayProductName = '';
       this.filteredStock = [];
       this.selectedMrp = null;
+      this.selectedExpiryRaw = '';
       this.quantityPlaceholder = 'Quantity';
       this.selectedBatchDisplay = '';    
       this.showBatchDropdown = false; 
     } else {
       this.billForm2.markAllAsTouched();
     }
+  }
+
+  goToReviewStep(): void {
+    if (this.step2Data.length === 0) {
+      this.alertService.error('Bill cannot be empty. Add items to the bill inorder to proceed.', 'Empty Bill', 3000);
+      return;
+    }
+
+    if (this.billForm2.dirty) {
+      this.alertService.confirm(
+        'You have an unsaved item in the form. Proceed to review without it?',
+        () => (this.currentStep = 3),
+        'Unsaved Item',
+        () => {}
+      );
+      return;
+    }
+
+    this.currentStep = 3;
   }
 
   delete(index: number): void {
@@ -421,16 +459,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   submitBill(): void {
     if (this.step2Data.length === 0) {
       this.alertService.error('Bill cannot be empty. Add items to the bill inorder to submit.', 'Empty Bill', 3000);
-      return;
-    }
-
-    if (this.billForm2.dirty) {
-      this.alertService.confirm(
-        'You have an unsaved item in the form. Submit the bill without it?',
-        () => this.processBillSubmit(),   
-        'Unsaved Item',
-        () => {}                         
-      );
+      this.currentStep = 2;
       return;
     }
 

@@ -55,7 +55,7 @@
     <div class="auth-card">
       <!-- Step Indicator -->
       <div class="step-indicator">
-        <div class="step-badge">Step {{ currentStep }} of 2</div>
+        <div class="step-badge">Step {{ currentStep }} of 3</div>
       </div>
 
       <!-- Step 1: Purchaser Details -->
@@ -334,11 +334,74 @@
             <button type="button" class="submit-btn" (click)="addItem()">
               Add Item
             </button>
-            <button type="button" class="submit-btn primary" (click)="submitBill()">
-              Submit Bill
+            <button type="button" class="submit-btn primary" (click)="goToReviewStep()">
+              Review Bill →
             </button>
           </div>        
         </form>
+      </div>
+
+      <!-- Step 3: Review & Submit -->
+      <div class="form-step" *ngIf="currentStep === 3">
+        <div class="auth-header">
+          <h1>Review Bill</h1>
+          <p>Confirm details before submitting</p>
+        </div>
+
+        <div class="review-section">
+          <div class="review-section-title">Purchaser Details</div>
+          <div class="review-grid">
+            <div class="review-field">
+              <span class="review-label">Name</span>
+              <span class="review-value">{{ step1Data.purchaserName }}</span>
+            </div>
+            <div class="review-field" *ngIf="step1Data.dl1 && step1Data.dl1 !== 'N/A'">
+              <span class="review-label">DL No. 1</span>
+              <span class="review-value">{{ step1Data.dl1 }}</span>
+            </div>
+            <div class="review-field" *ngIf="step1Data.dl2 && step1Data.dl2 !== 'N/A'">
+              <span class="review-label">DL No. 2</span>
+              <span class="review-value">{{ step1Data.dl2 }}</span>
+            </div>
+            <div class="review-field" *ngIf="step1Data.gstin && step1Data.gstin !== 'N/A'">
+              <span class="review-label">{{ documentTypeLabel }}</span>
+              <span class="review-value">{{ step1Data.gstin }}</span>
+            </div>
+            <div class="review-field">
+              <span class="review-label">Invoice Date</span>
+              <span class="review-value">{{ step1Data.invoiceDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-section">
+          <div class="review-section-title">Bill Summary</div>
+          <div class="review-grid">
+            <div class="review-field">
+              <span class="review-label">Total Items</span>
+              <span class="review-value">{{ step2Data.length }}</span>
+            </div>
+            <div class="review-field">
+              <span class="review-label">Total Quantity</span>
+              <span class="review-value">{{ totalQuantity | number }}</span>
+            </div>
+            <div class="review-field highlight">
+              <span class="review-label">Grand Total</span>
+              <span class="review-value">₹{{ totalAmount | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <p class="review-hint review-hint-desktop">You can edit or remove individual items in the table on the left.</p>
+          <p class="review-hint review-hint-mobile">Scroll up to view, edit or remove individual items before submitting.</p>
+        </div>
+
+        <div class="button-group-two">
+          <button type="button" class="submit-btn secondary" (click)="prevStep()">
+            ← Previous
+          </button>
+          <button type="button" class="submit-btn primary" (click)="submitBill()">
+            Submit Bill
+          </button>
+        </div>
       </div>
     </div>
   </div>

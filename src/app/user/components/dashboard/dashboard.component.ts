@@ -35,7 +35,7 @@ export class DashboardComponent implements OnInit {
   currentPage: number = 0;
   totalPages: number = 0;
   totalElements: number = 0;
-  pageSize: number = 20;
+  pageSize: number = 10;
   initialLoadComplete = false;
   isLoading: boolean = true;
   isSuggestionLoading: boolean = false;
@@ -54,6 +54,8 @@ export class DashboardComponent implements OnInit {
   stockToDeleteId: number | null = null;
   details: any = {};
   totalInventoryValue: number = 0;
+  isLoadingInventoryValue: boolean = true;
+  isRefreshingInventoryValue: boolean = false;
 
   get filterColumns() {
     const base = [
@@ -92,10 +94,25 @@ export class DashboardComponent implements OnInit {
     this.loadInventoryValue();
   }
 
-  loadInventoryValue() {
+  
+  loadInventoryValue(isRefresh: boolean = false) {
+    if (isRefresh) {
+      this.isRefreshingInventoryValue = true;
+    } else {
+      this.isLoadingInventoryValue = true;
+    }
+
     this.authService.getInventoryValue(this.userId).subscribe({
-      next: (value: number) => this.totalInventoryValue = value,
-      error: () => this.totalInventoryValue = 0
+      next: (value: number) => {
+        this.totalInventoryValue = value;
+        this.isLoadingInventoryValue = false;
+        this.isRefreshingInventoryValue = false;
+      },
+      error: () => {
+        this.totalInventoryValue = 0;
+        this.isLoadingInventoryValue = false;
+        this.isRefreshingInventoryValue = false;
+      }
     });
   }
 
@@ -257,7 +274,7 @@ export class DashboardComponent implements OnInit {
       next: () => {
         this.stock = this.stock.filter(s => s.id !== this.stockToDeleteId);
         this.closeDeleteModal();
-        this.loadInventoryValue();
+        this.loadInventoryValue(true);
       },
       error: () => {
         alert('Failed to delete stock');

@@ -384,6 +384,31 @@ body.modal-open {
     font: 800 1.1rem sans-serif;
     color: #000;
   }
+  
+  .chip-amount.skeleton-text {
+    display: inline-block;
+    width: 64px;
+    height: 1.1rem;
+    border-radius: 4px;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.1) 25%,
+      rgba(0, 0, 0, 0.2) 37%,
+      rgba(0, 0, 0, 0.1) 63%
+    );
+    background-size: 400% 100%;
+    animation: chip-shimmer 1.4s ease infinite;
+  }
+
+  &.refreshing {
+    opacity: 0.65;
+    transition: opacity 0.2s ease;
+  }
+}
+
+@keyframes chip-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
 }
 
 /* Media Queries */

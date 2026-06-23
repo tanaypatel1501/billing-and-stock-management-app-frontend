@@ -46,9 +46,12 @@
             </div>
           </div>
 
-          <div class="inventory-value-chip">
+          <div class="inventory-value-chip" [class.refreshing]="isRefreshingInventoryValue">
             <span class="chip-label">Inventory Value</span>
-            <span class="chip-amount">₹{{ totalInventoryValue | number:'1.2-2' }}</span>
+            <span class="chip-amount skeleton-text" *ngIf="isLoadingInventoryValue"></span>
+            <span class="chip-amount" *ngIf="!isLoadingInventoryValue">
+              ₹{{ totalInventoryValue | number:'1.2-2' }}
+            </span>
           </div>
 
           <div class="header-right">

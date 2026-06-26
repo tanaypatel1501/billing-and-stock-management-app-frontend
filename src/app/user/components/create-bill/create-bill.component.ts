@@ -214,8 +214,9 @@ export class CreateBillComponent implements OnInit, OnDestroy {
         const seen = new Set<string>();
         this.products = this.stock
           .filter((i: any) => {
-            if (seen.has(i.product.name)) return false;
-            seen.add(i.product.name);
+            const key = `${i.product.name}|${i.product.packing ?? ''}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
             return true;
           })
           .map((i: any) => ({
@@ -243,8 +244,9 @@ export class CreateBillComponent implements OnInit, OnDestroy {
 
     this.filteredStock = this.stock.filter(s => {
       if (s.product.name !== p.name) return false;
+      if ((s.product.packing ?? '') !== (p.packing ?? '')) return false;
       const used = this.step2Data
-        .filter(i => i.stockId === s.id)  
+        .filter(i => i.stockId === s.id)
         .reduce((sum, i) => sum + i.quantity + i.free, 0);
       return (s.quantity - used) > 0;
     });
@@ -334,7 +336,10 @@ export class CreateBillComponent implements OnInit, OnDestroy {
         dl2: this.step1Data.dl2,
         gstin: this.step1Data.gstin
       }).subscribe({
-        next: (saved) => this.selectedPurchaserId = saved.id,
+        next: (saved) => {
+          this.selectedPurchaserId = saved.id;
+          this.step1Data.purchaserId = saved.id;   
+        },
         error: () => {} 
       });
 

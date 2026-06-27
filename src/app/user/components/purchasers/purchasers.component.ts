@@ -1,4 +1,6 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -13,6 +15,9 @@ import {
   faSearch, faXmark, faArrowLeft, faUsers
 } from '@fortawesome/free-solid-svg-icons';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
+import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
+import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 const PATTERNS = {
   GST:     /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/i,
@@ -65,18 +70,27 @@ export class PurchasersComponent implements OnInit {
   documentType: 'GST' | 'PAN' | 'AADHAAR' = 'GST';
   saving = false;
 
+  private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
+  private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
+
   constructor(
     private authService: AuthService,
     private alertService: AlertService,
     private appState: AppStateService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private requestCache: RequestCacheService
   ) {}
 
   ngOnInit(): void {
     this.userId = UserStorageService.getUserId();
     this.buildForm();
     this.load(0, false);
+  }
+
+  ngOnDestroy(): void {
+    this.debouncedSearch.destroy();
+    this.scrollThrottle.destroy();
   }
 
   buildForm(): void {
@@ -92,31 +106,19 @@ export class PurchasersComponent implements OnInit {
 
   load(page: number = 0, append: boolean = false): void {
     this.isLoading = true;
+    const params = { page, size: this.pageSize, searchText: this.searchText };
+    const cacheKey = `purchasers:${this.userId}:${JSON.stringify(params)}`;
 
-    this.authService.getAllPurchasers(this.userId, {
-      page,
-      size: this.pageSize,
-      searchText: this.searchText
-    }).subscribe({
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyPurchasersPage(cached, append);
+      return;
+    }
+
+    this.authService.getAllPurchasers(this.userId, params).subscribe({
       next: (data: PageResponse<any>) => {
-
-        const incoming = data.content ?? [];
-
-        this.allPurchasers = append
-          ? [...this.allPurchasers, ...incoming]
-          : incoming;
-
-        this.filtered = [...this.allPurchasers];
-
-        this.totalPages = data.totalPages;
-        this.totalElements = data.totalElements;
-        this.currentPage = data.number;
-
-        // Your PageResponse model doesn't contain "last"
-        this.isLastPage = data.number >= data.totalPages - 1;
-
-        this.appState.setHasPurchasers(this.totalElements > 0);
-        this.isLoading = false;
+        this.requestCache.set(cacheKey, data);
+        this.applyPurchasersPage(data, append);
       },
       error: () => {
         this.alertService.error('Failed to load purchasers.');
@@ -125,29 +127,41 @@ export class PurchasersComponent implements OnInit {
     });
   }
 
+  private applyPurchasersPage(data: PageResponse<any>, append: boolean): void {
+    const incoming = data.content ?? [];
+    this.allPurchasers = append ? [...this.allPurchasers, ...incoming] : incoming;
+    this.filtered = [...this.allPurchasers];
+    this.totalPages = data.totalPages;
+    this.totalElements = data.totalElements;
+    this.currentPage = data.number;
+    this.isLastPage = data.number >= data.totalPages - 1;
+    this.appState.setHasPurchasers(this.totalElements > 0);
+    this.isLoading = false;
+  }
+
   /* ---------- Search (reuse SearchBarComponent pattern) ---------- */
   handleTyping(event: any): void {
-    const text =
-      typeof event === 'string'
-        ? event
-        : (event?.target as HTMLInputElement)?.value ?? '';
-
+    const text = typeof event === 'string' ? event : (event?.target as HTMLInputElement)?.value ?? '';
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-
-      this.authService.searchPurchasers(this.userId, text).subscribe({
-        next: (data: any[]) => {
-          this.suggestions = data;
-          this.isSuggestionLoading = false;
-        },
-        error: () => {
-          this.suggestions = [];
-          this.isSuggestionLoading = false;
-        }
-      });
+      this.debouncedSearch.next(text);
     } else {
       this.suggestions = [];
+      this.isSuggestionLoading = false;
     }
+  }
+
+  private performSuggestionSearch(text: string): void {
+    this.authService.searchPurchasers(this.userId, text).subscribe({
+      next: (data: any[]) => {
+        this.suggestions = data;
+        this.isSuggestionLoading = false;
+      },
+      error: () => {
+        this.suggestions = [];
+        this.isSuggestionLoading = false;
+      }
+    });
   }
 
   handleSearch(eventData: any): void {
@@ -191,6 +205,10 @@ export class PurchasersComponent implements OnInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
+    this.scrollThrottle.trigger();
+  }
+
+  private checkScrollPosition(): void {
     if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading) {
       const pos = (document.documentElement.scrollTop || document.body.scrollTop)
                 + document.documentElement.offsetHeight;
@@ -244,6 +262,7 @@ export class PurchasersComponent implements OnInit {
         if (idx !== -1) { this.allPurchasers[idx] = saved; this.filtered = [...this.allPurchasers]; }
         this.closeModal();
         this.alertService.success('Purchaser updated successfully.');
+        this.requestCache.invalidate('purchasers:');
         this.saving = false;
       },
       error: () => { this.alertService.error('Failed to save changes.'); this.saving = false; }
@@ -274,6 +293,7 @@ export class PurchasersComponent implements OnInit {
         this.totalElements = Math.max(0, this.totalElements - 1);
         this.appState.setHasPurchasers(this.totalElements > 0);
         this.alertService.success(`"${p.name}" deleted.`);
+        this.requestCache.invalidate('purchasers:');
       },
       error: () => this.alertService.error('Failed to delete purchaser.')
     });

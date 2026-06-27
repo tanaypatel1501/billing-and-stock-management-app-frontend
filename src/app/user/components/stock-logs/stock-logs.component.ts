@@ -1,4 +1,6 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -9,6 +11,9 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { SearchBarComponent } from 'src/app/shared/search-bar/search-bar.component';
 import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-button.component';
+import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
+import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 @Component({
   selector: 'app-stock-logs',
@@ -17,7 +22,7 @@ import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-butto
   templateUrl: './stock-logs.component.html',
   styleUrls: ['./stock-logs.component.scss']
 })
-export class StockLogsComponent implements OnInit {
+export class StockLogsComponent implements OnInit, OnDestroy {
   faFilter = faFilter;
   faTimes = faTimes;
   faClockRotateLeft = faClockRotateLeft;
@@ -49,6 +54,9 @@ export class StockLogsComponent implements OnInit {
   sortColumn: string | null = null;
   sortDirection: 'asc' | 'desc' = 'desc';
 
+  private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
+  private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
+
   get isSearchActive(): boolean {
     return this.searchText.trim().length > 0;
   }
@@ -57,7 +65,8 @@ export class StockLogsComponent implements OnInit {
     private authService: AuthService,
     private sanitizer: DomSanitizer,
     private router: Router,
-    private userStorageService: UserStorageService
+    private userStorageService: UserStorageService,
+    private requestCache: RequestCacheService
   ) { }
 
   ngOnInit() {
@@ -65,58 +74,76 @@ export class StockLogsComponent implements OnInit {
     this.loadLogs();
   }
 
+  ngOnDestroy(): void {
+    this.debouncedSearch.destroy();
+    this.scrollThrottle.destroy();
+  }
+
   loadLogs(page: number = 0, append: boolean = false) {
     this.isLoading = true;
+    const cacheKey = `stockLogs:list:${this.userId}:${JSON.stringify({ searchText: this.searchText, page, size: this.pageSize })}`;
+
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyLogsPage(cached, append);
+      return;
+    }
+
     this.authService.getAllStockLogsByUser(this.userId, this.searchText, page, this.pageSize)
       .subscribe({
         next: (data: any) => {
-          const incoming = data.content || [];
-          this.logs = append ? [...this.logs, ...incoming] : incoming;
-          this.totalPages = data.totalPages;
-          this.totalElements = data.totalElements;
-          this.currentPage = data.number;
-          this.isLastPage = data.last;
-          this.suggestions = [];
-          this.extractActions();
-          this.applyFilters();
-          this.isLoading = false;
+          this.requestCache.set(cacheKey, data);
+          this.applyLogsPage(data, append);
         },
-        error: () => {
-          this.isLoading = false;
-        }
+        error: () => { this.isLoading = false; }
       });
+  }
+
+  private applyLogsPage(data: any, append: boolean): void {
+    const incoming = data.content || [];
+    this.logs = append ? [...this.logs, ...incoming] : incoming;
+    this.totalPages = data.totalPages;
+    this.totalElements = data.totalElements;
+    this.currentPage = data.number;
+    this.isLastPage = data.last;
+    this.suggestions = [];
+    this.extractActions();
+    this.applyFilters();
+    this.isLoading = false;
   }
 
   // Search-bar suggestion typing — queries backend for matching product names
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      this.authService.getAllStockLogsByUser(this.userId, text, 0, 5)
-        .subscribe({
-          next: (data: any) => {
-            // De-duplicate by productName for clean suggestion list
-            const seen = new Set<string>();
-            this.suggestions = (data.content || [])
-              .filter((log: any) => {
-                if (!log.productName || seen.has(log.productName)) return false;
-                seen.add(log.productName);
-                return true;
-              })
-              // Shape into { product: { name, packing } } to match labelKey/subLabelKey
-              .map((log: any) => ({
-                product: { name: log.productName, packing: log.productPacking || '' }
-              }));
-            this.isSuggestionLoading = false;
-          },
-          error: () => {
-            this.suggestions = [];
-            this.isSuggestionLoading = false;
-          }
-        });
+      this.debouncedSearch.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
     }
+  }
+
+  private performSuggestionSearch(text: string) {
+    this.authService.getAllStockLogsByUser(this.userId, text, 0, 5)
+      .subscribe({
+        next: (data: any) => {
+          const seen = new Set<string>();
+          this.suggestions = (data.content || [])
+            .filter((log: any) => {
+              if (!log.productName || seen.has(log.productName)) return false;
+              seen.add(log.productName);
+              return true;
+            })
+            .map((log: any) => ({
+              product: { name: log.productName, packing: log.productPacking || '' }
+            }));
+          this.isSuggestionLoading = false;
+        },
+        error: () => {
+          this.suggestions = [];
+          this.isSuggestionLoading = false;
+        }
+      });
   }
 
   // Search-bar select/search — mirrors dashboard handleSearch
@@ -160,6 +187,10 @@ export class StockLogsComponent implements OnInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
+    this.scrollThrottle.trigger();
+  }
+
+  private checkScrollPosition() {
     if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading) {
       const pos = (document.documentElement.scrollTop || document.body.scrollTop)
         + document.documentElement.offsetHeight;

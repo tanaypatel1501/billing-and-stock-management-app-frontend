@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 import { faUpload, faFile, faColumns, faEye, faExclamationTriangle, faExclamationCircle, faCloudUploadAlt } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -40,7 +41,10 @@ export class BulkUploadModalComponent implements OnInit {
     { key: 'packing', label: 'Packing' }
   ];
 
-  constructor(private authService: AuthService) { }
+  constructor(
+    private authService: AuthService,
+    private requestCache: RequestCacheService   
+  ) { }
 
   ngOnInit(): void {
     this.reset();
@@ -247,12 +251,12 @@ export class BulkUploadModalComponent implements OnInit {
     this.submitting = true;
     const fd = new FormData();
     fd.append('file', this.selectedFile, this.selectedFile.name);
-    // include mapping as JSON string in case backend can use it
     fd.append('mapping', JSON.stringify(this.mapping));
 
     this.authService.uploadBulkProductsForm(fd).subscribe(
       (res) => {
         this.submitting = false;
+        this.requestCache.invalidate('products:');   // ADD
         this.result.emit({ success: true, payload: res });
         this.closed.emit();
         this.reset();
@@ -268,5 +272,4 @@ export class BulkUploadModalComponent implements OnInit {
   cancel() {
     this.closed.emit();
   }
-
 }

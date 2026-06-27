@@ -9,6 +9,7 @@ import { ImageCroppedEvent } from 'ngx-image-cropper';
 
 import { ImageCropperComponent } from 'ngx-image-cropper';
 import { fas } from '@fortawesome/free-solid-svg-icons';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 @Component({
   selector: 'app-details',
@@ -51,7 +52,8 @@ export class DetailsComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private appState: AppStateService
+    private appState: AppStateService,
+    private requestCache: RequestCacheService
   ) {}
 
   ngOnInit(): void {
@@ -184,28 +186,17 @@ export class DetailsComponent implements OnInit, OnDestroy {
   // --- Core Functionality ---
 
   private checkAndPopulateExistingDetails(): void {
+    const cacheKey = `details:${this.userId}`;
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyDetailsResponse(cached);
+      return;
+    }
+
     this.authService.getDetailsByUserId(this.userId).subscribe(
       (details) => {
-        if (details) {
-          this.originalDetails = details;
-          this.populateFormWithDetails(details);
-          this.userHasDetails = true;
-          
-          // Load existing logo if available
-          if (details.logoUrl) {
-            this.authService.getLogoUrl(this.userId).subscribe(url => this.setLogoUrl(url));
-          }
-          
-          // Populate dependent lists while preserving the saved selections
-          if (details.state && details.city) {
-            this.loadCities(details.state, details.city);
-            this.loadPincodes(details.city, details.state, details.pincode);
-          }
-          if (details.preferredTemplate) {
-            this.selectedTemplate = details.preferredTemplate;
-          }
-        }
-        this.isLoading = false;
+        if (details) this.requestCache.set(cacheKey, details);
+        this.applyDetailsResponse(details);
       },
       (error) => {
         this.isLoading = false;
@@ -213,6 +204,25 @@ export class DetailsComponent implements OnInit, OnDestroy {
         this.userHasDetails = false;
       }
     );
+  }
+
+  private applyDetailsResponse(details: any): void {
+    if (details) {
+      this.originalDetails = details;
+      this.populateFormWithDetails(details);
+      this.userHasDetails = true;
+      if (details.logoUrl) {
+        this.authService.getLogoUrl(this.userId).subscribe(url => this.setLogoUrl(url));
+      }
+      if (details.state && details.city) {
+        this.loadCities(details.state, details.city);
+        this.loadPincodes(details.city, details.state, details.pincode);
+      }
+      if (details.preferredTemplate) {
+        this.selectedTemplate = details.preferredTemplate;
+      }
+    }
+    this.isLoading = false;
   }
 
   selectTemplate(templateId: string): void {
@@ -399,6 +409,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
             this.clearSuccessAfterDelay();
             this.originalDetails = updated;
             this.populateFormWithDetails(updated);
+            this.requestCache.set(`details:${this.userId}`, updated);
             this.selectedLogoFile = null;
             this.isUploadingLogo = false;
             
@@ -423,6 +434,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
             this.clearSuccessAfterDelay();
             this.originalDetails = created;
             this.populateFormWithDetails(created);
+            this.requestCache.set(`details:${this.userId}`, created);
             this.selectedLogoFile = null;
             this.isUploadingLogo = false;
             

@@ -1,27 +1,25 @@
-import { Component, OnInit,HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { Router } from '@angular/router';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
-import { faPencil,faArrowLeft,faCapsules } from '@fortawesome/free-solid-svg-icons';
-import { CommonModule } from '@angular/common'; 
+import { faPencil, faArrowLeft, faCapsules } from '@fortawesome/free-solid-svg-icons';
+import { CommonModule } from '@angular/common';
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-button.component';
+import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
+import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,           
-  imports: [
-    CommonModule,             
-    SearchBarComponent, 
-    FilterButtonComponent,        
-    FontAwesomeModule
-  ],
+  standalone: true,
+  imports: [CommonModule, SearchBarComponent, FilterButtonComponent, FontAwesomeModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit{
+export class DashboardComponent implements OnInit, OnDestroy {
   faTrashCan = faTrashCan;
   faPencil = faPencil;
   faArrowLeft = faArrowLeft;
@@ -52,15 +50,24 @@ export class DashboardComponent implements OnInit{
   searchText: string = '';
   suggestions: any[] = [];
 
+  private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
+  private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
+
   constructor(
     private authService: AuthService,
     private userStorageService: UserStorageService,
-    private router: Router
+    private router: Router,
+    private requestCache: RequestCacheService
   ) { }
 
   ngOnInit() {
     this.userId = UserStorageService.getUserId();
     this.loadInitialData();
+  }
+
+  ngOnDestroy(): void {
+    this.debouncedSearch.destroy();
+    this.scrollThrottle.destroy();
   }
 
   get isInitialEmpty(): boolean {
@@ -74,10 +81,9 @@ export class DashboardComponent implements OnInit{
   collapseAll(): void {
     this.expandedIndex = null;
   }
-  loadData(page: number = 0, append: boolean = false) {
-    // if (this.isLoading) return;
-    this.isLoading = true;
 
+  loadData(page: number = 0, append: boolean = false) {
+    this.isLoading = true;
     if (!append && page === 0) {
       this.productList = [];
     }
@@ -85,22 +91,23 @@ export class DashboardComponent implements OnInit{
     const searchRequest = {
       page: page,
       size: this.pageSize,
-      sortBy: this.sortColumn || 'id', 
+      sortBy: this.sortColumn || 'id',
       direction: this.sortDirection,
-      searchText: this.searchText,  
+      searchText: this.searchText,
       filters: { "user.id": this.userId.toString() }
     };
 
+    const cacheKey = `products:${this.userId}:${JSON.stringify(searchRequest)}`;
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyProductsPage(cached, append);
+      return;
+    }
+
     this.authService.searchProducts(searchRequest).subscribe({
       next: (data: any) => {
-        this.totalPages = data.totalPages;
-        this.isLastPage = data.last;
-        this.currentPage = data.number;
-        this.totalElements = data.totalElements;
-        this.productList = append ? [...this.productList, ...data.content] : data.content;
-        this.initialLoadComplete = true;
-        this.isLoading = false;
-        this.suggestions = []; 
+        this.requestCache.set(cacheKey, data);
+        this.applyProductsPage(data, append);
       },
       error: (err) => {
         console.error(err);
@@ -110,18 +117,33 @@ export class DashboardComponent implements OnInit{
     });
   }
 
+  private applyProductsPage(data: any, append: boolean): void {
+    this.totalPages = data.totalPages;
+    this.isLastPage = data.last;
+    this.currentPage = data.number;
+    this.totalElements = data.totalElements;
+    this.productList = append ? [...this.productList, ...data.content] : data.content;
+    this.initialLoadComplete = true;
+    this.isLoading = false;
+    this.suggestions = [];
+  }
+
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
-      this.authService.searchProducts(req).subscribe({
-        next: (data) => { this.suggestions = data.content; this.isSuggestionLoading = false; },
-        error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
-      });
+      this.debouncedSearch.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
     }
+  }
+
+  private performSuggestionSearch(text: string) {
+    const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
+    this.authService.searchProducts(req).subscribe({
+      next: (data) => { this.suggestions = data.content; this.isSuggestionLoading = false; },
+      error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
+    });
   }
 
   handleSearch(eventData: any) {
@@ -145,8 +167,7 @@ export class DashboardComponent implements OnInit{
   handleFilterSort(event: { sortBy: string | null, direction: 'asc' | 'desc' }) {
     this.sortColumn = event.sortBy;
     this.sortDirection = event.direction;
-    // this.isSearchActive = true;
-    this.loadInitialData(); 
+    this.loadInitialData();
   }
 
   onDoubleClickSort(column: string) {
@@ -167,22 +188,20 @@ export class DashboardComponent implements OnInit{
   }
 
   getVisiblePages(): number[] {
-      const pages = [];
-      let start = Math.max(0, this.currentPage - 1);
-      let end = Math.min(this.totalPages - 1, start + 2);
-      
-      if (end - start < 2) {
-        start = Math.max(0, end - 2);
-      }
-      
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-      return pages;
+    const pages = [];
+    let start = Math.max(0, this.currentPage - 1);
+    let end = Math.min(this.totalPages - 1, start + 2);
+    if (end - start < 2) start = Math.max(0, end - 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
   }
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
+    this.scrollThrottle.trigger();
+  }
+
+  private checkScrollPosition() {
     if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading) {
       const pos = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.offsetHeight;
       if (pos > document.documentElement.scrollHeight - 100) {
@@ -196,25 +215,23 @@ export class DashboardComponent implements OnInit{
     this.sortDirection = 'asc';
     this.searchText = '';
     this.isSearchActive = false;
-    this.loadInitialData(); 
+    this.loadInitialData();
   }
 
-  getProducts(userId:any) {
+  getProducts(userId: any) {
     this.authService.getProducts().subscribe((data) => {
       this.products = data;
-      console.log(data);
     });
   }
 
   delete(productId: any) {
     this.authService.deleteProduct(productId).subscribe(() => {
-      console.log("Deleted Product Successfully");
-      // Remove the deleted product from the 'products' array
       this.productList = this.productList.filter((product: any) => product.id !== productId);
+      this.requestCache.invalidateMany(['products:', `product:${productId}`]);   // ADD
     });
   }
 
-  edit(productId: any){
+  edit(productId: any) {
     this.userStorageService.saveProductId(productId);
     this.router.navigateByUrl("admin/edit-product");
   }

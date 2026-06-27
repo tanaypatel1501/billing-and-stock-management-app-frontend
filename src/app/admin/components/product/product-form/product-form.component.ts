@@ -1,18 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 import { faUpload } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
-  selector: 'app-add-product',
-  templateUrl: './add-product.component.html',
-  styleUrls: ['./add-product.component.scss']
+  selector: 'app-product-form',
+  templateUrl: './product-form.component.html',
+  styleUrls: ['./product-form.component.scss']
 })
-export class AddProductComponent implements OnInit {
+export class ProductFormComponent implements OnInit {
+  @Input() mode: 'add' | 'edit' = 'add';
+
   productForm!: FormGroup;
   userId!: any;
+  productId: any;
   errorMessage: string | null = null;
   successMessage: string | null = null;
   bulkModalOpen = false;
@@ -21,7 +25,9 @@ export class AddProductComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private userStorageService: UserStorageService,
+    private router: Router,
+    private requestCache: RequestCacheService
   ) {}
 
   ngOnInit(): void {
@@ -30,14 +36,47 @@ export class AddProductComponent implements OnInit {
       name: [null, Validators.required],
       hsn: [null, Validators.required],
       mrp: [null, [Validators.required, Validators.min(0)]],
-      // Default CGST/SGST to 0 so the user can increase them; not strictly required.
       cgst: [0, [Validators.min(0), Validators.max(100)]],
       sgst: [0, [Validators.min(0), Validators.max(100)]],
       packing: [null, Validators.required]
     });
+
+    if (this.mode === 'edit') {
+      this.productId = this.userStorageService.getProductId();
+      this.getProductDetails(this.productId);
+    }
   }
 
-  
+  getProductDetails(productId: any) {
+    const cacheKey = `product:${productId}`;
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyProductData(cached);
+      return;
+    }
+
+    this.authService.getProductById(productId).subscribe(
+      (productData) => {
+        this.requestCache.set(cacheKey, productData);
+        this.applyProductData(productData);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
+  private applyProductData(productData: any): void {
+    this.productForm.patchValue({
+      name: productData.name,
+      hsn: productData.hsn,
+      mrp: productData.mrp,
+      cgst: productData.cgst != null ? productData.cgst : 0,
+      sgst: productData.sgst != null ? productData.sgst : 0,
+      packing: productData.packing
+    });
+  }
+
   onBulkResult(event: { success: boolean; payload: any }) {
     this.bulkModalOpen = false;
     if (event.success) {
@@ -57,7 +96,6 @@ export class AddProductComponent implements OnInit {
       }
       this.clearSuccessAfterDelay();
     } else {
-      // try to extract message
       const payload = event.payload;
       let msg = 'Bulk upload failed.';
       try { msg = payload?.error || payload?.message || JSON.stringify(payload); } catch { msg = String(payload); }
@@ -84,27 +122,38 @@ export class AddProductComponent implements OnInit {
       packing: this.productForm.get('packing')?.value
     };
 
-    this.authService.addProduct(productData).subscribe(
-      () => {
-        this.router.navigate(['admin/dashboard']);
-      },
-      (error) => {
-        console.log(error);
-        this.errorMessage = 'Adding product failed.';
-        this.clearMessageAfterDelay();
-      }
-    );
+    if (this.mode === 'edit') {
+      this.authService.editProduct(this.productId, productData).subscribe(
+        () => {
+          this.requestCache.invalidateMany(['products:', `product:${this.productId}`]);
+          this.router.navigate(['admin/dashboard']);
+        },
+        (error) => {
+          console.log(error);
+          this.errorMessage = 'Updating product failed.';
+          this.clearMessageAfterDelay();
+        }
+      );
+    } else {
+      this.authService.addProduct(productData).subscribe(
+        () => {
+          this.requestCache.invalidate('products:');
+          this.router.navigate(['admin/dashboard']);
+        },
+        (error) => {
+          console.log(error);
+          this.errorMessage = 'Adding product failed.';
+          this.clearMessageAfterDelay();
+        }
+      );
+    }
   }
 
   private clearMessageAfterDelay() {
-    setTimeout(() => {
-      this.errorMessage = null;
-    }, 5000);
+    setTimeout(() => { this.errorMessage = null; }, 5000);
   }
 
   private clearSuccessAfterDelay() {
-    setTimeout(() => {
-      this.successMessage = null;
-    }, 5000);
+    setTimeout(() => { this.successMessage = null; }, 5000);
   }
 }

@@ -1,4 +1,6 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { Router } from '@angular/router';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
@@ -10,6 +12,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-button.component';
 import { ConfirmDeleteModalComponent } from 'src/app/shared/confirm-delete-modal/confirm-delete-modal.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
+import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,7 +29,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   faTrashCan = faTrashCan;
   faPencil = faPencil;
   faArrowLeft = faArrowLeft;
@@ -56,6 +61,12 @@ export class DashboardComponent implements OnInit {
   totalInventoryValue: number = 0;
   isLoadingInventoryValue: boolean = true;
   isRefreshingInventoryValue: boolean = false;
+  private searchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+  private scrollThrottleTimeout: any = null;
+
+  private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
+  private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
 
   get filterColumns() {
     const base = [
@@ -82,20 +93,46 @@ export class DashboardComponent implements OnInit {
     private authService: AuthService,
     private userStorageService: UserStorageService,
     private router: Router,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private requestCache: RequestCacheService
   ) { }
 
   ngOnInit() {
     this.userId = UserStorageService.getUserId();
-    this.authService.getDetailsByUserId(this.userId).subscribe(
-      (response: any) => this.details = response || {}
-    );
+    const detailsCacheKey = `details:${this.userId}`;
+    const cachedDetails = this.requestCache.get(detailsCacheKey);
+    if (cachedDetails) {
+      this.details = cachedDetails;
+    } else {
+      this.authService.getDetailsByUserId(this.userId).subscribe(
+        (response: any) => {
+          this.details = response || {};
+          this.requestCache.set(detailsCacheKey, this.details);
+        }
+      );
+    }
     this.loadInitialData();
     this.loadInventoryValue();
   }
 
+  ngOnDestroy(): void {
+    this.debouncedSearch.destroy();
+    this.scrollThrottle.destroy();
+  }
+
   
   loadInventoryValue(isRefresh: boolean = false) {
+    const cacheKey = `inventory-value:${this.userId}`;
+
+    if (!isRefresh) {
+      const cached = this.requestCache.get(cacheKey);
+      if (cached !== null) {
+        this.totalInventoryValue = cached;
+        this.isLoadingInventoryValue = false;
+        return;
+      }
+    }
+
     if (isRefresh) {
       this.isRefreshingInventoryValue = true;
     } else {
@@ -105,6 +142,7 @@ export class DashboardComponent implements OnInit {
     this.authService.getInventoryValue(this.userId).subscribe({
       next: (value: number) => {
         this.totalInventoryValue = value;
+        this.requestCache.set(cacheKey, value);
         this.isLoadingInventoryValue = false;
         this.isRefreshingInventoryValue = false;
       },
@@ -142,37 +180,53 @@ export class DashboardComponent implements OnInit {
       filters: { "user.id": this.userId.toString() }
     };
 
+    const cacheKey = `stock:${this.userId}:${JSON.stringify(searchRequest)}`;
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyStockPage(cached, append);
+      return;
+    }
+
     this.authService.searchStock(searchRequest).subscribe({
-      next: (data: any) => {
-        this.totalPages = data.totalPages;
-        this.isLastPage = data.last;
-        this.currentPage = data.number;
-        this.totalElements = data.totalElements; 
-        this.stock = append ? [...this.stock, ...data.content] : data.content;
-        this.initialLoadComplete = true;
-        this.isLoading = false;
-        this.suggestions = []; 
-      },
-      error: (err) => {
-        console.error(err);
-        this.initialLoadComplete = true;
-        this.isLoading = false;
-      }
-    });
-  }
+    next: (data: any) => {
+      this.requestCache.set(cacheKey, data);
+      this.applyStockPage(data, append);
+    },
+    error: (err) => {
+      console.error(err);
+      this.initialLoadComplete = true;
+      this.isLoading = false;
+    }
+  });
+}
+
+private applyStockPage(data: any, append: boolean): void {
+  this.totalPages = data.totalPages;
+  this.isLastPage = data.last;
+  this.currentPage = data.number;
+  this.totalElements = data.totalElements;
+  this.stock = append ? [...this.stock, ...data.content] : data.content;
+  this.initialLoadComplete = true;
+  this.isLoading = false;
+  this.suggestions = [];
+}
 
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
-      this.authService.searchStock(req).subscribe({
-        next: (data) => { this.suggestions = data.content; this.isSuggestionLoading = false; },
-        error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
-      });
+      this.debouncedSearch.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
     }
+  }
+
+  private performSuggestionSearch(text: string) {
+    const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
+    this.authService.searchStock(req).subscribe({
+      next: (data) => { this.suggestions = data.content; this.isSuggestionLoading = false; },
+      error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
+    });
   }
 
   handleSearch(eventData: any) {
@@ -234,6 +288,10 @@ export class DashboardComponent implements OnInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
+    this.scrollThrottle.trigger();
+  }
+
+  private checkScrollPosition() {
     if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading) {
       const pos = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.offsetHeight;
       if (pos > document.documentElement.scrollHeight - 100) {
@@ -273,6 +331,7 @@ export class DashboardComponent implements OnInit {
     this.authService.deleteStock(this.stockToDeleteId).subscribe({
       next: () => {
         this.stock = this.stock.filter(s => s.id !== this.stockToDeleteId);
+        this.requestCache.invalidateMany(['stock:', 'inventory-value:']); 
         this.closeDeleteModal();
         this.loadInventoryValue(true);
       },

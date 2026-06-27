@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
+import { UserStorageService } from 'src/app/services/storage/user-storage.service';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 import { faPencil, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'; 
 
 @Component({
@@ -13,35 +15,33 @@ export class ProfileComponent implements OnInit {
   faPencil = faPencil;
   faCheck = faCheck;
   faTimes = faTimes;
-  
+
+  userId!: any;
   userProfile: any = null;
-  
-  // Flags to toggle edit mode for specific fields
+
   isEditing = {
     firstname: false,
     lastname: false,
   };
 
-  // Data binding for inline edits
   editData = {
     firstname: '',
     lastname: '',
   };
 
-  // Password Modal
   showPasswordModal = false;
   passwordForm: FormGroup;
-  
-  // Custom message for main page feedback
+
   feedbackMessage: string | null = null;
   isError: boolean = false;
 
-  // State for showing server-side errors specifically inside the modal
   modalErrorMessage: string | null = null;
 
-
-  constructor(private authService: AuthService, private fb: FormBuilder) {
-    // Initialize the password form with the custom password validator
+  constructor(
+    private authService: AuthService,
+    private fb: FormBuilder,
+    private requestCache: RequestCacheService   
+  ) {
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
       newPassword: ['', [Validators.required, this.passwordValidator]]
@@ -49,13 +49,12 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.userId = UserStorageService.getUserId();   
     this.getProfile();
   }
-  
-  // Custom password validator matching the one used in Login/Register
+
   passwordValidator(control: AbstractControl): { [key: string]: boolean } | null {
     const password = control.value;
-    // Check for special character, capital letter, digit, and minimum length 8
     const hasSpecialChar = /[!@#$%^&*()_+{}\[\]:;<>,.?~\\]/.test(password);
     const hasCapitalLetter = /[A-Z]/.test(password);
     const hasDigit = /[0-9]/.test(password);
@@ -72,40 +71,46 @@ export class ProfileComponent implements OnInit {
     this.isError = isError;
     setTimeout(() => {
       this.feedbackMessage = null;
-    }, 4000); 
+    }, 4000);
   }
 
   getProfile() {
+    const cacheKey = `profile:${this.userId}`;
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyProfile(cached);
+      return;
+    }
+
     this.authService.getProfile().subscribe(res => {
-      this.userProfile = res;
-      // Initialize edit data only with editable fields
-      this.editData = { 
-        firstname: res.firstname,
-        lastname: res.lastname
-      };
+      this.requestCache.set(cacheKey, res);
+      this.applyProfile(res);
     }, error => {
-        this.setFeedback('Failed to load profile data.', true);
+      this.setFeedback('Failed to load profile data.', true);
     });
   }
 
-  // Enable edit mode for a field
+  private applyProfile(res: any): void {
+    this.userProfile = res;
+    this.editData = {
+      firstname: res.firstname,
+      lastname: res.lastname
+    };
+  }
+
   enableEdit(field: 'firstname' | 'lastname') {
     this.isEditing[field] = true;
   }
 
-  // Cancel edit for a field
   cancelEdit(field: 'firstname' | 'lastname') {
     this.isEditing[field] = false;
-    // Reset value back to original
     this.editData[field] = this.userProfile[field];
   }
 
-  // Save profile updates (Firstname, Lastname)
   saveProfile(field: 'firstname' | 'lastname') {
-    // Construct DTO (only sending the field being changed for true PATCH)
     const updatePayload: any = {};
     let hasChanged = false;
-    
+
     if (field === 'firstname' && this.editData.firstname !== this.userProfile.firstname) {
       updatePayload.firstname = this.editData.firstname;
       hasChanged = true;
@@ -113,22 +118,23 @@ export class ProfileComponent implements OnInit {
       updatePayload.lastname = this.editData.lastname;
       hasChanged = true;
     }
-    
+
     if (!hasChanged) {
-        this.isEditing[field] = false;
-        return;
+      this.isEditing[field] = false;
+      return;
     }
 
     this.authService.updateProfile(updatePayload).subscribe({
       next: (res) => {
-        this.userProfile = res; // Update local display with response data
-        this.isEditing[field] = false; // Turn off edit mode
+        this.userProfile = res;
+        this.requestCache.set(`profile:${this.userId}`, res); 
+        this.isEditing[field] = false;
         this.setFeedback('Profile updated successfully!');
       },
       error: (err) => {
         console.error(err);
         this.setFeedback('Failed to update profile.', true);
-        this.cancelEdit(field); // Revert local change on error
+        this.cancelEdit(field);
       }
     });
   }
@@ -138,20 +144,20 @@ export class ProfileComponent implements OnInit {
   openChangePassword() {
     this.showPasswordModal = true;
     this.passwordForm.reset();
-    this.modalErrorMessage = null; // Clear modal error on open
-    this.feedbackMessage = null; // Clear main page feedback on open
+    this.modalErrorMessage = null;
+    this.feedbackMessage = null;
   }
 
   closeChangePassword() {
     this.showPasswordModal = false;
-    this.modalErrorMessage = null; // Clear modal error on close
+    this.modalErrorMessage = null;
   }
 
   submitPasswordChange() {
     if (this.passwordForm.invalid) return;
 
     const payload = this.passwordForm.value;
-    this.modalErrorMessage = null; // Clear previous error before submission
+    this.modalErrorMessage = null;
 
     this.authService.changePassword(payload).subscribe({
       next: (res) => {
@@ -160,11 +166,8 @@ export class ProfileComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        // Assuming the primary error for this endpoint is the incorrect current password.
         const apiError = err.error?.message || 'Failed to change password. Please verify your current password.';
-        
-        // Set the error message to be displayed in the modal
-        this.modalErrorMessage = apiError; 
+        this.modalErrorMessage = apiError;
       }
     });
   }

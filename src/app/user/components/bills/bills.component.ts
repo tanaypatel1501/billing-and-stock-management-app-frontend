@@ -1,4 +1,6 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ActivatedRoute,Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
@@ -10,6 +12,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-button.component';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
+import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
+import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 
 @Component({
   selector: 'app-bills',
@@ -19,7 +24,7 @@ import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-butto
   templateUrl: './bills.component.html',
   styleUrls: ['./bills.component.scss']
 })
-export class BillsComponent implements OnInit {
+export class BillsComponent implements OnInit, OnDestroy {
   bills: any[] = [];
   userId!: any;
   billId!: any;
@@ -65,12 +70,16 @@ export class BillsComponent implements OnInit {
   toDate: string = '';
   selectAllPages: boolean = false;
 
+  private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
+  private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
+
   constructor(
     private authService: AuthService,
     private userStorageService: UserStorageService,
     private router: Router,
     private route: ActivatedRoute,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private requestCache: RequestCacheService
   ) {}
 
   ngOnInit() {
@@ -88,6 +97,11 @@ export class BillsComponent implements OnInit {
       this.isSearchActive = true;
     }
     this.loadInitialData();
+  }
+
+  ngOnDestroy(): void {
+    this.debouncedSearch.destroy();
+    this.scrollThrottle.destroy();
   }
 
   get isInitialEmpty(): boolean {
@@ -128,7 +142,7 @@ export class BillsComponent implements OnInit {
       sortBy: this.sortColumn || 'id',
       direction: this.sortDirection,
       searchText: this.purchaserId ? '' : this.searchText,
-      purchaserId: this.purchaserId ?? undefined, 
+      purchaserId: this.purchaserId ?? undefined,
       filters: {
         'user.id': this.userId.toString(),
         ...(this.fromDate ? { 'invoiceDate.from': this.fromDate } : {}),
@@ -136,16 +150,17 @@ export class BillsComponent implements OnInit {
       }
     };
 
+    const cacheKey = `bills:${this.userId}:${JSON.stringify(searchRequest)}`;
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyBillsPage(cached, append);
+      return;
+    }
+
     this.authService.searchBills(searchRequest).subscribe({
       next: (data: any) => {
-        this.totalPages = data.totalPages;
-        this.isLastPage = data.last;
-        this.currentPage = data.number;
-        this.totalElements = data.totalElements;
-        this.bills = append ? [...this.bills, ...data.content] : data.content;
-        this.isLoading = false;
-        this.initialLoadComplete = true;
-        this.suggestions = [];
+        this.requestCache.set(cacheKey, data);
+        this.applyBillsPage(data, append);
       },
       error: (err) => {
         console.error(err);
@@ -155,18 +170,33 @@ export class BillsComponent implements OnInit {
     });
   }
 
+  private applyBillsPage(data: any, append: boolean): void {
+    this.totalPages = data.totalPages;
+    this.isLastPage = data.last;
+    this.currentPage = data.number;
+    this.totalElements = data.totalElements;
+    this.bills = append ? [...this.bills, ...data.content] : data.content;
+    this.isLoading = false;
+    this.initialLoadComplete = true;
+    this.suggestions = [];
+  }
+
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      const req = { searchText: text, size: 5, filters: { 'user.id': this.userId.toString() } };
-      this.authService.searchBills(req).subscribe({
-        next: (data) => { this.buildSuggestions(data.content); this.isSuggestionLoading = false; },
-        error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
-      });
+      this.debouncedSearch.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
     }
+  }
+
+  private performSuggestionSearch(text: string) {
+    const req = { searchText: text, size: 5, filters: { 'user.id': this.userId.toString() } };
+    this.authService.searchBills(req).subscribe({
+      next: (data) => { this.buildSuggestions(data.content); this.isSuggestionLoading = false; },
+      error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
+    });
   }
 
   handleSearch(eventData: any) {
@@ -213,6 +243,10 @@ export class BillsComponent implements OnInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
+    this.scrollThrottle.trigger();
+  }
+
+  private checkScrollPosition() {
     if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading && this.initialLoadComplete) {
       const pos = (document.documentElement.scrollTop || document.body.scrollTop)
                   + document.documentElement.offsetHeight;
@@ -243,7 +277,9 @@ export class BillsComponent implements OnInit {
     bill._reqId = (bill._reqId || 0) + 1;
     const reqId = bill._reqId;
     this.authService.updateBillPaidStatus(bill.id, newStatus).subscribe({
-      next: () => {},
+      next: () => {
+         this.requestCache.invalidateMany(['sales:', 'bills:']);
+      },
       error: () => {
         if (bill._reqId === reqId) {
           bill.paid = !newStatus;

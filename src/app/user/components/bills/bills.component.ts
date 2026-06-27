@@ -12,6 +12,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-button.component';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
+import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
+import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 
 @Component({
   selector: 'app-bills',
@@ -67,16 +70,16 @@ export class BillsComponent implements OnInit, OnDestroy {
   toDate: string = '';
   selectAllPages: boolean = false;
 
-  private searchSubject = new Subject<string>();
-  private subscriptions: Subscription[] = [];
-  private scrollThrottleTimeout: any = null;
+  private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
+  private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
 
   constructor(
     private authService: AuthService,
     private userStorageService: UserStorageService,
     private router: Router,
     private route: ActivatedRoute,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private requestCache: RequestCacheService
   ) {}
 
   ngOnInit() {
@@ -94,17 +97,11 @@ export class BillsComponent implements OnInit, OnDestroy {
       this.isSearchActive = true;
     }
     this.loadInitialData();
-    this.subscriptions.push(
-    this.searchSubject.pipe(
-        debounceTime(250),
-        distinctUntilChanged()
-      ).subscribe(text => this.performSuggestionSearch(text))
-    );
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(s => s.unsubscribe());
-    if (this.scrollThrottleTimeout) clearTimeout(this.scrollThrottleTimeout);
+    this.debouncedSearch.destroy();
+    this.scrollThrottle.destroy();
   }
 
   get isInitialEmpty(): boolean {
@@ -145,7 +142,7 @@ export class BillsComponent implements OnInit, OnDestroy {
       sortBy: this.sortColumn || 'id',
       direction: this.sortDirection,
       searchText: this.purchaserId ? '' : this.searchText,
-      purchaserId: this.purchaserId ?? undefined, 
+      purchaserId: this.purchaserId ?? undefined,
       filters: {
         'user.id': this.userId.toString(),
         ...(this.fromDate ? { 'invoiceDate.from': this.fromDate } : {}),
@@ -153,16 +150,17 @@ export class BillsComponent implements OnInit, OnDestroy {
       }
     };
 
+    const cacheKey = `bills:${this.userId}:${JSON.stringify(searchRequest)}`;
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyBillsPage(cached, append);
+      return;
+    }
+
     this.authService.searchBills(searchRequest).subscribe({
       next: (data: any) => {
-        this.totalPages = data.totalPages;
-        this.isLastPage = data.last;
-        this.currentPage = data.number;
-        this.totalElements = data.totalElements;
-        this.bills = append ? [...this.bills, ...data.content] : data.content;
-        this.isLoading = false;
-        this.initialLoadComplete = true;
-        this.suggestions = [];
+        this.requestCache.set(cacheKey, data);
+        this.applyBillsPage(data, append);
       },
       error: (err) => {
         console.error(err);
@@ -172,10 +170,21 @@ export class BillsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private applyBillsPage(data: any, append: boolean): void {
+    this.totalPages = data.totalPages;
+    this.isLastPage = data.last;
+    this.currentPage = data.number;
+    this.totalElements = data.totalElements;
+    this.bills = append ? [...this.bills, ...data.content] : data.content;
+    this.isLoading = false;
+    this.initialLoadComplete = true;
+    this.suggestions = [];
+  }
+
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      this.searchSubject.next(text);
+      this.debouncedSearch.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
@@ -234,11 +243,7 @@ export class BillsComponent implements OnInit, OnDestroy {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
-    if (this.scrollThrottleTimeout) return;
-    this.scrollThrottleTimeout = setTimeout(() => {
-      this.scrollThrottleTimeout = null;
-      this.checkScrollPosition();
-    }, 150);
+    this.scrollThrottle.trigger();
   }
 
   private checkScrollPosition() {
@@ -272,7 +277,9 @@ export class BillsComponent implements OnInit, OnDestroy {
     bill._reqId = (bill._reqId || 0) + 1;
     const reqId = bill._reqId;
     this.authService.updateBillPaidStatus(bill.id, newStatus).subscribe({
-      next: () => {},
+      next: () => {
+         this.requestCache.invalidateMany(['sales:', 'bills:']);
+      },
       error: () => {
         if (bill._reqId === reqId) {
           bill.paid = !newStatus;

@@ -5,6 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { faChartBar, faToggleOn, faToggleOff, faArrowTrendUp } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 @Component({
   selector: 'app-sales',
@@ -37,7 +40,10 @@ export class SalesComponent implements OnInit {
   readonly BAR_GAP = 12;
   readonly CHART_PADDING = 40;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private requestCache: RequestCacheService
+  ) {}
 
   ngOnInit(): void {
     this.userId = UserStorageService.getUserId();
@@ -45,16 +51,17 @@ export class SalesComponent implements OnInit {
   }
 
   loadYears(): void {
-    this.authService.getAvailableYears(this.userId).subscribe({
-      next: (years: number[]) => {
-        this.availableYears = years;
-        if (years.length > 0 && !years.includes(this.selectedYear)) {
-          this.selectedYear = years[0];
-        }
-        this.loadAll();
-      },
-      error: () => this.loadAll()
-    });
+    this.fetchCached(`sales:years:${this.userId}`, () => this.authService.getAvailableYears(this.userId))
+      .subscribe({
+        next: (years: number[]) => {
+          this.availableYears = years;
+          if (years.length > 0 && !years.includes(this.selectedYear)) {
+            this.selectedYear = years[0];
+          }
+          this.loadAll();
+        },
+        error: () => this.loadAll()
+      });
   }
 
   loadAll(): void {
@@ -62,30 +69,23 @@ export class SalesComponent implements OnInit {
     let completed = 0;
     const done = () => { if (++completed === 4) this.isLoading = false; };
 
-    this.authService.getSalesSummary(this.userId, false).subscribe({
-      next: (data: any) => { this.totalBillsOverall = data?.totalBills ?? 0; },
-      error: () => { this.totalBillsOverall = 0; }
-    });
-    
-    this.authService.getSalesSummary(this.userId, this.paidOnly).subscribe({
-      next: (data: any) => { this.summary = data; done(); },
-      error: () => done()
-    });
+    this.fetchCached(`sales:summary:${this.userId}:false`, () => this.authService.getSalesSummary(this.userId, false))
+      .subscribe({
+        next: (data: any) => { this.totalBillsOverall = data?.totalBills ?? 0; },
+        error: () => { this.totalBillsOverall = 0; }
+      });
 
-    this.authService.getTopProducts(this.userId, this.paidOnly, 6).subscribe({
-      next: (data: any[]) => { this.topProducts = data; done(); },
-      error: () => done()
-    });
+    this.fetchCached(`sales:summary:${this.userId}:${this.paidOnly}`, () => this.authService.getSalesSummary(this.userId, this.paidOnly))
+      .subscribe({ next: (data: any) => { this.summary = data; done(); }, error: () => done() });
 
-    this.authService.getMonthlySales(this.userId, this.selectedYear, this.paidOnly).subscribe({
-      next: (data: any[]) => { this.monthlySales = this.fillMonths(data); done(); },
-      error: () => done()
-    });
+    this.fetchCached(`sales:topProducts:${this.userId}:${this.paidOnly}`, () => this.authService.getTopProducts(this.userId, this.paidOnly, 6))
+      .subscribe({ next: (data: any[]) => { this.topProducts = data; done(); }, error: () => done() });
 
-    this.authService.getYearlySales(this.userId, this.paidOnly).subscribe({
-      next: (data: any[]) => { this.yearlySales = data; done(); },
-      error: () => done()
-    });
+    this.fetchCached(`sales:monthly:${this.userId}:${this.selectedYear}:${this.paidOnly}`, () => this.authService.getMonthlySales(this.userId, this.selectedYear, this.paidOnly))
+      .subscribe({ next: (data: any[]) => { this.monthlySales = this.fillMonths(data); done(); }, error: () => done() });
+
+    this.fetchCached(`sales:yearly:${this.userId}:${this.paidOnly}`, () => this.authService.getYearlySales(this.userId, this.paidOnly))
+      .subscribe({ next: (data: any[]) => { this.yearlySales = data; done(); }, error: () => done() });
   }
 
   onTogglePaid(): void {
@@ -95,10 +95,11 @@ export class SalesComponent implements OnInit {
 
   onYearChange(): void {
     this.isLoading = true;
-    this.authService.getMonthlySales(this.userId, this.selectedYear, this.paidOnly).subscribe({
-      next: (data: any[]) => { this.monthlySales = this.fillMonths(data); this.isLoading = false; },
-      error: () => { this.isLoading = false; }
-    });
+    this.fetchCached(`sales:monthly:${this.userId}:${this.selectedYear}:${this.paidOnly}`, () => this.authService.getMonthlySales(this.userId, this.selectedYear, this.paidOnly))
+      .subscribe({
+        next: (data: any[]) => { this.monthlySales = this.fillMonths(data); this.isLoading = false; },
+        error: () => { this.isLoading = false; }
+      });
   }
 
   // Fill missing months with zero so chart always shows all 12 bars
@@ -110,6 +111,11 @@ export class SalesComponent implements OnInit {
     });
   }
 
+  private fetchCached<T>(key: string, request: () => Observable<T>): Observable<T> {
+    const cached = this.requestCache.get(key);
+    if (cached !== null) return of(cached);
+    return request().pipe(tap(data => this.requestCache.set(key, data)));
+  }
   // Chart helpers — horizontal bar chart, value → percentage width
   maxTopProductQty(): number {
     return Math.max(...this.topProducts.map(p => p.totalQuantitySold), 1);

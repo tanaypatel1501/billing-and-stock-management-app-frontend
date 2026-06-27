@@ -6,6 +6,7 @@ import { UserStorageService } from 'src/app/services/storage/user-storage.servic
 import { LabelScannerService, ScannedLabelData } from 'src/app/services/label-scanner/label-scanner.service';
 import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 @Component({
   selector: 'app-stock-form',
@@ -79,7 +80,8 @@ export class StockFormComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
-    private labelScanner: LabelScannerService
+    private labelScanner: LabelScannerService,
+    private requestCache: RequestCacheService
   ) {}
 
   ngOnInit(): void {
@@ -284,7 +286,10 @@ export class StockFormComponent implements OnInit, OnDestroy {
           )
         )
       ).subscribe({
-        next: () => this.router.navigate(['user/dashboard']),
+        next: () => {
+          this.requestCache.invalidateMany(['stock:', 'inventory-value:', 'stockLogs:']);   // UPDATED
+          this.router.navigate(['user/dashboard']);
+        },
         error: () => this.errorMessage = 'Update failed'
       });
 
@@ -311,7 +316,10 @@ export class StockFormComponent implements OnInit, OnDestroy {
           );
         })
       ).subscribe({
-        next: () => this.router.navigate(['user/dashboard']),
+        next: () => {
+          this.requestCache.invalidateMany(['stock:', 'inventory-value:', 'stockLogs:']);   // UPDATED
+          this.router.navigate(['user/dashboard']);
+        },
         error: () => this.errorMessage = 'Add failed'
       });
     }

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService, ProductRequestDTO } from 'src/app/services/auth-service/auth.service';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 type FilterType = 'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL';
 
@@ -9,22 +10,22 @@ type FilterType = 'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL';
   styleUrls: ['./admin-product-requests.component.scss']
 })
 export class AdminProductRequestsComponent implements OnInit {
-
   allRequests: ProductRequestDTO[] = [];
   filteredRequests: ProductRequestDTO[] = [];
   activeFilter: FilterType = 'PENDING';
   isLoading = false;
   expandedId: number | null = null;
   processingId: number | null = null;
-
-  // Map of requestId → admin note string
   adminNotes: { [key: number]: string } = {};
 
   get pendingCount(): number {
     return this.allRequests.filter(r => r.status === 'PENDING').length;
   }
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private requestCache: RequestCacheService  
+  ) {}
 
   ngOnInit(): void {
     this.loadRequests();
@@ -32,8 +33,18 @@ export class AdminProductRequestsComponent implements OnInit {
 
   loadRequests(): void {
     this.isLoading = true;
+    const cacheKey = 'productRequests:all';
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.allRequests = cached;
+      this.applyFilter();
+      this.isLoading = false;
+      return;
+    }
+
     this.authService.getAllProductRequests().subscribe({
       next: (data) => {
+        this.requestCache.set(cacheKey, data);
         this.allRequests = data;
         this.applyFilter();
         this.isLoading = false;
@@ -50,11 +61,9 @@ export class AdminProductRequestsComponent implements OnInit {
   }
 
   applyFilter(): void {
-    if (this.activeFilter === 'ALL') {
-      this.filteredRequests = [...this.allRequests];
-    } else {
-      this.filteredRequests = this.allRequests.filter(r => r.status === this.activeFilter);
-    }
+    this.filteredRequests = this.activeFilter === 'ALL'
+      ? [...this.allRequests]
+      : this.allRequests.filter(r => r.status === this.activeFilter);
   }
 
   toggleExpand(id: number | undefined): void {
@@ -66,10 +75,10 @@ export class AdminProductRequestsComponent implements OnInit {
     if (!req.id) return;
     this.processingId = req.id;
     const note = this.adminNotes[req.id] || '';
-
     this.authService.approveProductRequest(req.id, note).subscribe({
       next: (updated) => {
         this.updateLocalRequest(updated);
+        this.requestCache.invalidateMany(['productRequests:', 'products:']);
         this.processingId = null;
         this.expandedId = null;
       },
@@ -83,15 +92,14 @@ export class AdminProductRequestsComponent implements OnInit {
     if (!req.id) return;
     const note = this.adminNotes[req.id] || '';
     if (!note.trim()) {
-      // Nudge admin to add a reason — good UX for the user getting the rejection email
       const confirmed = confirm('No rejection reason entered. Reject anyway?');
       if (!confirmed) return;
     }
     this.processingId = req.id;
-
     this.authService.rejectProductRequest(req.id, note).subscribe({
       next: (updated) => {
         this.updateLocalRequest(updated);
+        this.requestCache.invalidate('productRequests:');  
         this.processingId = null;
         this.expandedId = null;
       },

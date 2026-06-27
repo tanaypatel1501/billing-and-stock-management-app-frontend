@@ -12,6 +12,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-button.component';
 import { ConfirmDeleteModalComponent } from 'src/app/shared/confirm-delete-modal/confirm-delete-modal.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
+import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -62,6 +65,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private scrollThrottleTimeout: any = null;
 
+  private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
+  private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
+
   get filterColumns() {
     const base = [
       { label: 'Product Name', value: 'product.name' },
@@ -87,31 +93,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userStorageService: UserStorageService,
     private router: Router,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private requestCache: RequestCacheService
   ) { }
 
   ngOnInit() {
     this.userId = UserStorageService.getUserId();
-    this.authService.getDetailsByUserId(this.userId).subscribe(
-      (response: any) => this.details = response || {}
-    );
+    const detailsCacheKey = `details:${this.userId}`;
+    const cachedDetails = this.requestCache.get(detailsCacheKey);
+    if (cachedDetails) {
+      this.details = cachedDetails;
+    } else {
+      this.authService.getDetailsByUserId(this.userId).subscribe(
+        (response: any) => {
+          this.details = response || {};
+          this.requestCache.set(detailsCacheKey, this.details);
+        }
+      );
+    }
     this.loadInitialData();
     this.loadInventoryValue();
-    this.subscriptions.push(
-      this.searchSubject.pipe(
-        debounceTime(250),
-        distinctUntilChanged()
-      ).subscribe(text => this.performSuggestionSearch(text))
-    );
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(s => s.unsubscribe());
-    if (this.scrollThrottleTimeout) clearTimeout(this.scrollThrottleTimeout);
+    this.debouncedSearch.destroy();
+    this.scrollThrottle.destroy();
   }
 
   
   loadInventoryValue(isRefresh: boolean = false) {
+    const cacheKey = `inventory-value:${this.userId}`;
+
+    if (!isRefresh) {
+      const cached = this.requestCache.get(cacheKey);
+      if (cached !== null) {
+        this.totalInventoryValue = cached;
+        this.isLoadingInventoryValue = false;
+        return;
+      }
+    }
+
     if (isRefresh) {
       this.isRefreshingInventoryValue = true;
     } else {
@@ -121,6 +142,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.authService.getInventoryValue(this.userId).subscribe({
       next: (value: number) => {
         this.totalInventoryValue = value;
+        this.requestCache.set(cacheKey, value);
         this.isLoadingInventoryValue = false;
         this.isRefreshingInventoryValue = false;
       },
@@ -158,29 +180,41 @@ export class DashboardComponent implements OnInit, OnDestroy {
       filters: { "user.id": this.userId.toString() }
     };
 
+    const cacheKey = `stock:${this.userId}:${JSON.stringify(searchRequest)}`;
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyStockPage(cached, append);
+      return;
+    }
+
     this.authService.searchStock(searchRequest).subscribe({
-      next: (data: any) => {
-        this.totalPages = data.totalPages;
-        this.isLastPage = data.last;
-        this.currentPage = data.number;
-        this.totalElements = data.totalElements; 
-        this.stock = append ? [...this.stock, ...data.content] : data.content;
-        this.initialLoadComplete = true;
-        this.isLoading = false;
-        this.suggestions = []; 
-      },
-      error: (err) => {
-        console.error(err);
-        this.initialLoadComplete = true;
-        this.isLoading = false;
-      }
-    });
-  }
+    next: (data: any) => {
+      this.requestCache.set(cacheKey, data);
+      this.applyStockPage(data, append);
+    },
+    error: (err) => {
+      console.error(err);
+      this.initialLoadComplete = true;
+      this.isLoading = false;
+    }
+  });
+}
+
+private applyStockPage(data: any, append: boolean): void {
+  this.totalPages = data.totalPages;
+  this.isLastPage = data.last;
+  this.currentPage = data.number;
+  this.totalElements = data.totalElements;
+  this.stock = append ? [...this.stock, ...data.content] : data.content;
+  this.initialLoadComplete = true;
+  this.isLoading = false;
+  this.suggestions = [];
+}
 
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      this.searchSubject.next(text);
+      this.debouncedSearch.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
@@ -254,11 +288,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
-    if (this.scrollThrottleTimeout) return;
-    this.scrollThrottleTimeout = setTimeout(() => {
-      this.scrollThrottleTimeout = null;
-      this.checkScrollPosition();
-    }, 150);
+    this.scrollThrottle.trigger();
   }
 
   private checkScrollPosition() {
@@ -301,6 +331,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.authService.deleteStock(this.stockToDeleteId).subscribe({
       next: () => {
         this.stock = this.stock.filter(s => s.id !== this.stockToDeleteId);
+        this.requestCache.invalidateMany(['stock:', 'inventory-value:']); 
         this.closeDeleteModal();
         this.loadInventoryValue(true);
       },

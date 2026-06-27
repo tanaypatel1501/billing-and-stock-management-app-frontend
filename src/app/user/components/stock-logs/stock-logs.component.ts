@@ -11,6 +11,9 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { SearchBarComponent } from 'src/app/shared/search-bar/search-bar.component';
 import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-button.component';
+import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
+import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 @Component({
   selector: 'app-stock-logs',
@@ -51,9 +54,8 @@ export class StockLogsComponent implements OnInit, OnDestroy {
   sortColumn: string | null = null;
   sortDirection: 'asc' | 'desc' = 'desc';
 
-  private searchSubject = new Subject<string>();
-  private subscriptions: Subscription[] = [];
-  private scrollThrottleTimeout: any = null;
+  private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
+  private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
 
   get isSearchActive(): boolean {
     return this.searchText.trim().length > 0;
@@ -63,51 +65,58 @@ export class StockLogsComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private sanitizer: DomSanitizer,
     private router: Router,
-    private userStorageService: UserStorageService
+    private userStorageService: UserStorageService,
+    private requestCache: RequestCacheService
   ) { }
 
   ngOnInit() {
     this.userId = UserStorageService.getUserId();
-    this.loadLogs();this.subscriptions.push(
-    this.searchSubject.pipe(
-        debounceTime(250),
-        distinctUntilChanged()
-      ).subscribe(text => this.performSuggestionSearch(text))
-    );
+    this.loadLogs();
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(s => s.unsubscribe());
-    if (this.scrollThrottleTimeout) clearTimeout(this.scrollThrottleTimeout);
+    this.debouncedSearch.destroy();
+    this.scrollThrottle.destroy();
   }
 
   loadLogs(page: number = 0, append: boolean = false) {
     this.isLoading = true;
+    const cacheKey = `stockLogs:list:${this.userId}:${JSON.stringify({ searchText: this.searchText, page, size: this.pageSize })}`;
+
+    const cached = this.requestCache.get(cacheKey);
+    if (cached) {
+      this.applyLogsPage(cached, append);
+      return;
+    }
+
     this.authService.getAllStockLogsByUser(this.userId, this.searchText, page, this.pageSize)
       .subscribe({
         next: (data: any) => {
-          const incoming = data.content || [];
-          this.logs = append ? [...this.logs, ...incoming] : incoming;
-          this.totalPages = data.totalPages;
-          this.totalElements = data.totalElements;
-          this.currentPage = data.number;
-          this.isLastPage = data.last;
-          this.suggestions = [];
-          this.extractActions();
-          this.applyFilters();
-          this.isLoading = false;
+          this.requestCache.set(cacheKey, data);
+          this.applyLogsPage(data, append);
         },
-        error: () => {
-          this.isLoading = false;
-        }
+        error: () => { this.isLoading = false; }
       });
+  }
+
+  private applyLogsPage(data: any, append: boolean): void {
+    const incoming = data.content || [];
+    this.logs = append ? [...this.logs, ...incoming] : incoming;
+    this.totalPages = data.totalPages;
+    this.totalElements = data.totalElements;
+    this.currentPage = data.number;
+    this.isLastPage = data.last;
+    this.suggestions = [];
+    this.extractActions();
+    this.applyFilters();
+    this.isLoading = false;
   }
 
   // Search-bar suggestion typing — queries backend for matching product names
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      this.searchSubject.next(text);
+      this.debouncedSearch.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
@@ -178,11 +187,7 @@ export class StockLogsComponent implements OnInit, OnDestroy {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
-    if (this.scrollThrottleTimeout) return;
-    this.scrollThrottleTimeout = setTimeout(() => {
-      this.scrollThrottleTimeout = null;
-      this.checkScrollPosition();
-    }, 150);
+    this.scrollThrottle.trigger();
   }
 
   private checkScrollPosition() {

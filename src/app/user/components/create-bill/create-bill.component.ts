@@ -7,6 +7,7 @@ import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AlertService } from 'src/app/services/alert-service/alert.service';
+import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 const PATTERNS = {
   GST: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/i,
@@ -68,7 +69,8 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userStorageService: UserStorageService,
     private alertService: AlertService,
-    private router: Router
+    private router: Router,
+     private requestCache: RequestCacheService
   ) {}
 
   ngOnInit(): void {
@@ -339,6 +341,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
         next: (saved) => {
           this.selectedPurchaserId = saved.id;
           this.step1Data.purchaserId = saved.id;   
+          this.requestCache.invalidate('purchasers:'); 
         },
         error: () => {} 
       });
@@ -503,6 +506,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     this.authService.createBill(payload).subscribe({
       next: (bill: any) => {
         this.userStorageService.saveBillId(bill.id);
+        this.requestCache.invalidateMany(['stock:', 'inventory-value:', 'sales:', 'stockLogs:', 'bills:']);   
         this.router.navigate(['user/bill-preview']);
       },
       error: (err) => {

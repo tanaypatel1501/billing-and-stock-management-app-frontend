@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
-import { forkJoin, Subject, Subscription } from 'rxjs';
-import { switchMap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AlertService } from 'src/app/services/alert-service/alert.service';
 
 const PATTERNS = {
@@ -483,64 +483,33 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.authService.createBill(this.step1Data).subscribe({
+    const payload = {
+      userId: this.userId,
+      purchaserId: this.step1Data.purchaserId,
+      purchaserName: this.step1Data.purchaserName,
+      dl1: this.step1Data.dl1,
+      dl2: this.step1Data.dl2,
+      gstin: this.step1Data.gstin,
+      invoiceDate: this.step1Data.invoiceDate,
+      billItems: this.step2Data.map(item => ({
+        stockId: item.stockId,
+        quantity: item.quantity,
+        free: item.free,
+        rate: item.rate,
+        amount: item.amount
+      }))
+    };
+
+    this.authService.createBill(payload).subscribe({
       next: (bill: any) => {
         this.userStorageService.saveBillId(bill.id);
-
-        const requests = this.step2Data.map(item => {
-          const stockItem = item.stockItem;  
-
-          if (!stockItem) {
-            console.error('Stock item not found for:', item);
-            return null;
-          }
-
-          const totalQuantitySold = item.quantity + item.free;
-
-          return this.authService.addBillItem({
-            ...item,
-            billId: bill.id,
-            productId: stockItem.product.id
-          }).pipe(
-            switchMap(() =>
-              this.authService.updateStock({
-                id: stockItem.id,
-                userId: this.userId,
-                productId: stockItem.product.id,
-                batchNo: stockItem.batchNo,
-                expiryDate: this.formatDate(stockItem.expiryDate),
-                quantity: stockItem.quantity - totalQuantitySold  
-              })  
-            ),
-            switchMap(() =>
-              this.authService.addStockLog({
-                stockId: stockItem.id,
-                action: 'SOLD',
-                notes: `Sold ${item.quantity}${item.free > 0 ? ` + ${item.free} free` : ''} quantity to ${this.step1Data.purchaserName} via <a class="bill-link" data-bill-id="${bill.id}">Bill #${bill.id}</a>`
-              })
-            )
-          );       
-        }).filter(req => req !== null);
-
-        if (requests.length === 0) {
-          console.error('No valid requests to process');
-          return;
-        }
-
-        forkJoin(requests).subscribe({
-          next: () => this.router.navigate(['user/bill-preview']),
-          error: (err) => console.error('Error in bill item processing:', err)
-        });
+        this.router.navigate(['user/bill-preview']);
       },
-      error: (err) => console.error('Error creating bill:', err)
+      error: (err) => {
+        console.error('Error submitting bill:', err);
+        const message = err?.error?.message || 'Failed to submit bill. Please try again.';
+        this.alertService.error(message, 'Submission Failed', 4000);
+      }
     });
-  }
-
-  formatDate(date: string | Date): string {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = d.getMonth();
-    const lastDay = new Date(year, month + 1, 0).getDate();
-    return `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
   }
 }

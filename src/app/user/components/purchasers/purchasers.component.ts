@@ -1,4 +1,6 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -65,6 +67,10 @@ export class PurchasersComponent implements OnInit {
   documentType: 'GST' | 'PAN' | 'AADHAAR' = 'GST';
   saving = false;
 
+  private searchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+  private scrollThrottleTimeout: any = null;
+
   constructor(
     private authService: AuthService,
     private alertService: AlertService,
@@ -77,6 +83,17 @@ export class PurchasersComponent implements OnInit {
     this.userId = UserStorageService.getUserId();
     this.buildForm();
     this.load(0, false);
+    this.subscriptions.push(
+    this.searchSubject.pipe(
+        debounceTime(250),
+        distinctUntilChanged()
+      ).subscribe(text => this.performSuggestionSearch(text))
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    if (this.scrollThrottleTimeout) clearTimeout(this.scrollThrottleTimeout);
   }
 
   buildForm(): void {
@@ -134,20 +151,24 @@ export class PurchasersComponent implements OnInit {
 
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-
-      this.authService.searchPurchasers(this.userId, text).subscribe({
-        next: (data: any[]) => {
-          this.suggestions = data;
-          this.isSuggestionLoading = false;
-        },
-        error: () => {
-          this.suggestions = [];
-          this.isSuggestionLoading = false;
-        }
-      });
+      this.searchSubject.next(text);
     } else {
       this.suggestions = [];
+      this.isSuggestionLoading = false; 
     }
+  }
+
+  private performSuggestionSearch(text: string): void {
+    this.authService.searchPurchasers(this.userId, text).subscribe({
+      next: (data: any[]) => {
+        this.suggestions = data;
+        this.isSuggestionLoading = false;
+      },
+      error: () => {
+        this.suggestions = [];
+        this.isSuggestionLoading = false;
+      }
+    });
   }
 
   handleSearch(eventData: any): void {
@@ -191,6 +212,14 @@ export class PurchasersComponent implements OnInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
+    if (this.scrollThrottleTimeout) return;
+    this.scrollThrottleTimeout = setTimeout(() => {
+      this.scrollThrottleTimeout = null;
+      this.checkScrollPosition();
+    }, 150);
+  }
+
+  private checkScrollPosition(): void {
     if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading) {
       const pos = (document.documentElement.scrollTop || document.body.scrollTop)
                 + document.documentElement.offsetHeight;

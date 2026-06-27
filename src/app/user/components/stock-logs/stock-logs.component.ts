@@ -1,4 +1,6 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -17,7 +19,7 @@ import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-butto
   templateUrl: './stock-logs.component.html',
   styleUrls: ['./stock-logs.component.scss']
 })
-export class StockLogsComponent implements OnInit {
+export class StockLogsComponent implements OnInit, OnDestroy {
   faFilter = faFilter;
   faTimes = faTimes;
   faClockRotateLeft = faClockRotateLeft;
@@ -49,6 +51,10 @@ export class StockLogsComponent implements OnInit {
   sortColumn: string | null = null;
   sortDirection: 'asc' | 'desc' = 'desc';
 
+  private searchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+  private scrollThrottleTimeout: any = null;
+
   get isSearchActive(): boolean {
     return this.searchText.trim().length > 0;
   }
@@ -62,7 +68,17 @@ export class StockLogsComponent implements OnInit {
 
   ngOnInit() {
     this.userId = UserStorageService.getUserId();
-    this.loadLogs();
+    this.loadLogs();this.subscriptions.push(
+    this.searchSubject.pipe(
+        debounceTime(250),
+        distinctUntilChanged()
+      ).subscribe(text => this.performSuggestionSearch(text))
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    if (this.scrollThrottleTimeout) clearTimeout(this.scrollThrottleTimeout);
   }
 
   loadLogs(page: number = 0, append: boolean = false) {
@@ -91,32 +107,34 @@ export class StockLogsComponent implements OnInit {
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      this.authService.getAllStockLogsByUser(this.userId, text, 0, 5)
-        .subscribe({
-          next: (data: any) => {
-            // De-duplicate by productName for clean suggestion list
-            const seen = new Set<string>();
-            this.suggestions = (data.content || [])
-              .filter((log: any) => {
-                if (!log.productName || seen.has(log.productName)) return false;
-                seen.add(log.productName);
-                return true;
-              })
-              // Shape into { product: { name, packing } } to match labelKey/subLabelKey
-              .map((log: any) => ({
-                product: { name: log.productName, packing: log.productPacking || '' }
-              }));
-            this.isSuggestionLoading = false;
-          },
-          error: () => {
-            this.suggestions = [];
-            this.isSuggestionLoading = false;
-          }
-        });
+      this.searchSubject.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
     }
+  }
+
+  private performSuggestionSearch(text: string) {
+    this.authService.getAllStockLogsByUser(this.userId, text, 0, 5)
+      .subscribe({
+        next: (data: any) => {
+          const seen = new Set<string>();
+          this.suggestions = (data.content || [])
+            .filter((log: any) => {
+              if (!log.productName || seen.has(log.productName)) return false;
+              seen.add(log.productName);
+              return true;
+            })
+            .map((log: any) => ({
+              product: { name: log.productName, packing: log.productPacking || '' }
+            }));
+          this.isSuggestionLoading = false;
+        },
+        error: () => {
+          this.suggestions = [];
+          this.isSuggestionLoading = false;
+        }
+      });
   }
 
   // Search-bar select/search — mirrors dashboard handleSearch
@@ -160,6 +178,14 @@ export class StockLogsComponent implements OnInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
+    if (this.scrollThrottleTimeout) return;
+    this.scrollThrottleTimeout = setTimeout(() => {
+      this.scrollThrottleTimeout = null;
+      this.checkScrollPosition();
+    }, 150);
+  }
+
+  private checkScrollPosition() {
     if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading) {
       const pos = (document.documentElement.scrollTop || document.body.scrollTop)
         + document.documentElement.offsetHeight;

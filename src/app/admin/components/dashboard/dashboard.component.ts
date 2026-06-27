@@ -1,4 +1,6 @@
-import { Component, OnInit,HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { Router } from '@angular/router';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
@@ -21,7 +23,7 @@ import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-butto
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit{
+export class DashboardComponent implements OnInit, OnDestroy{
   faTrashCan = faTrashCan;
   faPencil = faPencil;
   faArrowLeft = faArrowLeft;
@@ -51,6 +53,9 @@ export class DashboardComponent implements OnInit{
   ];
   searchText: string = '';
   suggestions: any[] = [];
+  private searchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+  private scrollThrottleTimeout: any = null;
 
   constructor(
     private authService: AuthService,
@@ -61,6 +66,17 @@ export class DashboardComponent implements OnInit{
   ngOnInit() {
     this.userId = UserStorageService.getUserId();
     this.loadInitialData();
+    this.subscriptions.push(
+    this.searchSubject.pipe(
+        debounceTime(250),
+        distinctUntilChanged()
+      ).subscribe(text => this.performSuggestionSearch(text))
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    if (this.scrollThrottleTimeout) clearTimeout(this.scrollThrottleTimeout);
   }
 
   get isInitialEmpty(): boolean {
@@ -113,15 +129,19 @@ export class DashboardComponent implements OnInit{
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
-      this.authService.searchProducts(req).subscribe({
-        next: (data) => { this.suggestions = data.content; this.isSuggestionLoading = false; },
-        error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
-      });
+      this.searchSubject.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
     }
+  }
+
+  private performSuggestionSearch(text: string) {
+    const req = { searchText: text, size: 5, filters: { "user.id": this.userId.toString() } };
+    this.authService.searchProducts(req).subscribe({
+      next: (data) => { this.suggestions = data.content; this.isSuggestionLoading = false; },
+      error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
+    });
   }
 
   handleSearch(eventData: any) {
@@ -183,6 +203,14 @@ export class DashboardComponent implements OnInit{
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
+    if (this.scrollThrottleTimeout) return;
+    this.scrollThrottleTimeout = setTimeout(() => {
+      this.scrollThrottleTimeout = null;
+      this.checkScrollPosition();
+    }, 150);
+  }
+
+  private checkScrollPosition() {
     if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading) {
       const pos = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.offsetHeight;
       if (pos > document.documentElement.scrollHeight - 100) {

@@ -1,4 +1,6 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ActivatedRoute,Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
@@ -19,7 +21,7 @@ import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-butto
   templateUrl: './bills.component.html',
   styleUrls: ['./bills.component.scss']
 })
-export class BillsComponent implements OnInit {
+export class BillsComponent implements OnInit, OnDestroy {
   bills: any[] = [];
   userId!: any;
   billId!: any;
@@ -65,6 +67,10 @@ export class BillsComponent implements OnInit {
   toDate: string = '';
   selectAllPages: boolean = false;
 
+  private searchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+  private scrollThrottleTimeout: any = null;
+
   constructor(
     private authService: AuthService,
     private userStorageService: UserStorageService,
@@ -88,6 +94,17 @@ export class BillsComponent implements OnInit {
       this.isSearchActive = true;
     }
     this.loadInitialData();
+    this.subscriptions.push(
+    this.searchSubject.pipe(
+        debounceTime(250),
+        distinctUntilChanged()
+      ).subscribe(text => this.performSuggestionSearch(text))
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    if (this.scrollThrottleTimeout) clearTimeout(this.scrollThrottleTimeout);
   }
 
   get isInitialEmpty(): boolean {
@@ -158,15 +175,19 @@ export class BillsComponent implements OnInit {
   handleTyping(text: string) {
     if (text.length > 1) {
       this.isSuggestionLoading = true;
-      const req = { searchText: text, size: 5, filters: { 'user.id': this.userId.toString() } };
-      this.authService.searchBills(req).subscribe({
-        next: (data) => { this.buildSuggestions(data.content); this.isSuggestionLoading = false; },
-        error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
-      });
+      this.searchSubject.next(text);
     } else {
       this.suggestions = [];
       this.isSuggestionLoading = false;
     }
+  }
+
+  private performSuggestionSearch(text: string) {
+    const req = { searchText: text, size: 5, filters: { 'user.id': this.userId.toString() } };
+    this.authService.searchBills(req).subscribe({
+      next: (data) => { this.buildSuggestions(data.content); this.isSuggestionLoading = false; },
+      error: () => { this.suggestions = []; this.isSuggestionLoading = false; }
+    });
   }
 
   handleSearch(eventData: any) {
@@ -213,6 +234,14 @@ export class BillsComponent implements OnInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
+    if (this.scrollThrottleTimeout) return;
+    this.scrollThrottleTimeout = setTimeout(() => {
+      this.scrollThrottleTimeout = null;
+      this.checkScrollPosition();
+    }, 150);
+  }
+
+  private checkScrollPosition() {
     if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading && this.initialLoadComplete) {
       const pos = (document.documentElement.scrollTop || document.body.scrollTop)
                   + document.documentElement.offsetHeight;

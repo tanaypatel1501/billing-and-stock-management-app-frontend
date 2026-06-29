@@ -8,7 +8,7 @@ interface CacheEntry {
 @Injectable({ providedIn: 'root' })
 export class RequestCacheService {
   private cache = new Map<string, CacheEntry>();
-  private readonly DEFAULT_TTL_MS = 30000; 
+  private readonly DEFAULT_TTL_MS = 10 * 60 * 1000;
 
   get(key: string, ttlMs: number = this.DEFAULT_TTL_MS): any | null {
     const entry = this.cache.get(key);
@@ -32,5 +32,9 @@ export class RequestCacheService {
 
   invalidateMany(prefixes: string[]): void {
     prefixes.forEach(p => this.invalidate(p));
+  }
+
+  clearAll(): void {
+    this.cache.clear();
   }
 }

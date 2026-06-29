@@ -31,8 +31,6 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   billForm1!: FormGroup;
   billForm2!: FormGroup;
 
-  userId!: number;
-
   stock: any[] = [];
   filteredStock: any[] = [];
   products: any[] = [];
@@ -74,7 +72,6 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.userId = UserStorageService.getUserId();
     localStorage.removeItem('I_bill');
     this.billForm1 = this.fb.group({
       purchaserName: [null, Validators.required],
@@ -203,7 +200,6 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       searchText: searchText,
       page: page,
       size: 20,
-      filters: { 'user.id': String(this.userId) }
     }).subscribe({
       next: (res: any) => {
         const list = res?.content ?? res ?? [];
@@ -326,13 +322,11 @@ export class CreateBillComponent implements OnInit, OnDestroy {
         dl1: raw.dl1?.trim() || 'N/A',
         dl2: raw.dl2?.trim() || 'N/A',
         gstin: raw.gstin?.trim() || 'N/A',
-        userId: this.userId,
         purchaserId: this.selectedPurchaserId ?? undefined
       };
 
       this.authService.savePurchaser({
         id: this.selectedPurchaserId ?? undefined,
-        userId: this.userId,
         name: this.step1Data.purchaserName,
         dl1: this.step1Data.dl1,
         dl2: this.step1Data.dl2,
@@ -416,7 +410,7 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     clearTimeout(this.purchaserSearchTimeout);
     this.purchaserSearchTimeout = setTimeout(() => {
       this.isPurchaserLoading = true;
-      this.authService.searchPurchasers(this.userId, text).subscribe({
+      this.authService.searchPurchasers(text).subscribe({
         next: (data) => {
           this.purchaserSuggestions = data;
           this.showPurchaserDropdown = data.length > 0;
@@ -487,7 +481,6 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     }
 
     const payload = {
-      userId: this.userId,
       purchaserId: this.step1Data.purchaserId,
       purchaserName: this.step1Data.purchaserName,
       dl1: this.step1Data.dl1,

@@ -60,24 +60,7 @@ export class UserActivityService implements OnDestroy {
     }
 
     this.authService.refreshToken().subscribe({
-      next: (response: any) => {
-        const tokenHeader = response.headers.get('authorization');
-        const bearerToken = tokenHeader ? tokenHeader.substring(7) : null;
-
-        if (!bearerToken) {
-          this.forceLogout();
-          return;
-        }
-
-        this.userStorageService.saveToken(bearerToken);
-
-        const decoded: any = jwt_decode(bearerToken);
-        if (decoded?.exp) {
-          const expirationTime = decoded.exp * 1000;
-          this.userStorageService.saveTokenExpiration(expirationTime);
-        }
-
-        // Restart monitoring cycle if needed
+      next: () => {
         if (this.callback) {
           this.callback();
         }

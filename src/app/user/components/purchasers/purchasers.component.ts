@@ -83,7 +83,6 @@ export class PurchasersComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.userId = UserStorageService.getUserId();
     this.buildForm();
     this.load(0, false);
   }
@@ -152,7 +151,7 @@ export class PurchasersComponent implements OnInit {
   }
 
   private performSuggestionSearch(text: string): void {
-    this.authService.searchPurchasers(this.userId, text).subscribe({
+    this.authService.searchPurchasers(text).subscribe({
       next: (data: any[]) => {
         this.suggestions = data;
         this.isSuggestionLoading = false;
@@ -251,7 +250,6 @@ export class PurchasersComponent implements OnInit {
 
     this.authService.savePurchaser({
       id:     this.editingId,
-      userId: this.userId,
       name:   raw.name,
       dl1:    raw.dl1?.trim()   || 'N/A',
       dl2:    raw.dl2?.trim()   || 'N/A',

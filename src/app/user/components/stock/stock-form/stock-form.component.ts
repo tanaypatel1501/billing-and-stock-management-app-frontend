@@ -258,7 +258,6 @@ export class StockFormComponent implements OnInit, OnDestroy {
     this.errorMessage = null; // Clear any previous errors
 
     const payload: any = {
-      userId: UserStorageService.getUserId(),
       productId: this.selectedProductId,
       batchNo: this.productForm.value.batchNo,
       expiryDate: this.productForm.value.expiryDate,

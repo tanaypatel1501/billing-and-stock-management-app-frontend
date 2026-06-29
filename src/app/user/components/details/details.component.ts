@@ -398,7 +398,6 @@ export class DetailsComponent implements OnInit, OnDestroy {
     const details = this.userHasDetails && this.originalDetails 
       ? { ...this.originalDetails, ...formValues } 
       : { ...formValues };
-    details.userId = this.userId;
     details.preferredTemplate = this.selectedTemplate;
 
     if (this.userHasDetails) {

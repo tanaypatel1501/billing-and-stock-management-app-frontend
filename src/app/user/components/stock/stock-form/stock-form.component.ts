@@ -270,54 +270,33 @@ export class StockFormComponent implements OnInit, OnDestroy {
       
       const dynamicNotes = this.generateUpdateNotes(payload);
       
-      this.authService.updateStock(payload).pipe(
-        switchMap(() => 
+      this.authService.updateStock(payload).subscribe({
+        next: () => {
+          this.requestCache.invalidateMany(['stock:', 'inventory-value:', 'stockLogs:']);
+          this.router.navigate(['user/dashboard']); 
           this.authService.addStockLog({
             stockId: this.stockId,
             action: 'UPDATE',
             notes: dynamicNotes
-          }).pipe(
-            catchError(logError => {
-              // Log the error locally, but let the user proceed since the stock update succeeded
-              console.error('Stock saved successfully, but log creation failed:', logError);
-              return of(null); 
-            })
-          )
-        )
-      ).subscribe({
-        next: () => {
-          this.requestCache.invalidateMany(['stock:', 'inventory-value:', 'stockLogs:']);   // UPDATED
-          this.router.navigate(['user/dashboard']);
+          }).subscribe({ error: () => {} });
         },
         error: () => this.errorMessage = 'Update failed'
       });
 
     } else {
-      this.authService.addStock(payload).pipe(
-        switchMap((savedStock: any) => {
-          // Safe extraction check depending on backend return structure (direct object vs wrapped data)
-          const generatedId = savedStock?.id || savedStock?.data?.id;
-          console.log('--- ACTUAL BACKEND RESPONSE ---', savedStock);
-          if (!generatedId) {
-            console.warn('Could not extract stockId from backend response wrapper:', savedStock);
-            return of(null); // Bypass log creation gracefully if ID cannot be parsed
-          }
+      this.authService.addStock(payload).subscribe({
+        next: (savedStock: any) => {
+          this.requestCache.invalidateMany(['stock:', 'inventory-value:', 'stockLogs:']);
+          this.router.navigate(['user/dashboard']); 
 
-          return this.authService.addStockLog({
-            stockId: generatedId,
-            action: 'ADD',
-            notes: `Added ${payload.quantity} quantity of ${this.productForm.value.name} | Batch: ${payload.batchNo} | MRP: ₹${payload.mrp}`
-          }).pipe(
-            catchError(logError => {
-              console.error('Stock created successfully, but log creation failed:', logError);
-              return of(null); // Prevent logging failures from breaking navigation
-            })
-          );
-        })
-      ).subscribe({
-        next: () => {
-          this.requestCache.invalidateMany(['stock:', 'inventory-value:', 'stockLogs:']);   // UPDATED
-          this.router.navigate(['user/dashboard']);
+          const generatedId = savedStock?.id || savedStock?.data?.id;
+          if (generatedId) {
+            this.authService.addStockLog({
+              stockId: generatedId,
+              action: 'ADD',
+              notes: `Added ${payload.quantity} quantity of ${this.productForm.value.name} | Batch: ${payload.batchNo} | MRP: ₹${payload.mrp}`
+            }).subscribe({ error: () => {} });
+          }
         },
         error: () => this.errorMessage = 'Add failed'
       });

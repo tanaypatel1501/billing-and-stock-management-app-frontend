@@ -20,28 +20,29 @@ export class UserActivityService implements OnDestroy {
   ) {}
 
   startMonitoringActivity(callback: Function): void {
-    if (this.monitoringActive) {
-      return;
-    }
-
+    if (this.monitoringActive) return;
     this.callback = callback;
     this.monitoringActive = true;
 
-    window.addEventListener('keypress', this.handleUserActivity);
-    window.addEventListener('click', this.handleUserActivity);
-    window.addEventListener('scroll', this.handleUserActivity);
-    window.addEventListener('mousemove', this.handleUserActivity);
+    window.addEventListener('keypress',   this.handleUserActivity);
+    window.addEventListener('click',      this.handleUserActivity);
+    window.addEventListener('scroll',     this.handleUserActivity);
+    window.addEventListener('mousemove',  this.handleUserActivity);
+    window.addEventListener('touchstart', this.handleUserActivity, { passive: true });
+    window.addEventListener('touchmove',  this.handleUserActivity, { passive: true });
+    window.addEventListener('touchend',   this.handleUserActivity, { passive: true });
   }
 
   stopMonitoringActivity(): void {
-    if (!this.monitoringActive) {
-      return;
-    }
+    if (!this.monitoringActive) return;
 
-    window.removeEventListener('keypress', this.handleUserActivity);
-    window.removeEventListener('click', this.handleUserActivity);
-    window.removeEventListener('scroll', this.handleUserActivity);
-    window.removeEventListener('mousemove', this.handleUserActivity);
+    window.removeEventListener('keypress',   this.handleUserActivity);
+    window.removeEventListener('click',      this.handleUserActivity);
+    window.removeEventListener('scroll',     this.handleUserActivity);
+    window.removeEventListener('mousemove',  this.handleUserActivity);
+    window.removeEventListener('touchstart', this.handleUserActivity);
+    window.removeEventListener('touchmove',  this.handleUserActivity);
+    window.removeEventListener('touchend',   this.handleUserActivity);
 
     this.monitoringActive = false;
   }

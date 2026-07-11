@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth-service/auth.service';
 import { AlertService } from '../services/alert-service/alert.service';
 
-const PUBLIC_PATHS = ['/authenticate', '/sign-up', '/refresh-token', '/forgot-password', '/reset-password'];
+const PUBLIC_PATHS = ['/authenticate', '/sign-up', '/refresh-token', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification', '/auth/google'];
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {

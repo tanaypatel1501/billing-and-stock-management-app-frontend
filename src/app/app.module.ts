@@ -26,6 +26,7 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 import { ConfirmDeleteModalComponent } from './shared/confirm-delete-modal/confirm-delete-modal.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { QRCodeModule } from 'angularx-qrcode';
+import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
 
 @NgModule({
   declarations: [
@@ -41,6 +42,7 @@ import { QRCodeModule } from 'angularx-qrcode';
     ForgotPasswordComponent,
     ResetPasswordComponent,
     SettingsComponent,
+    VerifyEmailComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,31 +1,39 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
+import { UserStorageService } from 'src/app/services/storage/user-storage.service';
+import { ConfigService } from 'src/app/services/config.service';
+
+declare const google: any;
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   validateForm!: FormGroup;
   successMessage: string | null = null;
   errorMessage: string | null = null;
+  registered = false;
+  private googleTokenClient: any;
 
   confirmPassword = (control: FormControl): { [s: string]: boolean } => {
     if (!control.value) {
       return { required: true };
     } else if (control.value !== this.validateForm.controls["password"].value) {
-      return {
-        confirm: true, error: true
-      };
+      return { confirm: true, error: true };
     }
     return {};
   }
 
-  constructor(private authService: AuthService,
-    private fb: FormBuilder) { }
-
+  constructor(
+    private authService: AuthService,
+    private fb: FormBuilder,
+    private router: Router,
+    private config: ConfigService
+  ) { }
 
   ngOnInit() {
     this.validateForm = this.fb.group({
@@ -34,35 +42,69 @@ export class RegisterComponent {
       email: [null, [Validators.required, Validators.pattern(this.emailPattern)]],
       password: [null, [Validators.required, Validators.minLength(8), this.passwordValidator]],
       confirm: [null, [Validators.required, this.confirmPassword]]
-    })
+    });
+    
+    setTimeout(() => this.initGoogleSignIn(), 100);
+  }
+
+  private initGoogleSignIn(): void {
+    if (typeof google === 'undefined') return;
+
+    this.googleTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: this.config.googleClientId,
+      scope: 'openid profile email',
+      callback: (response: any) => {
+        if (response && response.access_token) {
+          this.handleGoogleCredential({ credential: response.access_token });
+        }
+      }
+    });
+  }
+
+  triggerGoogleAuth(): void {
+    if (this.googleTokenClient) {
+      this.googleTokenClient.requestAccessToken();
+    } else {
+      this.errorMessage = 'Google services are currently unavailable. Please refresh.';
+      this.clearMessageAfterDelay();
+    }
+  }
+
+  handleGoogleCredential(response: any): void {
+    this.authService.googleSignIn(response.credential).subscribe({
+      next: () => {
+        if (UserStorageService.isUserLoggedIn()) {
+          this.router.navigateByUrl('user/dashboard');
+        }
+      },
+      error: () => {
+        this.errorMessage = 'Google sign-up failed. Please try again.';
+        this.clearMessageAfterDelay();
+      }
+    });
   }
 
   register(data: any) {
-    this.authService.register(data).subscribe(
-      (res) => {
-        console.log(res);
-        this.successMessage = 'Registration successful!'; // Set success message
-        this.clearMessageAfterDelay(); // Clear success message after 3 seconds
+    this.authService.register(data).subscribe({
+      next: () => {
+        this.registered = true; 
       },
-      (error) => {
-        console.log(error);
-        this.errorMessage = 'Registration failed. Please try again.'; // Set error message
-        this.clearMessageAfterDelay(); // Clear error message after 3 seconds
+      error: (error) => {
+        this.errorMessage = error?.error || 'Registration failed. Please try again.';
+        this.clearMessageAfterDelay();
       }
-    );
+    });
   }
 
   private clearMessageAfterDelay() {
     setTimeout(() => {
       this.successMessage = null;
       this.errorMessage = null;
-    }, 3000); // 3 seconds delay
+    }, 3000);
   }
 
-  // Custom email pattern (regex)
   emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
-  // Custom password validator
   passwordValidator(control: AbstractControl): { [key: string]: boolean } | null {
     const password = control.value;
     const hasSpecialChar = /[!@#$%^&*()_+{}\[\]:;<>,.?~\\]/.test(password);
@@ -72,7 +114,6 @@ export class RegisterComponent {
     if (!hasSpecialChar || !hasCapitalLetter || !hasDigit || password.length < 8) {
       return { 'invalidPassword': true };
     }
-
     return null;
   }
 }

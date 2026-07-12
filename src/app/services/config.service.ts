@@ -13,6 +13,6 @@ export class ConfigService {
   }
 
   get googleClientId(): string {
-    return (window as any)['__env']?.GOOGLE_CLIENT_ID || '';
+    return (window as any)['runtimeConfig']?.GOOGLE_CLIENT_ID || '';
   }
 }

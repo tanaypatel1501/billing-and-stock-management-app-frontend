@@ -17,7 +17,6 @@ export class RegisterComponent implements OnInit {
   successMessage: string | null = null;
   errorMessage: string | null = null;
   registered = false;
-  private googleTokenClient: any;
 
   confirmPassword = (control: FormControl): { [s: string]: boolean } => {
     if (!control.value) {
@@ -48,26 +47,29 @@ export class RegisterComponent implements OnInit {
   }
 
   private initGoogleSignIn(): void {
-    if (typeof google === 'undefined') return;
 
-    this.googleTokenClient = google.accounts.oauth2.initTokenClient({
+    if (typeof google === 'undefined') {
+      return;
+    }
+
+    google.accounts.id.initialize({
       client_id: this.config.googleClientId,
-      scope: 'openid profile email',
       callback: (response: any) => {
-        if (response && response.access_token) {
-          this.handleGoogleCredential({ credential: response.access_token });
-        }
+
+        this.handleGoogleCredential(response);
+
       }
     });
-  }
 
-  triggerGoogleAuth(): void {
-    if (this.googleTokenClient) {
-      this.googleTokenClient.requestAccessToken();
-    } else {
-      this.errorMessage = 'Google services are currently unavailable. Please refresh.';
-      this.clearMessageAfterDelay();
-    }
+    google.accounts.id.renderButton(
+      document.getElementById('googleLoginButton'),
+      {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        width: 430
+      }
+    );
   }
 
   handleGoogleCredential(response: any): void {

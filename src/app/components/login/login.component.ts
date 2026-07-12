@@ -27,8 +27,6 @@ export class LoginComponent implements OnInit {
     private config: ConfigService
   ) {}
 
-  private googleTokenClient: any;
-
   ngOnInit(): void {
     this.validateForm = this.fb.group({
       email: [null, [Validators.required, Validators.pattern(this.emailPattern)]],
@@ -40,25 +38,29 @@ export class LoginComponent implements OnInit {
   }
 
   private initGoogleSignIn(): void {
-    if (typeof google === 'undefined') return;
-    this.googleTokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: this.config.googleClientId,
-    scope: 'openid profile email',
-    callback: (response: any) => {
-      if (response && response.access_token) {
-        this.handleGoogleCredential({ credential: response.access_token });
+
+    if (typeof google === 'undefined') {
+      return;
+    }
+
+    google.accounts.id.initialize({
+      client_id: this.config.googleClientId,
+      callback: (response: any) => {
+
+        this.handleGoogleCredential(response);
+
       }
-    }
-  });
-  }
-  
-  triggerGoogleAuth(): void {
-    if (this.googleTokenClient) {
-      this.googleTokenClient.requestAccessToken();
-    } else {
-      this.errorMessage = 'Google services are currently unavailable. Please refresh.';
-      this.clearMessageAfterDelay();
-    }
+    });
+
+    google.accounts.id.renderButton(
+      document.getElementById('googleLoginButton'),
+      {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        width: 430
+      }
+    );
   }
 
   handleGoogleCredential(response: any): void {

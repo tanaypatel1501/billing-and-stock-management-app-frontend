@@ -155,6 +155,31 @@ input {
   span { font-size: .8rem; color: var(--gstm-text-muted); white-space: nowrap; }
 }
 
+.google-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.google-wrapper:hover .google-custom-btn {
+  transform: translateY(-2px);
+  background-color: var(--gstm-input-bg);
+  border-color: var(--gstm-primary-color);
+}
+
+.google-wrapper:active .google-custom-btn {
+  transform: translateY(0);
+}
+
+#googleLoginButton,
+#googleRegisterButton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.01;
+  overflow: hidden;
+}
+
 .google-custom-btn {
   width: 100%;
   padding: 14px; 
@@ -173,16 +198,7 @@ input {
   margin-top: 10px;
   margin-bottom: 8px;
   transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
-
-  &:hover {
-    transform: translateY(-1px);
-    background-color: var(--gstm-input-bg);
-    border-color: var(--gstm-primary-color);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+  pointer-events: none;
 }
 
 .google-icon {

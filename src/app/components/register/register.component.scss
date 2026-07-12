@@ -146,6 +146,74 @@ input {
   }
 }
 
+.divider-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 10px 0;
+  hr { flex: 1; border: none; border-top: 1px solid var(--gstm-input-border); }
+  span { font-size: .8rem; color: var(--gstm-text-muted); white-space: nowrap; }
+}
+
+.google-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.google-wrapper:hover .google-custom-btn {
+  transform: translateY(-2px);
+  background-color: var(--gstm-input-bg);
+  border-color: var(--gstm-primary-color);
+}
+
+.google-wrapper:active .google-custom-btn {
+  transform: translateY(0);
+}
+
+#googleLoginButton,
+#googleRegisterButton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.01;
+  overflow: hidden;
+}
+
+.google-custom-btn {
+  width: 100%;
+  padding: 14px; 
+  background-color: var(--gstm-card-bg);
+  color: var(--gstm-text-main);
+  border: 2px solid var(--gstm-input-border);
+  border-radius: 10px; 
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+  margin-bottom: 8px;
+  transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+  pointer-events: none;
+}
+
+.google-icon {
+  flex-shrink: 0;
+  display: block;
+}
+
+.verify-prompt {
+  text-align: center;
+  padding: 20px 0;
+  .verify-icon { font-size: 3.5rem; margin-bottom: 16px; }
+  h2 { font: 800 1.5rem sans-serif; color: var(--gstm-text-main); margin-bottom: 12px; }
+  p { color: var(--gstm-text-muted); line-height: 1.6; margin-bottom: 24px; }
+}
+
 /* Mobile View */
 @media (max-width: 500px) {
   .form-row { grid-template-columns: 1fr; gap: 0; }

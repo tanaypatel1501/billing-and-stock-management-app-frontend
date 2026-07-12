@@ -11,4 +11,8 @@ export class ConfigService {
     // Read directly from the window object where main.ts saved it
     return (window as any).runtimeConfig?.BASIC_URL;
   }
+
+  get googleClientId(): string {
+    return (window as any)['runtimeConfig']?.GOOGLE_CLIENT_ID || '';
+  }
 }

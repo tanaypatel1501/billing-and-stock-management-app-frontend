@@ -154,6 +154,33 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}reset-password`, data);
   }
 
+  verifyEmail(token: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}verify-email`, { token });
+  }
+
+  resendVerification(email: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}resend-verification`, { email });
+  }
+
+  googleSignIn(idToken: string): any {
+    return this.http
+      .post<any>(`${this.baseUrl}auth/google`, { idToken }, { observe: 'response' })
+      .pipe(
+        map((res: HttpResponse<any>) => {
+          const token = res.headers.get('authorization');
+          const bearer = token ? token.substring(7) : '';
+          this.userStorageService.saveToken(bearer);
+          this.updateNavBar();
+          const decoded: any = jwt_decode(bearer);
+          if (decoded?.exp) {
+            this.userStorageService.saveTokenExpiration(decoded.exp * 1000);
+            this.tokenRefreshed.emit();
+          }
+          return res;
+        })
+      );
+  }
+
   /* ---------------------- POSTAL APIs ---------------------- */
 
   lookupPincode(pincode: string): Observable<AddressLookupDTO | null> {

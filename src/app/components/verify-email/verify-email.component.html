@@ -1,0 +1,25 @@
+<div class="verify-wrapper">
+  <div class="verify-card">
+
+    <div *ngIf="status === 'loading'" class="state loading">
+      <div class="spinner-ring"></div>
+      <p>Verifying your email...</p>
+    </div>
+
+    <div *ngIf="status === 'success'" class="state success">
+      <div class="icon">✓</div>
+      <h2>Email Verified!</h2>
+      <p>{{ message }}</p>
+      <p class="redirect-note">Redirecting to login...</p>
+      <button class="btn" (click)="goToLogin()">Go to Login</button>
+    </div>
+
+    <div *ngIf="status === 'error'" class="state error">
+      <div class="icon">✗</div>
+      <h2>Verification Failed</h2>
+      <p>{{ message }}</p>
+      <button class="btn" (click)="goToLogin()">Go to Login</button>
+    </div>
+
+  </div>
+</div>

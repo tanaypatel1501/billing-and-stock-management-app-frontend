@@ -6,9 +6,6 @@ import { UserStorageService } from 'src/app/services/storage/user-storage.servic
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AppStateService } from 'src/app/services/app-state.service';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
-
-import { ImageCropperComponent } from 'ngx-image-cropper';
-import { fas } from '@fortawesome/free-solid-svg-icons';
 import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
 @Component({

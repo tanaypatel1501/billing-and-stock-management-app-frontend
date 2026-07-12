@@ -10,6 +10,7 @@ import { UserGuard } from './guards/user-guard/user.guard';
 import { ProfileComponent } from './components/profile/profile.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
 
 const routes: Routes = [
   {
@@ -30,6 +31,11 @@ const routes: Routes = [
     path: 'reset-password',
     component: ResetPasswordComponent,canActivate:[NoauthGuard],
     title: 'Reset Password | GST Medicose'
+  },
+  { 
+    path: 'verify-email', 
+    component: VerifyEmailComponent,canActivate:[NoauthGuard],
+    title: 'Verify Email | GST Medicose'
   },
   {
     path : "profile", 

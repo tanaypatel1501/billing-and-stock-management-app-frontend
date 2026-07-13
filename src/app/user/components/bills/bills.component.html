@@ -71,16 +71,13 @@
         <div class="export-toolbar" *ngIf="selectedBillIds.size > 0 || selectAllPages">
           <div class="select-all-wrapper">
             <input type="checkbox" id="selectAll"
-              [checked]="allSelected || allCurrentPageSelected"
+              [checked]="selectAllPages || allCurrentPageSelected"
               (change)="toggleSelectAll()" />
             <label for="selectAll">
               <ng-container *ngIf="selectAllPages">
                 All {{ totalElements }} bills selected
               </ng-container>
-              <ng-container *ngIf="!selectAllPages && allCurrentPageSelected">
-                Select all {{ totalElements }} bills?
-              </ng-container>
-              <ng-container *ngIf="!selectAllPages && !allCurrentPageSelected">
+              <ng-container *ngIf="!selectAllPages">
                 {{ selectedBillIds.size }} selected
               </ng-container>
             </label>

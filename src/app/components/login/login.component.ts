@@ -1,18 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { ConfigService } from 'src/app/services/config.service';
+import { GoogleAuthService } from 'src/app/services/google-auth/google-auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
-
-declare const google: any;
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   validateForm!: FormGroup;
   errorMessage: string | null = null;
   showResendLink = false;
@@ -24,7 +23,8 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private config: ConfigService
+    private config: ConfigService,
+    private googleAuth: GoogleAuthService
   ) {}
 
   ngOnInit(): void {
@@ -33,34 +33,14 @@ export class LoginComponent implements OnInit {
       password: [null, [Validators.required, this.passwordValidator]]
     });
 
-    // Initialize Google Sign-In button after view is ready
-    setTimeout(() => this.initGoogleSignIn(), 100);
+    setTimeout(() => {
+      this.googleAuth.init((response) => this.handleGoogleCredential(response));
+      this.googleAuth.renderButton('googleLoginButton');
+    }, 100);
   }
 
-  private initGoogleSignIn(): void {
-
-    if (typeof google === 'undefined') {
-      return;
-    }
-
-    google.accounts.id.initialize({
-      client_id: this.config.googleClientId,
-      callback: (response: any) => {
-
-        this.handleGoogleCredential(response);
-
-      }
-    });
-
-    google.accounts.id.renderButton(
-      document.getElementById('googleLoginButton'),
-      {
-        type: 'standard',
-        theme: 'outline',
-        size: 'large',
-        width: 430
-      }
-    );
+  ngOnDestroy(): void {
+    this.googleAuth.cancel();
   }
 
   handleGoogleCredential(response: any): void {

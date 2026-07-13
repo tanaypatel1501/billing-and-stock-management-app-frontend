@@ -187,6 +187,38 @@
   white-space: nowrap;
 }
 
+.totals-breakdown {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 2px;
+  padding: 0 6px;
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: .75rem;
+  color: var(--gstm-text-muted);
+
+  span:last-child {
+    font-weight: 600;
+    color: var(--gstm-text-main);
+  }
+
+  &.discount span:last-child {
+    color: #d32f2f;
+  }
+
+  &.grand-total {
+    border-top: 1px solid var(--gstm-input-border);
+    margin-top: 4px;
+    padding-top: 4px;
+    font-size: 1rem;
+    font-weight: 800;
+  }
+}
+
 .qr-label {
   font: 500 .65rem sans-serif;
   color: var(--gstm-text-muted);

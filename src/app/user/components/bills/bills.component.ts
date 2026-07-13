@@ -320,17 +320,14 @@ export class BillsComponent implements OnInit, OnDestroy {
   }
 
   toggleSelectAll(): void {
-    if (this.selectAllPages) {
-      // deselect everything
+    if (this.selectAllPages || this.allCurrentPageSelected) {
+      // Currently selected (either mode) — clicking again deselects everything
       this.selectAllPages = false;
       this.selectedBillIds.clear();
-    } else if (this.allCurrentPageSelected) {
-      // current page all selected — prompt for all-pages
-      this.selectAllPages = true;
-      // selectedBillIds stays — we use selectAllPages flag for export
     } else {
-      // select current page
-      this.bills.forEach(b => this.selectedBillIds.add(b.id));
+      // Select everything across all pages in one click
+      this.selectAllPages = true;
+      this.bills.forEach(b => this.selectedBillIds.add(b.id)); // keep current page's ids too, for immediate UI feedback
     }
   }
   // ── Export ──
@@ -340,10 +337,9 @@ export class BillsComponent implements OnInit, OnDestroy {
     this.isExporting = true;
 
     if (this.selectAllPages) {
-      // Fetch all bill IDs matching current filters, then export
       const allPagesRequest = {
         page: 0,
-        size: this.totalElements,   // fetch everything
+        size: this.totalElements,
         sortBy: this.sortColumn || 'id',
         direction: this.sortDirection,
         searchText: this.searchText,
@@ -356,7 +352,7 @@ export class BillsComponent implements OnInit, OnDestroy {
       this.authService.searchBills(allPagesRequest).subscribe({
         next: (data: any) => {
           const ids = data.content.map((b: any) => b.id);
-          this.fetchAndExportPdfs(ids);
+          this.exportBills(ids);
         },
         error: () => {
           this.isExporting = false;
@@ -365,35 +361,55 @@ export class BillsComponent implements OnInit, OnDestroy {
       });
     } else {
       if (this.selectedBillIds.size === 0) { this.isExporting = false; return; }
-      this.fetchAndExportPdfs(Array.from(this.selectedBillIds));
+      this.exportBills(Array.from(this.selectedBillIds));
     }
   }
-  private fetchAndExportPdfs(ids: number[]): void {
+
+  /**
+   * Routes to the single-PDF endpoint when exactly one bill is selected
+   * (skips zip overhead entirely), otherwise uses the bulk zip endpoint.
+   */
+  private exportBills(ids: number[]): void {
     if (ids.length === 0) { this.isExporting = false; return; }
 
-    let index = 0;
-    const downloadNext = () => {
-      if (index >= ids.length) { this.finishExport(); return; }
-      const id = ids[index++];
+    if (ids.length === 1) {
+      this.downloadSinglePdf(ids[0]);
+    } else {
+      this.downloadBillsZip(ids);
+    }
+  }
 
-      // Find the bill in current page for name/date — fall back to ID if not on page
-      const bill = this.bills.find(b => b.id === id);
-      const filename = bill
-        ? `Invoice-${bill.purchaserName}-${this.datePipe.transform(bill.invoiceDate, 'dd-MM-yyyy')}.pdf`
-        : `Invoice-${id}-${this.today()}.pdf`;
+  private downloadSinglePdf(id: number): void {
+    const bill = this.bills.find(b => b.id === id);
+    const filename = bill
+      ? `Invoice-${bill.purchaserName}-${this.datePipe.transform(bill.invoiceDate, 'dd-MM-yyyy')}.pdf`
+      : `Invoice-${id}.pdf`;
 
-      this.authService.getPdfBlob(id).subscribe({
-        next: (blob) => {
-          this.triggerDownload(blob, filename);
-          setTimeout(downloadNext, 300);
-        },
-        error: () => {
-          this.isExporting = false;
-          alert(`Failed to export bill ID ${id}`);
-        }
-      });
-    };
-    downloadNext();
+    this.authService.getPdfBlob(id).subscribe({
+      next: (blob) => {
+        this.triggerDownload(blob, filename);
+        this.finishExport();
+      },
+      error: () => {
+        this.isExporting = false;
+        alert(`Failed to export bill ID ${id}`);
+      }
+    });
+  }
+
+  private downloadBillsZip(ids: number[]): void {
+    if (ids.length === 0) { this.isExporting = false; return; }
+
+    this.authService.downloadBillsZip(ids).subscribe({
+      next: (blob) => {
+        this.triggerDownload(blob, `Invoices-${this.today()}.zip`);
+        this.finishExport();
+      },
+      error: () => {
+        this.isExporting = false;
+        alert('Failed to export bills.');
+      }
+    });
   }
 
   private triggerDownload(blob: Blob, filename: string): void {

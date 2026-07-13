@@ -137,7 +137,32 @@
         <span class="qr-label">{{ data.details.upiId }}</span>
       </div>
       <div class="total-half">
-        <p class="total-amount"><strong>Total:</strong> ₹{{ data.bill.totalAmount | number:'1.2-2' }}</p>
+        <div class="totals-breakdown">
+          <div class="totals-row">
+            <span>Subtotal</span>
+            <span>₹{{ subtotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="totals-row discount" *ngIf="discountAmount > 0">
+            <span>Discount</span>
+            <span>-₹{{ discountAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="totals-row" *ngIf="data.details.taxMode === 'IGST'">
+            <span>IGST</span>
+            <span>₹{{ igstTotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="totals-row" *ngIf="data.details.taxMode !== 'IGST'">
+            <span>CGST</span>
+            <span>₹{{ cgstTotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="totals-row" *ngIf="data.details.taxMode !== 'IGST'">
+            <span>SGST</span>
+            <span>₹{{ sgstTotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="totals-row grand-total">
+            <span>Total</span>
+            <span>₹{{ data.bill.totalAmount | number:'1.2-2' }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

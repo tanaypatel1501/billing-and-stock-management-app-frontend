@@ -364,6 +364,14 @@ export class AuthService {
     return this.http.get(`${this.baseUrl}api/pdf/bill/${billId}`, { headers, responseType: 'blob' });
   }
 
+  downloadBillsZip(billIds: number[]): Observable<Blob> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post(`${this.baseUrl}api/pdf/bills/zip`, billIds, {
+      headers,
+      responseType: 'blob'
+    });
+  }
+
   /* ---------------------- PURCHASER ---------------------- */
 
   searchPurchasers(name: string): Observable<any[]> {

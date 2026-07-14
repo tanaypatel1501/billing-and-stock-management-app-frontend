@@ -252,28 +252,32 @@
   color: #555;
 }
 
-.t2-total-box {
-  background: #1a3c5e;
-  color: #fff;
-  border-radius: 6px;
-  padding: 8px 14px;
-  text-align: center;
+.t2-totals-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 0 6px;
+  color: #1a3c5e;
 }
 
-.t2-total-label {
-  display: block;
-  font-size: 0.65rem;
-  font-weight: 700;
-  opacity: 0.8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+.t2-totals-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: .75rem;
+  color: #555;
 
-.t2-total-amount {
-  display: block;
-  font-size: 1rem;
-  font-weight: 800;
-  white-space: nowrap;
+  span:last-child { font-weight: 600; color: #1a3c5e; }
+
+  &.t2-discount span:last-child { color: #d32f2f; }
+
+  &.t2-grand-total {
+    border-top: 1px solid #1a3c5e;
+    margin-top: 4px;
+    padding-top: 4px;
+    font-size: 1rem;
+    font-weight: 800;
+  }
 }
 
 /* Mobile */
@@ -312,7 +316,6 @@
   .t2-invoice { font-size: 9px; }
   .t2-header { background: #1a3c5e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .t2-table th { background: #1a3c5e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .t2-total-box { background: #1a3c5e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   .t2-table {
     thead { display: table-header-group !important; }

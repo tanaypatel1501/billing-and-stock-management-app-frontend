@@ -148,9 +148,31 @@
         <qrcode [qrdata]="data.upiQrData" [width]="80" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
         <span class="t2-qr-label">{{ data.details.upiId }}</span>
       </div>
-      <div class="t2-total-box">
-        <span class="t2-total-label">Total Amount</span>
-        <span class="t2-total-amount">₹{{ data.bill.totalAmount | number:'1.2-2' }}</span>
+      <div class="t2-totals-breakdown">
+        <div class="t2-totals-row">
+          <span>Subtotal</span>
+          <span>₹{{ subtotal | number:'1.2-2' }}</span>
+        </div>
+        <div class="t2-totals-row t2-discount" *ngIf="discountAmount > 0">
+          <span>Discount</span>
+          <span>-₹{{ discountAmount | number:'1.2-2' }}</span>
+        </div>
+        <div class="t2-totals-row" *ngIf="data.details.taxMode === 'IGST'">
+          <span>IGST</span>
+          <span>₹{{ igstTotal | number:'1.2-2' }}</span>
+        </div>
+        <div class="t2-totals-row" *ngIf="data.details.taxMode !== 'IGST'">
+          <span>CGST</span>
+          <span>₹{{ cgstTotal | number:'1.2-2' }}</span>
+        </div>
+        <div class="t2-totals-row" *ngIf="data.details.taxMode !== 'IGST'">
+          <span>SGST</span>
+          <span>₹{{ sgstTotal | number:'1.2-2' }}</span>
+        </div>
+        <div class="t2-totals-row t2-grand-total">
+          <span>Total</span>
+          <span>₹{{ data.bill.totalAmount | number:'1.2-2' }}</span>
+        </div>
       </div>
     </div>
   </div>

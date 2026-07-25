@@ -259,15 +259,16 @@ input[type="date"] {
   }
 
   .date-placeholder {
-    display: none;  
+    display: none;
     position: absolute;
     left: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--gstm-text-muted);
-    font-size: 14px;
     pointer-events: none;
     z-index: 1;
+    font: inherit;
+    color: var(--gstm-text-muted);
+    opacity: 0.65;
   }
 }
 

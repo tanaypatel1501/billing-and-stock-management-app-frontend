@@ -117,7 +117,7 @@
 }
 
 /* Auth/Form Card Styles */
-.auth-container { width: min(600px, 100%); margin: 0 auto; }
+.auth-container { width: min(600px, 100%); margin: 0 auto;  min-width: 0; }
 
 .auth-card {
   background: var(--gstm-card-bg);

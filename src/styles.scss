@@ -97,13 +97,8 @@ body {
     align-items: center;
     min-height: 1.2em;
   }
-
-  .form-row {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(0, 1fr)) !important;
-    gap: 15px;
-  }
 }
+
 @media (max-width: 992px) {
   body {
     padding-bottom: calc(70px + env(safe-area-inset-bottom) + 20px) !important;

@@ -47,6 +47,11 @@
 --gstm-danger-bg-hover: #2b1414;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 /* Add global styles to this file, and also import other style files */
 body {
   background-color: var(--gstm-bg);
@@ -77,17 +82,20 @@ body {
     font-size: 16px !important;
   }
 
-  input {
+  input:not([type="date"]):not([type="datetime-local"]):not([type="month"]) {
     min-width: 0 !important; 
-    
     -webkit-appearance: none;
     appearance: none;
+  }
 
-    &[type="date"], &[type="datetime-local"], &[type="month"] {
-      display: inline-flex;
-      align-items: center;
-      min-height: 1.2em; 
-    }
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"] {
+    -webkit-appearance: auto !important;
+    appearance: auto !important;
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.2em;
   }
 
   .form-row {
@@ -99,5 +107,79 @@ body {
 @media (max-width: 992px) {
   body {
     padding-bottom: calc(70px + env(safe-area-inset-bottom) + 20px) !important;
+  }
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: .85rem;
+
+  th, td {
+    border: 1px solid var(--gstm-input-border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th {
+    background: var(--gstm-input-bg);
+    color: var(--gstm-text-label);
+    font-weight: 700;
+  }
+  tbody tr:nth-child(even) { background: var(--gstm-card-bg); }
+}
+.doc-content {
+  flex: 1;
+  min-width: 0; 
+  padding: 32px 40px;
+  margin: 24px;
+  max-width: 900px;
+  background: var(--gstm-card-bg);
+  border: 1px solid var(--gstm-input-border);
+  border-radius: 12px;
+  color: var(--gstm-text-main);
+
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--gstm-border-subtle);
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    margin: 28px 0 12px;
+    color: var(--gstm-primary-hover);
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+    color: var(--gstm-text-label);
+  }
+
+  p, li { line-height: 1.65; margin-bottom: 8px; color: var(--gstm-text-main); }
+  ul, ol { padding-left: 22px; margin-bottom: 12px; }
+
+  a {
+    color: var(--gstm-primary-hover);
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+
+  code {
+    background: var(--gstm-input-bg);
+    border: 1px solid var(--gstm-input-border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: .85em;
+    color: var(--gstm-text-main);
+  }
+}
+
+@media (max-width: 992px) {
+  .doc-content {
+    margin: 12px;
+    padding: 20px;
   }
 }

@@ -223,7 +223,7 @@ input, select {
 }
 
 input[type="date"] {
-  padding: 14px 12px !important;
+  padding: 13px 12px !important;
   &::-webkit-datetime-edit { padding: 0; }
   &::-webkit-calendar-picker-indicator {
     margin-left: 0;
@@ -239,6 +239,7 @@ input[type="date"] {
   border: 2px solid var(--gstm-input-border);
   background: var(--gstm-input-bg);
   transition: .3s;
+  position: relative;
 
   &:focus-within {
     border-color: var(--gstm-primary-color);
@@ -253,6 +254,20 @@ input[type="date"] {
     border: none !important;      
     background: transparent !important;
     box-shadow: none !important;
+    position: relative;
+    z-index: 2;
+  }
+
+  .date-placeholder {
+    display: none;  
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gstm-text-muted);
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 1;
   }
 }
 

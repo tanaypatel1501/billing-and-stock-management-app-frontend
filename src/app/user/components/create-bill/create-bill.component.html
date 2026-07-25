@@ -175,6 +175,7 @@
                 id="invoiceDate" 
                 formControlName="invoiceDate"
                 [class.error]="billForm1.get('invoiceDate')?.invalid && billForm1.get('invoiceDate')?.touched">
+              <span class="date-placeholder" *ngIf="!billForm1.get('invoiceDate')?.value">dd/mm/yyyy</span>
             </div>
             <div class="error-msg" *ngIf="billForm1.get('invoiceDate')?.hasError('required') && billForm1.get('invoiceDate')?.touched">
               Invoice Date is required.

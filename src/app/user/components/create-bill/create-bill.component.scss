@@ -1,3 +1,7 @@
+:host {
+  * { box-sizing: border-box; }
+}
+
 .billing-wrapper {
   min-height: calc(100vh - 70px);
   background: var(--gstm-bg);

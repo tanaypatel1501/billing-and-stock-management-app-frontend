@@ -1,3 +1,7 @@
+:host {
+  * { box-sizing: border-box; }
+}
+
 .billing-wrapper {
   min-height: calc(100vh - 70px);
   background: var(--gstm-bg);
@@ -113,7 +117,7 @@
 }
 
 /* Auth/Form Card Styles */
-.auth-container { width: min(600px, 100%); margin: 0 auto; }
+.auth-container { width: min(600px, 100%); margin: 0 auto;  min-width: 0; }
 
 .auth-card {
   background: var(--gstm-card-bg);
@@ -216,6 +220,56 @@ input, select {
   }
   &.error { border-color: var(--gstm-danger); }
   &[readonly] { background: var(--gstm-bg); cursor: not-allowed; color: var(--gstm-text-muted); }
+}
+
+input[type="date"] {
+  padding: 13px 12px !important;
+  &::-webkit-datetime-edit { padding: 0; }
+  &::-webkit-calendar-picker-indicator {
+    margin-left: 0;
+    padding: 0;
+  }
+  &::-webkit-inner-spin-button { display: none; }
+}
+
+.date-field-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 2px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+  transition: .3s;
+  position: relative;
+
+  &:focus-within {
+    border-color: var(--gstm-primary-color);
+    background: var(--gstm-card-bg);
+    box-shadow: 0 0 0 4px var(--gstm-border-subtle);
+  }
+
+  input[type="date"] {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border: none !important;      
+    background: transparent !important;
+    box-shadow: none !important;
+    position: relative;
+    z-index: 2;
+  }
+
+  .date-placeholder {
+    display: none;
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 1;
+    font: inherit;
+    color: var(--gstm-text-muted);
+    opacity: 0.65;
+  }
 }
 
 select {

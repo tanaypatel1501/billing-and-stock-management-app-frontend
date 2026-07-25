@@ -8,11 +8,12 @@ import { UserStorageService } from 'src/app/services/storage/user-storage.servic
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
+import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-sales',
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule, FormsModule],
+  imports: [CommonModule, FontAwesomeModule, FormsModule, LoadingSpinnerComponent],
   templateUrl: './sales.component.html',
   styleUrls: ['./sales.component.scss']
 })

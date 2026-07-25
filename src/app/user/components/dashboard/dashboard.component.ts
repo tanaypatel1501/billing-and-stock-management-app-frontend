@@ -15,6 +15,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
 import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
+import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,7 +25,8 @@ import { RequestCacheService } from 'src/app/services/cache/request-cache.servic
     SearchBarComponent, 
     FilterButtonComponent,   
     ConfirmDeleteModalComponent,     
-    FontAwesomeModule
+    FontAwesomeModule,
+    LoadingSpinnerComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']

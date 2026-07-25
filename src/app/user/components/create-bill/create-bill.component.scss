@@ -231,18 +231,6 @@ input[type="date"] {
   &::-webkit-inner-spin-button { display: none; }
 }
 
-.date-field-wrap {
-  width: 100%;
-  overflow: hidden;
-  border-radius: 10px;
-
-  input[type="date"] {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
-
 select {
   cursor: pointer;
   appearance: none;

@@ -14,11 +14,12 @@ import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-butto
 import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
 import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
+import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-stock-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule, FontAwesomeModule, SearchBarComponent, FilterButtonComponent],
+  imports: [CommonModule, FormsModule, FontAwesomeModule, SearchBarComponent, FilterButtonComponent, LoadingSpinnerComponent],
   templateUrl: './stock-logs.component.html',
   styleUrls: ['./stock-logs.component.scss']
 })

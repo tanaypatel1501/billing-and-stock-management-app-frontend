@@ -11,11 +11,12 @@ import { FilterButtonComponent } from 'src/app/shared/filter-button/filter-butto
 import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
 import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
+import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SearchBarComponent, FilterButtonComponent, FontAwesomeModule],
+  imports: [CommonModule, SearchBarComponent, FilterButtonComponent, FontAwesomeModule, LoadingSpinnerComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })

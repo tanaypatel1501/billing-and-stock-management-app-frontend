@@ -25,6 +25,7 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 import { ConfirmDeleteModalComponent } from './shared/confirm-delete-modal/confirm-delete-modal.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
+import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinner.component';
 
 @NgModule({
   declarations: [
@@ -52,7 +53,8 @@ import { VerifyEmailComponent } from './components/verify-email/verify-email.com
     NgbModule,
     FontAwesomeModule,
     FilterButtonComponent,
-    ConfirmDeleteModalComponent
+    ConfirmDeleteModalComponent,
+    LoadingSpinnerComponent,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, 

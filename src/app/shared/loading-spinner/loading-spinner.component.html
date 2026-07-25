@@ -1,0 +1,16 @@
+<div *ngIf="mode === 'full'" class="loading-screen">
+  <div class="spinner-wrapper">
+    <div class="spinner-ring"></div>
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <p class="loading-text">{{ text }}</p>
+  </div>
+</div>
+
+<div *ngIf="mode === 'inline'" class="mobile-loader">
+  <div class="spinner"></div>
+   <p *ngIf="text">{{ text }}</p>
+</div>

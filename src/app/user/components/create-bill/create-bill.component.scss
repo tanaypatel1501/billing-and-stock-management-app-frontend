@@ -222,6 +222,27 @@ input, select {
   &[readonly] { background: var(--gstm-bg); cursor: not-allowed; color: var(--gstm-text-muted); }
 }
 
+input[type="date"] {
+  &::-webkit-datetime-edit { padding: 0; }
+  &::-webkit-calendar-picker-indicator {
+    margin-left: 0;
+    padding: 0;
+  }
+  &::-webkit-inner-spin-button { display: none; }
+}
+
+.date-field-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+
+  input[type="date"] {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
 select {
   cursor: pointer;
   appearance: none;

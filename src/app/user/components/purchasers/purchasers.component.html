@@ -45,7 +45,7 @@
     </div>
 
     <!-- List -->
-    <div class="purchaser-list" *ngIf="!isLoading && filtered.length > 0">
+    <div class="purchaser-list" *ngIf="filtered.length > 0">
       <div class="purchaser-card" *ngFor="let p of filtered" (click)="viewBills(p)">
 
         <div class="card-main">
@@ -80,34 +80,34 @@
       </div>
     </div>
 
+    <!-- Desktop Pagination -->
+    <div class="modern-pagination d-none d-md-flex" *ngIf="totalPages > 1">
+      <nav>
+        <ul class="pagination-list">
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="goToPage(0)"><span>«</span></a>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="goToPage(currentPage - 1)"><span>‹</span></a>
+          </li>
+          <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+            <a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
+          </li>
+          <li class="page-item" [class.disabled]="isLastPage">
+            <a class="page-link" (click)="goToPage(currentPage + 1)"><span>›</span></a>
+          </li>
+          <li class="page-item" [class.disabled]="isLastPage">
+            <a class="page-link" (click)="goToPage(totalPages - 1)"><span>»</span></a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Mobile infinite scroll loader -->
+    <app-loading-spinner *ngIf="isLoading && allPurchasers.length > 0" mode="inline" class="d-md-none"></app-loading-spinner>
+    
   </ng-container>
 </div>
-
-<!-- Desktop Pagination -->
-<div class="modern-pagination d-none d-md-flex" *ngIf="totalPages > 1">
-  <nav>
-    <ul class="pagination-list">
-      <li class="page-item" [class.disabled]="currentPage === 0">
-        <a class="page-link" (click)="goToPage(0)"><span>«</span></a>
-      </li>
-      <li class="page-item" [class.disabled]="currentPage === 0">
-        <a class="page-link" (click)="goToPage(currentPage - 1)"><span>‹</span></a>
-      </li>
-      <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
-        <a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
-      </li>
-      <li class="page-item" [class.disabled]="isLastPage">
-        <a class="page-link" (click)="goToPage(currentPage + 1)"><span>›</span></a>
-      </li>
-      <li class="page-item" [class.disabled]="isLastPage">
-        <a class="page-link" (click)="goToPage(totalPages - 1)"><span>»</span></a>
-      </li>
-    </ul>
-  </nav>
-</div>
-
-<!-- Mobile infinite scroll loader -->
-<app-loading-spinner *ngIf="isLoading && allPurchasers.length > 0" mode="inline" class="d-md-none"></app-loading-spinner>
 
 <!-- Edit Modal -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">

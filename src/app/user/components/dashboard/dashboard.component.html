@@ -36,13 +36,22 @@
             </div>
           </div>
 
-          <div class="inventory-value-chip" [class.refreshing]="isRefreshingInventoryValue">
-            <span class="chip-label">Inventory Value</span>
+          <div class="inventory-value-chip"
+            [class.expired-mode]="showingExpired"
+            [class.clickable]="expiredInventoryValue > 0"
+            [class.refreshing]="isRefreshingInventoryValue"
+            (click)="toggleInventoryChip()">
+          <span class="chip-label">{{ showingExpired ? 'Expired Value' : 'Inventory Value' }}</span>
+          <div class="chip-value-block">
             <span class="chip-amount skeleton-text" *ngIf="isLoadingInventoryValue"></span>
             <span class="chip-amount" *ngIf="!isLoadingInventoryValue">
-              ₹{{ totalInventoryValue | number:'1.2-2' }}
+              ₹{{ (showingExpired ? expiredInventoryValue : totalInventoryValue) | number:'1.2-2' }}
+            </span>
+            <span class="chip-sub" *ngIf="!isLoadingInventoryValue && expiredInventoryValue > 0">
+              {{ showingExpired ? 'Active' : 'Expired' }}: ₹{{ (showingExpired ? totalInventoryValue : expiredInventoryValue) | number:'1.2-2' }}
             </span>
           </div>
+        </div>
 
           <div class="header-right">
             <app-search-bar

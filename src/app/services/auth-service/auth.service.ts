@@ -256,7 +256,7 @@ export class AuthService {
   /* ---------------------- STOCK ---------------------- */
 
   // `userId` param kept for call-site compatibility; backend now derives identity from the JWT.
-  getInventoryValue(userId: number): Observable<number> {
+  getInventoryValue(userId: number): Observable<any> {
     return this.http.get<number>(`${this.baseUrl}api/stock/user/inventory-value`, {
       headers: this.createAuthorizationHeader().set('X-Skip-Loader', 'true')
     });

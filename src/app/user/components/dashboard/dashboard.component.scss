@@ -289,19 +289,39 @@ body.modal-open {
   padding: 10px 20px;
   border-radius: 12px;
   white-space: nowrap;
+  min-width: 190px; 
+  box-sizing: border-box;
+  transition: background 0.3s ease, opacity 0.2s ease;
 
   .chip-label {
     font: 700 0.65rem sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: rgba(0,0,0,0.6);
+    transition: color 0.3s ease;
+  }
+
+  .chip-value-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .chip-amount {
     font: 800 1.1rem sans-serif;
+    font-variant-numeric: tabular-nums;
     color: #000;
+    transition: color 0.3s ease;
   }
-  
+
+  .chip-sub {
+    font: 600 0.7rem sans-serif;
+    font-variant-numeric: tabular-nums;
+    color: rgba(0,0,0,0.55);
+    margin-top: 2px;
+    transition: color 0.3s ease;
+  }
+
   .chip-amount.skeleton-text {
     display: inline-block;
     width: 64px;
@@ -320,6 +340,20 @@ body.modal-open {
   &.refreshing {
     opacity: 0.65;
     transition: opacity 0.2s ease;
+  }
+
+  &.clickable {
+    cursor: pointer;
+    &:hover { filter: brightness(0.97); }
+    &:active { transform: scale(.97); }
+  }
+
+  &.expired-mode {
+    background: linear-gradient(135deg, #ff8787 0%, #c92a2a 100%);
+
+    .chip-label { color: rgba(255,255,255,0.85); }
+    .chip-amount { color: #fff; }
+    .chip-sub { color: rgba(255,255,255,0.75); }
   }
 }
 
@@ -392,11 +426,18 @@ body.modal-open {
   .inventory-value-chip {
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
+    min-width: 0;
     padding: 10px 16px;
     border-radius: 10px;
 
+    .chip-value-block {
+      align-items: flex-end;
+    }
+
     .chip-amount { font-size: 1rem; }
+    .chip-sub { font-size: 0.65rem; }
   }
 }
 

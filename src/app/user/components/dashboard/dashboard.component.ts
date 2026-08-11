@@ -61,8 +61,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   stockToDeleteId: number | null = null;
   details: any = {};
   totalInventoryValue: number = 0;
+  expiredInventoryValue: number = 0;
   isLoadingInventoryValue: boolean = true;
   isRefreshingInventoryValue: boolean = false;
+  showingExpired: boolean = false;
   private searchSubject = new Subject<string>();
   private subscriptions: Subscription[] = [];
   private scrollThrottleTimeout: any = null;
@@ -129,7 +131,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!isRefresh) {
       const cached = this.requestCache.get(cacheKey);
       if (cached !== null) {
-        this.totalInventoryValue = cached;
+        this.totalInventoryValue = cached.activeValue;
+        this.expiredInventoryValue = cached.expiredValue;
+        if (this.expiredInventoryValue <= 0) this.showingExpired = false;
         this.isLoadingInventoryValue = false;
         return;
       }
@@ -142,18 +146,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     this.authService.getInventoryValue(this.userId).subscribe({
-      next: (value: number) => {
-        this.totalInventoryValue = value;
+      next: (value: any) => {
+        this.totalInventoryValue = value.activeValue;
+        this.expiredInventoryValue = value.expiredValue;
+        if (this.expiredInventoryValue <= 0) this.showingExpired = false;
         this.requestCache.set(cacheKey, value);
         this.isLoadingInventoryValue = false;
         this.isRefreshingInventoryValue = false;
       },
       error: () => {
         this.totalInventoryValue = 0;
+        this.expiredInventoryValue = 0;
+        this.showingExpired = false;
         this.isLoadingInventoryValue = false;
         this.isRefreshingInventoryValue = false;
       }
     });
+  }
+
+  toggleInventoryChip(): void {
+    if (this.expiredInventoryValue > 0) {
+      this.showingExpired = !this.showingExpired;
+    }
   }
 
   get isInitialEmpty(): boolean {

@@ -6,7 +6,7 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import {
   faArrowLeft, faMoneyBillTrendUp, faFileInvoice, faCalendar,
-  faArrowRight, faCircleCheck, faCircle, faCheckSquare, faDownload, faSpinner, faTimes
+  faArrowRight, faCircleCheck, faCircle, faCheckSquare, faDownload, faSpinner, faTimes, faRotateLeft
 } from '@fortawesome/free-solid-svg-icons';
 import { CommonModule, DatePipe } from '@angular/common';
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
@@ -16,6 +16,7 @@ import { RequestCacheService } from 'src/app/services/cache/request-cache.servic
 import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
 import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
+import { AlertService } from 'src/app/services/alert-service/alert.service';
 
 @Component({
   selector: 'app-bills',
@@ -43,6 +44,7 @@ export class BillsComponent implements OnInit, OnDestroy {
   faDownload = faDownload;
   faSpinner = faSpinner;
   faTimes = faTimes;
+  faRotateLeft = faRotateLeft;
 
   isSearchActive: boolean = false;
   currentPage: number = 0;
@@ -70,6 +72,7 @@ export class BillsComponent implements OnInit, OnDestroy {
   fromDate: string = '';
   toDate: string = '';
   selectAllPages: boolean = false;
+  isReverting = false;
 
   private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
   private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
@@ -80,7 +83,8 @@ export class BillsComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private datePipe: DatePipe,
-    private requestCache: RequestCacheService
+    private requestCache: RequestCacheService,
+    private alertService: AlertService,
   ) {}
 
   ngOnInit() {
@@ -331,8 +335,42 @@ export class BillsComponent implements OnInit, OnDestroy {
       this.bills.forEach(b => this.selectedBillIds.add(b.id)); // keep current page's ids too, for immediate UI feedback
     }
   }
-  // ── Export ──
 
+  // ── Revert ──
+  confirmRevertBill(): void {
+    if (this.selectedBillIds.size !== 1) return;
+    const billId = Array.from(this.selectedBillIds)[0];
+    const bill = this.bills.find(b => b.id === billId);
+    const label = bill
+  ? `${bill.purchaserName} (${this.datePipe.transform(bill.invoiceDate, 'dd MMM yyyy')},Invoice No: ${bill.id})`
+  : `Invoice No: #${billId}`;
+
+    this.alertService.confirm(
+      `Revert bill for ${label}?\nThis restores stock quantities and \nCANNOT BE UNDONE.`,
+      () => this.revertBill(billId),
+      'Revert Bill',
+      () => {},
+      'error'
+    );
+  }
+
+  private revertBill(billId: number): void {
+    this.isReverting = true;
+    this.authService.revertBill(billId).subscribe({
+      next: () => {
+        this.requestCache.invalidateMany(['stock:', 'inventory-value:', 'sales:', 'stockLogs:', 'bills:']);
+        this.selectedBillIds.clear();
+        this.isReverting = false;
+        this.loadData(this.currentPage, false);
+      },
+      error: (err) => {
+        this.isReverting = false;
+        alert(err?.error?.message || 'Failed to revert bill.');
+      }
+    });
+  }
+
+  // ── Export ──
   exportSelectedAsPdf(): void {
     if (this.isExporting) return;
     this.isExporting = true;

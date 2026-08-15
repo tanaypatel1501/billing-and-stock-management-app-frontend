@@ -11,6 +11,11 @@
     </button>
   </div>
 
+  <div class="reverted-banner no-print" *ngIf="bill.reverted">
+    <fa-icon [icon]="faRotateLeft"></fa-icon>
+    <span>This bill has been reverted. Stock quantities were restored and this invoice is no longer active.</span>
+  </div>
+
   <!-- Invoice Content -->
   <div class="invoice-content">
     <app-invoice-template-one *ngIf="details.preferredTemplate !== 'template2'" [data]="invoiceData">

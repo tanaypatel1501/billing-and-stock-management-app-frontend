@@ -72,10 +72,20 @@
               </ng-container>
             </label>
           </div>
-          <button class="export-btn" [disabled]="isExporting" (click)="exportSelectedAsPdf()">
-            <fa-icon [icon]="isExporting ? faSpinner : faDownload"></fa-icon>
-            <span>{{ isExporting ? 'Exporting...' : 'Export PDF' }}</span>
-          </button>
+
+          <div class="toolbar-actions">
+            <button class="revert-btn"
+                  *ngIf="selectedBillIds.size === 1 && !selectAllPages"
+                  [disabled]="isReverting"
+                  (click)="confirmRevertBill()">
+              <fa-icon [icon]="isReverting ? faSpinner : faRotateLeft"></fa-icon>
+              <span>{{ isReverting ? 'Reverting...' : 'Revert Bill' }}</span>
+            </button>
+            <button class="export-btn" [disabled]="isExporting" (click)="exportSelectedAsPdf()">
+              <fa-icon [icon]="isExporting ? faSpinner : faDownload"></fa-icon>
+              <span>{{ isExporting ? 'Exporting...' : 'Export PDF' }}</span>
+            </button>
+          </div>
         </div>
 
         <!-- Bills List -->
@@ -96,10 +106,15 @@
               </div>
               <div class="bill-info">
                 <h3 class="bill-purchaser">{{ bill.purchaserName }}</h3>
-                <span class="bill-date">
-                  <fa-icon [icon]="faCalendar"></fa-icon>
-                  {{ bill.invoiceDate | date:'dd MMM yyyy' }}
-                </span>
+                <div class="bill-meta">
+                  <span class="bill-date">
+                    <fa-icon [icon]="faCalendar"></fa-icon>
+                    {{ bill.invoiceDate | date:'dd MMM yyyy' }}
+                  </span>
+                  <span class="invoice-number">
+                    <span>Invoice No:</span> {{ bill.id }}
+                  </span>
+                </div>
               </div>
             </div>
             

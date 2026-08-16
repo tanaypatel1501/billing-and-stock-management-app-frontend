@@ -74,8 +74,12 @@ export class BillsComponent implements OnInit, OnDestroy {
   selectAllPages: boolean = false;
   isReverting = false;
 
+  cameFromPurchaser: boolean = false;
+
   private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
   private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
+  private exportStartedAt = 0;
+  private readonly minInfoDisplayMs = 1200;
 
   constructor(
     private authService: AuthService,
@@ -95,8 +99,9 @@ export class BillsComponent implements OnInit, OnDestroy {
     if (paramPurchaserId) {
       this.purchaserId   = +paramPurchaserId;
       this.purchaserName = paramPurchaserName ?? '';
-      this.searchText    = this.purchaserName;  
+      this.searchText    = this.purchaserName;
       this.isSearchActive = true;
+      this.cameFromPurchaser = true;
     } else if (paramSearch) {
       this.searchText    = paramSearch;
       this.isSearchActive = true;
@@ -107,6 +112,14 @@ export class BillsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.debouncedSearch.destroy();
     this.scrollThrottle.destroy();
+  }
+
+  goBack(): void {
+    if (this.cameFromPurchaser) {
+      this.router.navigate(['/user/purchasers']);
+    } else {
+      this.resetView();
+    }
   }
 
   get isInitialEmpty(): boolean {
@@ -375,6 +388,14 @@ export class BillsComponent implements OnInit, OnDestroy {
     if (this.isExporting) return;
     this.isExporting = true;
 
+    const count = this.selectAllPages ? this.totalElements : this.selectedBillIds.size;
+    this.exportStartedAt = Date.now();
+    this.alertService.info(
+      count === 1
+        ? 'Export started. You\'ll be notified once your invoice is ready.'
+        : `Export started for ${count} invoices. You'll be notified once ready.`
+    );
+
     if (this.selectAllPages) {
       const allPagesRequest = {
         page: 0,
@@ -395,12 +416,22 @@ export class BillsComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.isExporting = false;
-          alert('Failed to fetch all bills for export.');
+          this.showAfterMinDisplay(() => this.alertService.error('Failed to fetch all bills for export.'));
         }
       });
     } else {
       if (this.selectedBillIds.size === 0) { this.isExporting = false; return; }
       this.exportBills(Array.from(this.selectedBillIds));
+    }
+  }
+
+  private showAfterMinDisplay(fn: () => void): void {
+    const elapsed = Date.now() - this.exportStartedAt;
+    const remaining = this.minInfoDisplayMs - elapsed;
+    if (remaining > 0) {
+      setTimeout(fn, remaining);
+    } else {
+      fn();
     }
   }
 
@@ -428,10 +459,11 @@ export class BillsComponent implements OnInit, OnDestroy {
       next: (blob) => {
         this.triggerDownload(blob, filename);
         this.finishExport();
+        this.showAfterMinDisplay(() => this.alertService.success('Invoice downloaded.'));
       },
       error: () => {
         this.isExporting = false;
-        alert(`Failed to export bill ID ${id}`);
+        this.showAfterMinDisplay(() => this.alertService.error(`Failed to export bill ID ${id}`));
       }
     });
   }
@@ -443,10 +475,11 @@ export class BillsComponent implements OnInit, OnDestroy {
       next: (blob) => {
         this.triggerDownload(blob, `Invoices-${this.today()}.zip`);
         this.finishExport();
+        this.showAfterMinDisplay(() => this.alertService.success(`${ids.length} invoices exported.`));
       },
       error: () => {
         this.isExporting = false;
-        alert('Failed to export bills.');
+        this.showAfterMinDisplay(() => this.alertService.error('Failed to export bills.'));
       }
     });
   }

@@ -71,35 +71,33 @@
       </ul>
     </div>
 
+    <!-- Desktop Pagination -->
+    <div class="modern-pagination d-none d-md-flex" *ngIf="totalPages > 1">
+      <nav aria-label="Log page navigation">
+        <ul class="pagination-list">
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="goToPage(0)"><span>«</span></a>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="goToPage(currentPage - 1)"><span>‹</span></a>
+          </li>
+          <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+            <a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
+          </li>
+          <li class="page-item" [class.disabled]="isLastPage">
+            <a class="page-link" (click)="goToPage(currentPage + 1)"><span>›</span></a>
+          </li>
+          <li class="page-item" [class.disabled]="isLastPage">
+            <a class="page-link" (click)="goToPage(totalPages - 1)"><span>»</span></a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Mobile infinite scroll loader -->
+    <app-loading-spinner *ngIf="isLoading && filteredLogs.length > 0" mode="inline" class="d-md-none"></app-loading-spinner>
+
   </ng-container>
 
 </div>
 
-<!-- Desktop Pagination -->
-<div class="modern-pagination d-none d-md-flex" *ngIf="totalPages > 1">
-  <nav aria-label="Log page navigation">
-    <ul class="pagination-list">
-      <li class="page-item" [class.disabled]="currentPage === 0">
-        <a class="page-link" (click)="goToPage(0)"><span>«</span></a>
-      </li>
-      <li class="page-item" [class.disabled]="currentPage === 0">
-        <a class="page-link" (click)="goToPage(currentPage - 1)"><span>‹</span></a>
-      </li>
-      <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
-        <a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
-      </li>
-      <li class="page-item" [class.disabled]="isLastPage">
-        <a class="page-link" (click)="goToPage(currentPage + 1)"><span>›</span></a>
-      </li>
-      <li class="page-item" [class.disabled]="isLastPage">
-        <a class="page-link" (click)="goToPage(totalPages - 1)"><span>»</span></a>
-      </li>
-    </ul>
-  </nav>
-</div>
-
-<!-- Mobile infinite scroll loader -->
-<div *ngIf="isLoading && filteredLogs.length > 0" class="mobile-loader d-md-none">
-  <div class="spinner"></div>
-</div>
-<app-loading-spinner *ngIf="isLoading && filteredLogs.length > 0" mode="inline" class="d-md-none"></app-loading-spinner>

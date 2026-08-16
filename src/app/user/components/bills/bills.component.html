@@ -105,7 +105,10 @@
                 <fa-icon [icon]="faFileInvoice"></fa-icon>
               </div>
               <div class="bill-info">
-                <h3 class="bill-purchaser">{{ bill.purchaserName }}</h3>
+                <div class="bill-info-top">
+                  <h3 class="bill-purchaser">{{ bill.purchaserName }}</h3>
+                  <span class="bill-amount">₹{{ bill.totalAmount | number:'1.2-2' }}</span>
+                </div>
                 <div class="bill-meta">
                   <span class="bill-date">
                     <fa-icon [icon]="faCalendar"></fa-icon>

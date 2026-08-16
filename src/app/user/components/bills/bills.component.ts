@@ -6,7 +6,7 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import {
   faArrowLeft, faMoneyBillTrendUp, faFileInvoice, faCalendar,
-  faArrowRight, faCircleCheck, faCircle, faCheckSquare, faDownload, faSpinner, faTimes
+  faArrowRight, faCircleCheck, faCircle, faCheckSquare, faDownload, faSpinner, faTimes, faRotateLeft
 } from '@fortawesome/free-solid-svg-icons';
 import { CommonModule, DatePipe } from '@angular/common';
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
@@ -16,6 +16,7 @@ import { RequestCacheService } from 'src/app/services/cache/request-cache.servic
 import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
 import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
+import { AlertService } from 'src/app/services/alert-service/alert.service';
 
 @Component({
   selector: 'app-bills',
@@ -43,6 +44,7 @@ export class BillsComponent implements OnInit, OnDestroy {
   faDownload = faDownload;
   faSpinner = faSpinner;
   faTimes = faTimes;
+  faRotateLeft = faRotateLeft;
 
   isSearchActive: boolean = false;
   currentPage: number = 0;
@@ -70,9 +72,14 @@ export class BillsComponent implements OnInit, OnDestroy {
   fromDate: string = '';
   toDate: string = '';
   selectAllPages: boolean = false;
+  isReverting = false;
+
+  cameFromPurchaser: boolean = false;
 
   private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
   private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
+  private exportStartedAt = 0;
+  private readonly minInfoDisplayMs = 1200;
 
   constructor(
     private authService: AuthService,
@@ -80,7 +87,8 @@ export class BillsComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private datePipe: DatePipe,
-    private requestCache: RequestCacheService
+    private requestCache: RequestCacheService,
+    private alertService: AlertService,
   ) {}
 
   ngOnInit() {
@@ -91,8 +99,9 @@ export class BillsComponent implements OnInit, OnDestroy {
     if (paramPurchaserId) {
       this.purchaserId   = +paramPurchaserId;
       this.purchaserName = paramPurchaserName ?? '';
-      this.searchText    = this.purchaserName;  
+      this.searchText    = this.purchaserName;
       this.isSearchActive = true;
+      this.cameFromPurchaser = true;
     } else if (paramSearch) {
       this.searchText    = paramSearch;
       this.isSearchActive = true;
@@ -103,6 +112,14 @@ export class BillsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.debouncedSearch.destroy();
     this.scrollThrottle.destroy();
+  }
+
+  goBack(): void {
+    if (this.cameFromPurchaser) {
+      this.router.navigate(['/user/purchasers']);
+    } else {
+      this.resetView();
+    }
   }
 
   get isInitialEmpty(): boolean {
@@ -331,11 +348,53 @@ export class BillsComponent implements OnInit, OnDestroy {
       this.bills.forEach(b => this.selectedBillIds.add(b.id)); // keep current page's ids too, for immediate UI feedback
     }
   }
-  // ── Export ──
 
+  // ── Revert ──
+  confirmRevertBill(): void {
+    if (this.selectedBillIds.size !== 1) return;
+    const billId = Array.from(this.selectedBillIds)[0];
+    const bill = this.bills.find(b => b.id === billId);
+    const label = bill
+  ? `${bill.purchaserName} \n(${this.datePipe.transform(bill.invoiceDate, 'dd MMM yyyy')},Invoice No: ${bill.id})`
+  : `Invoice No: #${billId}`;
+
+    this.alertService.confirm(
+      `Revert bill for ${label} ?\nThis restores stock quantities and \n𝗖𝗔𝗡𝗡𝗢𝗧 𝗕𝗘 𝗨𝗡𝗗𝗢𝗡𝗘.`,
+      () => this.revertBill(billId),
+      'Revert Bill',
+      () => {},
+      'error'
+    );
+  }
+
+  private revertBill(billId: number): void {
+    this.isReverting = true;
+    this.authService.revertBill(billId).subscribe({
+      next: () => {
+        this.requestCache.invalidateMany(['stock:', 'inventory-value:', 'sales:', 'stockLogs:', 'bills:']);
+        this.selectedBillIds.clear();
+        this.isReverting = false;
+        this.loadData(this.currentPage, false);
+      },
+      error: (err) => {
+        this.isReverting = false;
+        alert(err?.error?.message || 'Failed to revert bill.');
+      }
+    });
+  }
+
+  // ── Export ──
   exportSelectedAsPdf(): void {
     if (this.isExporting) return;
     this.isExporting = true;
+
+    const count = this.selectAllPages ? this.totalElements : this.selectedBillIds.size;
+    this.exportStartedAt = Date.now();
+    this.alertService.info(
+      count === 1
+        ? 'Export started. You\'ll be notified once your invoice is ready.'
+        : `Export started for ${count} invoices. You'll be notified once ready.`
+    );
 
     if (this.selectAllPages) {
       const allPagesRequest = {
@@ -357,12 +416,22 @@ export class BillsComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.isExporting = false;
-          alert('Failed to fetch all bills for export.');
+          this.showAfterMinDisplay(() => this.alertService.error('Failed to fetch all bills for export.'));
         }
       });
     } else {
       if (this.selectedBillIds.size === 0) { this.isExporting = false; return; }
       this.exportBills(Array.from(this.selectedBillIds));
+    }
+  }
+
+  private showAfterMinDisplay(fn: () => void): void {
+    const elapsed = Date.now() - this.exportStartedAt;
+    const remaining = this.minInfoDisplayMs - elapsed;
+    if (remaining > 0) {
+      setTimeout(fn, remaining);
+    } else {
+      fn();
     }
   }
 
@@ -390,10 +459,11 @@ export class BillsComponent implements OnInit, OnDestroy {
       next: (blob) => {
         this.triggerDownload(blob, filename);
         this.finishExport();
+        this.showAfterMinDisplay(() => this.alertService.success('Invoice downloaded.'));
       },
       error: () => {
         this.isExporting = false;
-        alert(`Failed to export bill ID ${id}`);
+        this.showAfterMinDisplay(() => this.alertService.error(`Failed to export bill ID ${id}`));
       }
     });
   }
@@ -405,10 +475,11 @@ export class BillsComponent implements OnInit, OnDestroy {
       next: (blob) => {
         this.triggerDownload(blob, `Invoices-${this.today()}.zip`);
         this.finishExport();
+        this.showAfterMinDisplay(() => this.alertService.success(`${ids.length} invoices exported.`));
       },
       error: () => {
         this.isExporting = false;
-        alert('Failed to export bills.');
+        this.showAfterMinDisplay(() => this.alertService.error('Failed to export bills.'));
       }
     });
   }

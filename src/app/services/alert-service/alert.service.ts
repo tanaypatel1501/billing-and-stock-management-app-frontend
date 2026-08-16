@@ -43,7 +43,7 @@ export class AlertService {
     this.show({ type: 'info', title, message, duration, onClose });
   }
 
-  confirm(message: string, onConfirm: () => void, title = 'Confirm', onClose?: () => void) {
-    this.show({ type: 'warning', title, message, duration: 0, onConfirm, onClose });
+  confirm(message: string, onConfirm: () => void, title = 'Confirm', onClose?: () => void, type: AlertMessage['type'] = 'warning') {
+    this.show({ type, title, message, duration: 0, onConfirm, onClose });
   }
 }

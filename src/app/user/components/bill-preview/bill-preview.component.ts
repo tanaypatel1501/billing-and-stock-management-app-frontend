@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
-import { faArrowLeft, faPrint, faDownload, faShare, faTimes, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faPrint, faDownload, faShare, faTimes, faEnvelope, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { DatePipe } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -40,6 +40,7 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
   faTimes = faTimes;
   faEnvelope = faEnvelope;
   faWhatsapp = faWhatsapp;
+  faRotateLeft = faRotateLeft;
 
   constructor(
     private authService: AuthService,

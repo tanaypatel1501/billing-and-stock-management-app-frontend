@@ -68,6 +68,22 @@
   }
 }
 
+.reverted-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 1200px;
+  margin: 16px auto 0;
+  padding: 12px 18px;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 10px;
+  color: #9a3412;
+  font: 600 .85rem sans-serif;
+
+  fa-icon { font-size: 1rem; flex-shrink: 0; }
+}
+
 .invoice-content {
   max-width: 1200px;
   margin: 0 auto;

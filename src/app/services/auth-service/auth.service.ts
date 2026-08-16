@@ -372,6 +372,11 @@ export class AuthService {
     });
   }
 
+  revertBill(billId: number): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post(`${this.baseUrl}api/bill/${billId}/revert`, null, { headers });
+  }
+
   /* ---------------------- PURCHASER ---------------------- */
 
   searchPurchasers(name: string): Observable<any[]> {

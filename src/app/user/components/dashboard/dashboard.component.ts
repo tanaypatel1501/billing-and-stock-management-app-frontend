@@ -5,7 +5,7 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { Router } from '@angular/router';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
-import { faPencil, faArrowLeft, faCartFlatbed, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { faPencil, faArrowLeft, faCartFlatbed, faCircleInfo, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { CommonModule } from '@angular/common'; 
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -37,6 +37,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   faArrowLeft = faArrowLeft;
   faCartFlatbed = faCartFlatbed;
   faCircleInfo = faCircleInfo;
+  faChevronDown = faChevronDown;
+  faChevronUp = faChevronUp;
   stock: any[] = [];
   isSearchActive: boolean = false;
   currentPage: number = 0;

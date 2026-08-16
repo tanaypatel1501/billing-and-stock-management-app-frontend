@@ -357,6 +357,10 @@ body.modal-open {
   }
 }
 
+.expand-button-cell {
+  display: none;
+}
+
 @keyframes chip-shimmer {
   0% { background-position: 100% 50%; }
   100% { background-position: 0 50%; }
@@ -371,7 +375,19 @@ body.modal-open {
   .title-icon { display: inline-flex; }
   .stock-count { font-size: .75rem; }
   .header-right { width: 100%; justify-content: space-between; }
-  
+  .stock-table-container {
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .modern-stock-table {
+    background: transparent;
+  }
+
+  .modern-stock-table tbody {
+    background: transparent;
+  }
   .modern-stock-table thead, .modern-pagination { display: none !important; }
   .modern-stock-table, .modern-stock-table tbody, .modern-stock-table tr, .modern-stock-table td { display: block; }
 
@@ -438,6 +454,78 @@ body.modal-open {
 
     .chip-amount { font-size: 1rem; }
     .chip-sub { font-size: 0.65rem; }
+  }
+
+  .expand-button-cell {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center;
+    padding: 8px 0 2px !important;
+    border: none !important;
+
+    &::before {
+      content: none !important;
+    }
+  }
+
+  .expand-button {
+    width: 34px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 20px;
+    background: var(--gstm-input-bg);
+    color: var(--gstm-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      background 0.25s ease,
+      color 0.25s ease,
+      transform 0.2s ease;
+
+    fa-icon {
+      font-size: 0.85rem;
+      transition: transform 0.25s ease;
+    }
+
+    &:hover {
+      background: var(--gstm-primary-color);
+      color: #000;
+    }
+
+    &:active {
+      transform: scale(0.9);
+    }
+
+    /* Subtle bouncing animation while collapsed */
+    &:not(.expanded) {
+      fa-icon {
+        animation: expandArrowBounce 1.5s ease-in-out infinite;
+      }
+    }
+
+    /* Stop animation once expanded */
+    &.expanded {
+      background: var(--gstm-primary-color);
+      color: #000;
+
+      fa-icon {
+        animation: none;
+      }
+    }
+  }
+
+  @keyframes expandArrowBounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(4px);
+    }
   }
 }
 

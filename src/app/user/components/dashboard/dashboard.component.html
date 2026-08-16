@@ -206,6 +206,20 @@
                       <fa-icon [icon]="faTrashCan"></fa-icon>
                     </button>
                   </td>
+                  <td class="expand-button-cell">
+                    <button
+                      type="button"
+                      class="expand-button"
+                      [class.expanded]="expandedIndex === i"
+                      (click)="toggleCard(i); $event.stopPropagation()"
+                      [attr.aria-label]="expandedIndex === i ? 'Collapse card' : 'Expand card'">
+
+                      <fa-icon
+                        [icon]="expandedIndex === i ? faChevronUp : faChevronDown">
+                      </fa-icon>
+
+                    </button>
+                  </td>
                 </tr>
               </tbody>
               <tbody *ngIf="stock.length === 0 && !isLoading" class="empty-state">

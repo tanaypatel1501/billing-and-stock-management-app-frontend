@@ -17,6 +17,7 @@ import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
 import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
 import { AlertService } from 'src/app/services/alert-service/alert.service';
+import { AppStateService } from 'src/app/services/app-state.service';
 
 @Component({
   selector: 'app-bills',
@@ -89,6 +90,7 @@ export class BillsComponent implements OnInit, OnDestroy {
     private datePipe: DatePipe,
     private requestCache: RequestCacheService,
     private alertService: AlertService,
+    private appState: AppStateService
   ) {}
 
   ngOnInit() {
@@ -96,22 +98,64 @@ export class BillsComponent implements OnInit, OnDestroy {
     const paramPurchaserId = this.route.snapshot.queryParamMap.get('purchaserId');
     const paramPurchaserName = this.route.snapshot.queryParamMap.get('purchaserName');
     const paramSearch = this.route.snapshot.queryParamMap.get('searchText');
+    const savedState = this.appState.consumeBillsListState();
+
     if (paramPurchaserId) {
       this.purchaserId   = +paramPurchaserId;
       this.purchaserName = paramPurchaserName ?? '';
       this.searchText    = this.purchaserName;
       this.isSearchActive = true;
       this.cameFromPurchaser = true;
+      this.loadInitialData();
     } else if (paramSearch) {
       this.searchText    = paramSearch;
       this.isSearchActive = true;
+      this.loadInitialData();
+    } else if (savedState) {
+      this.currentPage       = savedState.currentPage;
+      this.searchText        = savedState.searchText;
+      this.isSearchActive    = savedState.isSearchActive;
+      this.sortColumn        = savedState.sortColumn;
+      this.sortDirection     = savedState.sortDirection;
+      this.fromDate           = savedState.fromDate;
+      this.toDate             = savedState.toDate;
+      this.purchaserId       = savedState.purchaserId;
+      this.purchaserName     = savedState.purchaserName;
+      this.cameFromPurchaser = savedState.cameFromPurchaser;
+
+      this.bills = [];
+      this.isLastPage = false;
+      if (window.innerWidth < 768) {
+
+      this.restoreInfiniteScrollUpTo(savedState.currentPage, () => {
+        requestAnimationFrame(() => window.scrollTo(0, savedState.scrollY));
+      });
+    } else {
+      this.loadData(this.currentPage, false, () => {
+        requestAnimationFrame(() => window.scrollTo(0, savedState.scrollY));
+      });
     }
+  } else {
     this.loadInitialData();
   }
+}
 
   ngOnDestroy(): void {
     this.debouncedSearch.destroy();
     this.scrollThrottle.destroy();
+  }
+
+  private restoreInfiniteScrollUpTo(targetPage: number, onComplete: () => void): void {
+    const loadNext = (page: number) => {
+      this.loadData(page, page > 0, () => {
+        if (page < targetPage && !this.isLastPage) {
+          loadNext(page + 1);
+        } else {
+          onComplete();
+        }
+      });
+    };
+    loadNext(0);
   }
 
   goBack(): void {
@@ -148,7 +192,7 @@ export class BillsComponent implements OnInit, OnDestroy {
     this.loadData(0, false);
   }
 
-  loadData(page: number = 0, append: boolean = false) {
+  loadData(page: number = 0, append: boolean = false, onComplete?: () => void){
     this.isLoading = true;
     if (!append && page === 0) {
       this.bills = [];
@@ -172,6 +216,7 @@ export class BillsComponent implements OnInit, OnDestroy {
     const cached = this.requestCache.get(cacheKey);
     if (cached) {
       this.applyBillsPage(cached, append);
+      onComplete?.();
       return;
     }
 
@@ -179,11 +224,13 @@ export class BillsComponent implements OnInit, OnDestroy {
       next: (data: any) => {
         this.requestCache.set(cacheKey, data);
         this.applyBillsPage(data, append);
+        onComplete?.();
       },
       error: (err) => {
         console.error(err);
         this.isLoading = false;
         this.initialLoadComplete = true;
+        onComplete?.();
       }
     });
   }
@@ -308,6 +355,19 @@ export class BillsComponent implements OnInit, OnDestroy {
   }
 
   openBill(billId: any) {
+     this.appState.saveBillsListState({
+      currentPage: this.currentPage,
+      scrollY: window.scrollY,
+      searchText: this.searchText,
+      isSearchActive: this.isSearchActive,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection,
+      fromDate: this.fromDate,
+      toDate: this.toDate,
+      purchaserId: this.purchaserId,
+      purchaserName: this.purchaserName,
+      cameFromPurchaser: this.cameFromPurchaser
+    });
     this.userStorageService.saveBillId(billId);
     this.router.navigate(['user/bill-preview']);
   }

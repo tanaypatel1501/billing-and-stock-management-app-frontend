@@ -3,6 +3,20 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthService, PageResponse } from './auth-service/auth.service';
 import { UserStorageService } from './storage/user-storage.service';
 
+export interface BillsListState {
+  currentPage: number;
+  scrollY: number;
+  searchText: string;
+  isSearchActive: boolean;
+  sortColumn: string | null;
+  sortDirection: 'asc' | 'desc';
+  fromDate: string;
+  toDate: string;
+  purchaserId: number | null;
+  purchaserName: string;
+  cameFromPurchaser: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AppStateService {
   // true when details tab form is valid and complete
@@ -10,6 +24,7 @@ export class AppStateService {
   public detailsValid$: Observable<boolean> = this.detailsValidSubject.asObservable();
   private hasPurchasersSubject = new BehaviorSubject<boolean>(false);
   hasPurchasers$ = this.hasPurchasersSubject.asObservable();
+  private billsListState: BillsListState | null = null;
   constructor(private authService: AuthService) {
     // attempt to bootstrap details valid state if user is already logged in
     const uid = UserStorageService.getUserId();
@@ -52,5 +67,15 @@ export class AppStateService {
       },
       error: () => this.setHasPurchasers(false)
     });
+  }
+
+  saveBillsListState(state: BillsListState): void {
+    this.billsListState = state;
+  }
+
+  consumeBillsListState(): BillsListState | null {
+    const s = this.billsListState;
+    this.billsListState = null;
+    return s;
   }
 }

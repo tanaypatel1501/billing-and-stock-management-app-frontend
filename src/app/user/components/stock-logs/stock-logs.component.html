@@ -55,7 +55,7 @@
     </div>
 
     <!-- Timeline -->
-    <div class="logs-container" *ngIf="!isLoading && filteredLogs.length > 0">
+    <div class="logs-container" *ngIf="filteredLogs.length > 0">
       <ul class="timeline" (click)="handleLogClick($event)">
         <li class="timeline-item" *ngFor="let log of filteredLogs" [ngClass]="log.action.toLowerCase()">
           <div class="timeline-marker"></div>

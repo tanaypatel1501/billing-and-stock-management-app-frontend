@@ -355,11 +355,11 @@ export class BillsComponent implements OnInit, OnDestroy {
     const billId = Array.from(this.selectedBillIds)[0];
     const bill = this.bills.find(b => b.id === billId);
     const label = bill
-  ? `${bill.purchaserName} (${this.datePipe.transform(bill.invoiceDate, 'dd MMM yyyy')},Invoice No: ${bill.id})`
+  ? `${bill.purchaserName} \n(${this.datePipe.transform(bill.invoiceDate, 'dd MMM yyyy')},Invoice No: ${bill.id})`
   : `Invoice No: #${billId}`;
 
     this.alertService.confirm(
-      `Revert bill for ${label}?\nThis restores stock quantities and \nCANNOT BE UNDONE.`,
+      `Revert bill for ${label} ?\nThis restores stock quantities and \n𝗖𝗔𝗡𝗡𝗢𝗧 𝗕𝗘 𝗨𝗡𝗗𝗢𝗡𝗘.`,
       () => this.revertBill(billId),
       'Revert Bill',
       () => {},

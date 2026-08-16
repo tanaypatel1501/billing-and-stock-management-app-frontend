@@ -272,7 +272,8 @@
   &.add    .timeline-marker { background: var(--gstm-success-text, #2b8a3e); box-shadow: 0 0 0 2px rgba(43, 138, 62, 0.2); }
   &.update  .timeline-marker { background: #e67700; box-shadow: 0 0 0 2px rgba(230, 119, 0, 0.2); }
   &.sold     .timeline-marker { background: #339af0; box-shadow: 0 0 0 2px rgba(51, 154, 240, 0.2); }
-
+  &.reverted .timeline-marker { background: var(--gstm-danger, #dc2626); box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2); }
+  
   .timeline-content {
     background: var(--gstm-bg);
     padding: 14px 18px;

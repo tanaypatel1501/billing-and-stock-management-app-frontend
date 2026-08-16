@@ -54,6 +54,10 @@ const routes: Routes = [
     canActivate: [UserGuard] 
   },
   {
+    path: 'documentation',
+    loadChildren: () => import('./documentation/documentation.routes').then(m => m.DOCUMENTATION_ROUTES)
+  },
+  {
     path : '',
     redirectTo : '/home',
     pathMatch : 'full'

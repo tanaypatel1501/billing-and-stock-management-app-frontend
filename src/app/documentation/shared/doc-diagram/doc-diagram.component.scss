@@ -1,0 +1,12 @@
+.doc-diagram {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid var(--gstm-input-border);
+  border-radius: 8px;
+  background: var(--gstm-card-bg);
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+
+  ::ng-deep svg { max-width: 100%; }
+}

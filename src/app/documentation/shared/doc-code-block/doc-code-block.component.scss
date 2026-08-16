@@ -1,0 +1,48 @@
+.doc-code {
+  border: 1px solid var(--gstm-input-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 16px 0;
+  background: var(--gstm-input-bg);
+}
+
+.doc-code__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--gstm-card-bg);
+  border-bottom: 1px solid var(--gstm-input-border);
+  font-size: .75rem;
+}
+
+.doc-code__lang { color: var(--gstm-text-label); text-transform: uppercase; letter-spacing: .5px; }
+
+.doc-code__copy {
+  border: 1px solid var(--gstm-input-border);
+  background: transparent;
+  color: var(--gstm-text-main);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: .75rem;
+  cursor: pointer;
+  &:hover { background: var(--gstm-input-bg); }
+}
+
+pre {
+  margin: 0;
+  padding: 14px;
+  overflow-x: auto;
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+// Prism token colors mapped to your theme instead of a stock Prism theme
+:host ::ng-deep {
+  .token.keyword { color: #c586c0; }
+  .token.string { color: #ce9178; }
+  .token.comment { color: var(--gstm-text-muted); font-style: italic; }
+  .token.function { color: #dcdcaa; }
+  .token.number { color: #b5cea8; }
+  .token.punctuation { color: var(--gstm-text-main); }
+}

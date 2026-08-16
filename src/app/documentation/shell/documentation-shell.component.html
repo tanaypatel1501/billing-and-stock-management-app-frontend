@@ -1,0 +1,55 @@
+<div class="doc-layout">
+
+  <!-- Mobile top bar: hamburger + search only, no title -->
+  <div class="doc-mobile-bar">
+    <button class="doc-hamburger" [class.active]="isSidebarOpen" (click)="toggleSidebar()" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="doc-mobile-search-wrapper">
+      <input
+        class="doc-search"
+        type="text"
+        placeholder="Search documentation..."
+        [ngModel]="searchText"
+        (ngModelChange)="onSearchInput($event)" />
+      <span class="doc-search-spinner" *ngIf="isSearching">…</span>
+    </div>
+  </div>
+
+  <div class="doc-backdrop" *ngIf="isSidebarOpen" (click)="closeSidebar()"></div>
+
+  <aside class="doc-sidebar" [class.doc-sidebar--open]="isSidebarOpen">
+    <div class="doc-search-wrapper doc-search-wrapper--desktop">
+      <input
+        class="doc-search"
+        type="text"
+        placeholder="Search documentation..."
+        [ngModel]="searchText"
+        (ngModelChange)="onSearchInput($event)" />
+      <span class="doc-search-spinner" *ngIf="isSearching">…</span>
+    </div>
+
+    <nav>
+      <ng-container *ngIf="hasResults; else noResults">
+        <div class="doc-nav-section" *ngFor="let section of filteredNav">
+          <h4>{{ section.section }}</h4>
+          <a
+            *ngFor="let item of section.items"
+            class="doc-nav-link"
+            [routerLink]="['/documentation', item.slug]"
+            routerLinkActive="active"
+            (click)="closeSidebar()">
+            {{ item.title }}
+          </a>
+        </div>
+      </ng-container>
+      <ng-template #noResults>
+        <p class="doc-no-results">No pages match "{{ searchText }}"</p>
+      </ng-template>
+    </nav>
+  </aside>
+
+  <main class="doc-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

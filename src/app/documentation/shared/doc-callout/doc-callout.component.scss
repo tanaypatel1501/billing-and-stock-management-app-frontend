@@ -1,0 +1,17 @@
+.doc-callout {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  border-left: 4px solid transparent;
+
+  &__icon { font-size: 1.1rem; flex-shrink: 0; }
+  &__title { display: block; margin-bottom: 2px; font-weight: 700; color: var(--gstm-text-main); }
+  &__content { font-size: .9rem; line-height: 1.5; color: var(--gstm-text-main); }
+
+  &--info    { background: var(--gstm-input-bg);   border-left-color: var(--gstm-info); }
+  &--warning { background: var(--gstm-input-bg);   border-left-color: var(--gstm-warning); }
+  &--success { background: var(--gstm-success-bg); border-left-color: var(--gstm-success-text); }
+  &--danger  { background: var(--gstm-danger-bg);  border-left-color: var(--gstm-error); }
+}

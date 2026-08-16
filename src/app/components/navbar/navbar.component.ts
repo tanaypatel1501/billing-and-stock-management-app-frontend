@@ -23,7 +23,8 @@ import {
   faClockRotateLeft,
   faClipboardList,
   faBars,
-  faUsers
+  faUsers,
+  faBook
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -55,6 +56,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   faClipboardList = faClipboardList;
   faBars = faBars;
   faUsers = faUsers;
+  faBook = faBook;
 
   pendingRequestCount = 0;
   // optionally poll: authService.getPendingProductRequests().subscribe(r => this.pendingRequestCount = r.length)

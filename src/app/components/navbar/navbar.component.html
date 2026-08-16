@@ -45,6 +45,15 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" 
+            routerLink="/documentation" 
+            routerLinkActive="active"
+            (click)="closeMobileMenu()">
+            <fa-icon [icon]="faBook"></fa-icon>
+            <span>Documentation</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <button class="nav-link settings-trigger" (click)="openSettings()">
             <fa-icon [icon]="faGear"></fa-icon>
             <span>Settings</span>

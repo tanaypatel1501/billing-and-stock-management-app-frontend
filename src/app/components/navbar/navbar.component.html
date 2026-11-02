@@ -22,7 +22,7 @@
     </button>
 
     <!-- Navigation Links -->
-    <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
+    <div class="navbar-menu" [class.mobile-open]="mobileMenuOpen" [class.native-hidden]="isAndroidApp && (isAuthenticated$ | async)">
       
       <!-- Logged Out Links -->
       <ul class="nav-list" *ngIf="!(isAuthenticated$ | async)">
@@ -224,61 +224,127 @@
     {{ errorMessage }}
   </div>
 </div>
-<div class="bottom-dock" *ngIf="(isAuthenticated$ | async)">
+<div
+  class="bottom-dock"
+  *ngIf="(isAuthenticated$ | async) && !isAndroidApp"
+  [class.android-liquid-dock]="isAndroidApp"
+  (pointerdown)="onDockPointerDown($event)"
+  (pointermove)="onDockPointerMove($event)"
+  (pointerup)="onDockPointerUp($event)"
+  (pointercancel)="onDockPointerCancel($event)"
+  (pointerleave)="onDockPointerLeave($event)"
+>
   
-  <a class="dock-item" 
-     [routerLink]="isAdminLoggedIn ? 'admin/dashboard' : 'user/dashboard'" 
-     routerLinkActive="active" 
-     [routerLinkActiveOptions]="{exact: true}">
-    <fa-icon [icon]="faChartLine"></fa-icon>
-    <span class="dock-label">Home</span>
-  </a>
-
-  <a class="dock-item" *ngIf="isAdminLoggedIn"
-     routerLink="/admin/add-product" 
-     routerLinkActive="active">
-    <fa-icon [icon]="faBoxOpen"></fa-icon>
-    <span class="dock-label">Add Product</span>
-  </a>
-  <a class="dock-item" *ngIf="!isAdminLoggedIn"
-     routerLink="/user/stock/add" 
-     routerLinkActive="active">
-    <fa-icon [icon]="faBoxes"></fa-icon>
-    <span class="dock-label">Add Stock</span>
-  </a>
-
-  <a class="dock-item" *ngIf="isAdminLoggedIn"
-     routerLink="/admin/product-requests" 
-     routerLinkActive="active">
-    <div class="dock-fab">
-      <fa-icon [icon]="faClipboardList"></fa-icon>
-      <span class="dock-badge" *ngIf="pendingRequestCount > 0">{{ pendingRequestCount }}</span>
+  <div class="dock-glass">
+    <div class="dock-lens" aria-hidden="true">
+      <div class="dock-lens-content"></div>
     </div>
-    <span class="dock-label dock-label-fab">Requests</span>
-  </a>
-  <a class="dock-item" *ngIf="!isAdminLoggedIn"
-     [class.active]="isCreateBillActive"
-     [class.disabled]="!detailsValid"
-     [attr.aria-disabled]="!detailsValid"
-     (click)="onCreateBill($event)">
-    <div class="dock-fab" [class.fab-disabled]="!detailsValid">
-      <fa-icon [icon]="faFileInvoice"></fa-icon>
-    </div>
-    <span class="dock-label dock-label-fab">Create Bill</span>
-  </a>
 
-  <a class="dock-item" 
-     routerLink="/profile" 
-     routerLinkActive="active">
-    <fa-icon [icon]="faUser"></fa-icon>
-    <span class="dock-label">Profile</span>
-  </a>
+    <!-- Home -->
+    <a
+      class="dock-item"
+      [routerLink]="isAdminLoggedIn ? 'admin/dashboard' : 'user/dashboard'"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{exact: true}"
+      (click)="onDockItemClick($event)"
+    >
+      <div class="dock-icon">
+        <fa-icon [icon]="faChartLine"></fa-icon>
+      </div>
+      <span class="dock-label">Home</span>
+    </a>
 
-  <button class="dock-item dock-menu-btn" 
-          (click)="toggleMobileMenu()" 
-          [class.active]="mobileMenuOpen">
-    <fa-icon [icon]="faBars"></fa-icon>
-    <span class="dock-label">Menu</span>
-  </button>
+    <!-- Add Product / Add Stock -->
+    <a
+      class="dock-item"
+      *ngIf="isAdminLoggedIn"
+      routerLink="/admin/add-product"
+      routerLinkActive="active"
+      (click)="onDockItemClick($event)"
+    >
+      <div class="dock-icon">
+        <fa-icon [icon]="faBoxOpen"></fa-icon>
+      </div>
+      <span class="dock-label">Add Product</span>
+    </a>
 
+    <a
+      class="dock-item"
+      *ngIf="!isAdminLoggedIn"
+      routerLink="/user/stock/add"
+      routerLinkActive="active"
+      (click)="onDockItemClick($event)"
+    >
+      <div class="dock-icon">
+        <fa-icon [icon]="faBoxes"></fa-icon>
+      </div>
+      <span class="dock-label">Add Stock</span>
+    </a>
+
+    <!-- Requests / Create Bill -->
+    <a
+      class="dock-item dock-item-fab"
+      *ngIf="isAdminLoggedIn"
+      routerLink="/admin/product-requests"
+      routerLinkActive="active"
+      (click)="onDockItemClick($event)"
+    >
+      <div class="dock-fab">
+        <fa-icon [icon]="faClipboardList"></fa-icon>
+
+        <span
+          class="dock-badge"
+          *ngIf="pendingRequestCount > 0"
+        >
+          {{ pendingRequestCount }}
+        </span>
+      </div>
+
+      <span class="dock-label">Requests</span>
+    </a>
+
+    <a
+      class="dock-item dock-item-fab"
+      *ngIf="!isAdminLoggedIn"
+      [class.active]="isCreateBillActive"
+      [class.disabled]="!detailsValid"
+      [attr.aria-disabled]="!detailsValid"
+      (click)="onCreateBill($event)"
+    >
+      <div
+        class="dock-fab"
+        [class.fab-disabled]="!detailsValid"
+      >
+        <fa-icon [icon]="faFileInvoice"></fa-icon>
+      </div>
+
+      <span class="dock-label">Create Bill</span>
+    </a>
+
+    <!-- Profile -->
+    <a
+      class="dock-item"
+      routerLink="/profile"
+      routerLinkActive="active"
+      (click)="onDockItemClick($event)"
+    >
+      <div class="dock-icon">
+        <fa-icon [icon]="faUser"></fa-icon>
+      </div>
+      <span class="dock-label">Profile</span>
+    </a>
+
+    <!-- Menu -->
+    <button
+      class="dock-item dock-menu-btn"
+      [class.active]="mobileMenuOpen"
+      (click)="onDockMenuClick($event)"
+    >
+      <div class="dock-icon">
+        <fa-icon [icon]="faBars"></fa-icon>
+      </div>
+      <span class="dock-label">Menu</span>
+    </button>
+
+  </div>
 </div>

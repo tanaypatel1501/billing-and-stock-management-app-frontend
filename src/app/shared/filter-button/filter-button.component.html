@@ -5,7 +5,7 @@
   </button>
 
   <!-- Modal Overlay -->
-  <div class="modal-overlay" *ngIf="showModal" (click)="toggleModal()">
+  <div class="modal-overlay" *ngIf="showModal" appSuppressDock (click)="toggleModal()">
     <div class="filter-modal-card" (click)="$event.stopPropagation()">
       
       <!-- Header -->

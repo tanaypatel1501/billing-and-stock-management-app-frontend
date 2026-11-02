@@ -1,0 +1,49 @@
+<div class="menu-page">
+  <ng-container *ngIf="isUser">
+    <div class="group">
+      <a class="row" routerLink="/user/stock-logs">
+        <span class="row-icon ic-orange"><fa-icon [icon]="faClockRotateLeft"></fa-icon></span>
+        <span class="row-label">Stock Logs</span>
+        <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
+      </a>
+      <a class="row" routerLink="/user/bills">
+        <span class="row-icon ic-green"><fa-icon [icon]="faMoneyBillWave"></fa-icon></span>
+        <span class="row-label">Bills</span>
+        <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
+      </a>
+      <a class="row" *ngIf="hasPurchasers" routerLink="/user/purchasers">
+        <span class="row-icon ic-blue"><fa-icon [icon]="faUsers"></fa-icon></span>
+        <span class="row-label">Purchasers</span>
+        <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
+      </a>
+      <a class="row" routerLink="/user/sales">
+        <span class="row-icon ic-purple"><fa-icon [icon]="faChartBar"></fa-icon></span>
+        <span class="row-label">Sales</span>
+        <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
+      </a>
+    </div>
+
+    <div class="group">
+      <a class="row" routerLink="/user/details">
+        <span class="row-icon ic-teal"><fa-icon [icon]="faBuilding"></fa-icon></span>
+        <span class="row-label">Details</span>
+        <span class="row-pill" *ngIf="!detailsValid">Incomplete</span>
+        <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
+      </a>
+    </div>
+  </ng-container>
+
+  <div class="group">
+    <a class="row" routerLink="/settings">
+      <span class="row-icon ic-gray"><fa-icon [icon]="faGear"></fa-icon></span>
+      <span class="row-label">Settings</span>
+      <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
+    </a>
+  </div>
+
+  <div class="group">
+    <button class="row destructive" (click)="logout()">
+      <span class="row-label">Log Out</span>
+    </button>
+  </div>
+</div>

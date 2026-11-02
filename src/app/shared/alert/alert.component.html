@@ -1,19 +1,15 @@
-<div class="alert-overlay" *ngIf="alert" (click)="close()">
+<div class="alert-overlay" *ngIf="alert" appSuppressDock (click)="close()">
   <div class="alert-modal" [ngClass]="alert.type" (click)="$event.stopPropagation()">
-    
-    <!-- Icon -->
     <div class="alert-icon">
       <fa-icon [icon]="getIcon()"></fa-icon>
     </div>
 
-    <!-- Content -->
     <div class="alert-content">
-      <h3 class="alert-title">{{ alert.title }}</h3>
+      <h3 class="alert-title" *ngIf="alert.title">{{ alert.title }}</h3>
       <p class="alert-message">{{ alert.message }}</p>
     </div>
 
-    <!-- Close Button -->
-    <div class="alert-footer">
+    <div class="alert-footer" *ngIf="alert.showButtons !== false">
       <ng-container *ngIf="alert?.onConfirm; else singleBtn">
         <button class="alert-btn secondary" (click)="cancel()">Cancel</button>
         <button class="alert-btn" (click)="confirm()">Confirm</button>
@@ -22,6 +18,5 @@
         <button class="alert-btn" (click)="close()">OK</button>
       </ng-template>
     </div>
-
   </div>
 </div>

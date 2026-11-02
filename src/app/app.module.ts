@@ -26,6 +26,9 @@ import { ConfirmDeleteModalComponent } from './shared/confirm-delete-modal/confi
 import { SettingsComponent } from './components/settings/settings.component';
 import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
 import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinner.component';
+import { MenuComponent } from './components/menu/menu.component';
+import { SuppressDockDirective } from './shared/suppress-dock/suppress-dock.directive';
+import { SalesChatbotComponent } from './user/components/sales/sales-chatbot/sales-chatbot.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +38,7 @@ import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinne
     LoginComponent,
     RegisterComponent,
     NavbarComponent,
+    MenuComponent,
     NotFoundComponent,
     ProfileComponent,
     AlertComponent,
@@ -55,6 +59,8 @@ import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinne
     FilterButtonComponent,
     ConfirmDeleteModalComponent,
     LoadingSpinnerComponent,
+    SuppressDockDirective,
+    SalesChatbotComponent
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, 

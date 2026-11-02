@@ -1,199 +1,179 @@
-<div *ngIf="!userProfile" class="loading-screen">
-  <div class="spinner-wrapper">
-    <div class="spinner-ring"></div>
+<!-- Loader: skeleton on Android, spinner elsewhere -->
+<app-loading-spinner
+  *ngIf="!userProfile"
+  text="Loading Profile"
+  skeleton="profile"
+  [skeletonPadded]="true">
+</app-loading-spinner>
 
-    <div class="loading-dots">
-      <span></span>
-      <span></span>
-      <span></span>
+<div class="pf-page" *ngIf="userProfile">
+
+  <h1 class="pf-title">Profile</h1>
+
+  <!-- Hero -->
+  <div class="pf-hero">
+    <div class="pf-avatar" aria-hidden="true">
+      {{ ((userProfile.firstname || '').charAt(0) + (userProfile.lastname || '').charAt(0)) | uppercase }}
+    </div>
+    <div class="pf-name">{{ userProfile.firstname }} {{ userProfile.lastname }}</div>
+    <div class="pf-email">{{ userProfile.email }}</div>
+  </div>
+
+  <!-- Feedback -->
+  <div class="pf-toast"
+       *ngIf="feedbackMessage"
+       [class.ok]="!isError"
+       [class.err]="isError"
+       (click)="feedbackMessage = null">
+    <span class="pf-toast-icon">{{ isError ? '⚠' : '✓' }}</span>
+    <span>{{ feedbackMessage }}</span>
+  </div>
+
+  <!-- NAME -->
+  <div class="pf-header">Name</div>
+  <div class="pf-group">
+
+    <div class="pf-row" [class.editing]="isEditing.firstname">
+      <label class="pf-label" for="pf-firstname">First name</label>
+      <div class="pf-value">
+        <span *ngIf="!isEditing.firstname" class="pf-text" (click)="enableEdit('firstname')">{{ userProfile.firstname }}</span>
+        <input *ngIf="isEditing.firstname"
+               id="pf-firstname"
+               class="pf-input"
+               type="text"
+               [(ngModel)]="editData.firstname"
+               placeholder="First name"
+               autocomplete="given-name"
+               (keydown.enter)="saveProfile('firstname')"
+               (keydown.escape)="cancelEdit('firstname')">
+      </div>
+      <div class="pf-actions">
+        <button *ngIf="!isEditing.firstname" type="button" class="pf-icon-btn" (click)="enableEdit('firstname')" aria-label="Edit first name">
+          <fa-icon [icon]="faPencil"></fa-icon>
+        </button>
+        <ng-container *ngIf="isEditing.firstname">
+          <button type="button" class="pf-icon-btn" (click)="cancelEdit('firstname')" aria-label="Cancel">
+            <fa-icon [icon]="faTimes"></fa-icon>
+          </button>
+          <button type="button" class="pf-icon-btn pf-save" (click)="saveProfile('firstname')" aria-label="Save">
+            <fa-icon [icon]="faCheck"></fa-icon>
+          </button>
+        </ng-container>
+      </div>
     </div>
 
-    <p class="loading-text">Loading Profile</p>
-  </div>
-</div>
-<div class="profile-wrapper" *ngIf="userProfile">
-  <div class="profile-container">
-    
-    <!-- Feedback Alert -->
-    <div *ngIf="feedbackMessage" class="alert" 
-         [ngClass]="{'alert-success': !isError, 'alert-danger': isError}"
-         (click)="feedbackMessage = null">
-      <span class="alert-icon">{{ isError ? '⚠' : '✓' }}</span>
-      {{ feedbackMessage }}
+    <div class="pf-row" [class.editing]="isEditing.lastname">
+      <label class="pf-label" for="pf-lastname">Last name</label>
+      <div class="pf-value">
+        <span *ngIf="!isEditing.lastname" class="pf-text" (click)="enableEdit('lastname')">{{ userProfile.lastname }}</span>
+        <input *ngIf="isEditing.lastname"
+               id="pf-lastname"
+               class="pf-input"
+               type="text"
+               [(ngModel)]="editData.lastname"
+               placeholder="Last name"
+               autocomplete="family-name"
+               (keydown.enter)="saveProfile('lastname')"
+               (keydown.escape)="cancelEdit('lastname')">
+      </div>
+      <div class="pf-actions">
+        <button *ngIf="!isEditing.lastname" type="button" class="pf-icon-btn" (click)="enableEdit('lastname')" aria-label="Edit last name">
+          <fa-icon [icon]="faPencil"></fa-icon>
+        </button>
+        <ng-container *ngIf="isEditing.lastname">
+          <button type="button" class="pf-icon-btn" (click)="cancelEdit('lastname')" aria-label="Cancel">
+            <fa-icon [icon]="faTimes"></fa-icon>
+          </button>
+          <button type="button" class="pf-icon-btn pf-save" (click)="saveProfile('lastname')" aria-label="Save">
+            <fa-icon [icon]="faCheck"></fa-icon>
+          </button>
+        </ng-container>
+      </div>
     </div>
 
-    <!-- Profile Card -->
-    <div class="profile-card">
-      <div class="profile-header">
-        <h1>Profile Details</h1>
-        <p>Manage your account information</p>
-      </div>
-
-      <div class="profile-body" *ngIf="userProfile">
-        
-        <!-- First Name Row -->
-        <div class="profile-row">
-          <div class="profile-label">
-            <label>First Name</label>
-          </div>
-          <div class="profile-value">
-            <span *ngIf="!isEditing.firstname" class="value-text">{{ userProfile.firstname }}</span>
-            <input *ngIf="isEditing.firstname" 
-                   type="text" 
-                   class="edit-input" 
-                   [(ngModel)]="editData.firstname"
-                   placeholder="Enter first name">
-          </div>
-          <div class="profile-actions">
-            <button *ngIf="!isEditing.firstname" 
-                    class="icon-btn edit-btn" 
-                    (click)="enableEdit('firstname')" 
-                    title="Edit First Name">
-              <fa-icon [icon]="faPencil"></fa-icon>
-            </button>
-            <div *ngIf="isEditing.firstname" class="action-group">
-              <button class="icon-btn save-btn" 
-                      (click)="saveProfile('firstname')" 
-                      title="Save">
-                <fa-icon [icon]="faCheck"></fa-icon>
-              </button>
-              <button class="icon-btn cancel-btn" 
-                      (click)="cancelEdit('firstname')" 
-                      title="Cancel">
-                <fa-icon [icon]="faTimes"></fa-icon>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Last Name Row -->
-        <div class="profile-row">
-          <div class="profile-label">
-            <label>Last Name</label>
-          </div>
-          <div class="profile-value">
-            <span *ngIf="!isEditing.lastname" class="value-text">{{ userProfile.lastname }}</span>
-            <input *ngIf="isEditing.lastname" 
-                   type="text" 
-                   class="edit-input" 
-                   [(ngModel)]="editData.lastname"
-                   placeholder="Enter last name">
-          </div>
-          <div class="profile-actions">
-            <button *ngIf="!isEditing.lastname" 
-                    class="icon-btn edit-btn" 
-                    (click)="enableEdit('lastname')" 
-                    title="Edit Last Name">
-              <fa-icon [icon]="faPencil"></fa-icon>
-            </button>
-            <div *ngIf="isEditing.lastname" class="action-group">
-              <button class="icon-btn save-btn" 
-                      (click)="saveProfile('lastname')" 
-                      title="Save">
-                <fa-icon [icon]="faCheck"></fa-icon>
-              </button>
-              <button class="icon-btn cancel-btn" 
-                      (click)="cancelEdit('lastname')" 
-                      title="Cancel">
-                <fa-icon [icon]="faTimes"></fa-icon>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Email Row (Read-only) -->
-        <div class="profile-row">
-          <div class="profile-label">
-            <label>Email</label>
-          </div>
-          <div class="profile-value">
-            <span class="value-text readonly">{{ userProfile.email }}</span>
-          </div>
-          <div class="profile-actions">
-            <span class="readonly-badge">Read-only</span>
-          </div>
-        </div>
-
-        <!-- Password Row -->
-        <div class="profile-row">
-          <div class="profile-label">
-            <label>Password</label>
-          </div>
-          <div class="profile-value">
-            <span class="value-text password">••••••••</span>
-          </div>
-          <div class="profile-actions">
-            <button class="change-password-btn" 
-                    (click)="openChangePassword()" 
-                    title="Change Password">
-              Change
-            </button>
-          </div>
-        </div>
-      </div>
   </div>
+
+  <!-- ACCOUNT -->
+  <div class="pf-header">Account</div>
+  <div class="pf-group">
+
+    <div class="pf-row">
+      <span class="pf-label">Email</span>
+      <div class="pf-value">
+        <span class="pf-text pf-muted">{{ userProfile.email }}</span>
+      </div>
+    </div>
+
+    <div class="pf-row">
+      <span class="pf-label">Password</span>
+      <div class="pf-value">
+        <span class="pf-text pf-muted pf-dots">••••••••</span>
+      </div>
+      <div class="pf-actions">
+        <button type="button" class="pf-pill" (click)="openChangePassword()">Change</button>
+      </div>
+    </div>
+
+  </div>
+  <div class="pf-footer">Your email address can’t be changed.</div>
+
 </div>
 
-<!-- Change Password Modal -->
-<div class="modal-overlay" *ngIf="showPasswordModal" (click)="closeChangePassword()">
-  <div class="modal-card" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Change Password</h2>
-      <button class="modal-close" (click)="closeChangePassword()">×</button>
+<!-- ============ Change password sheet ============ -->
+<div class="pf-sheet-overlay" *ngIf="showPasswordModal" (click)="closeChangePassword()">
+  <form class="pf-sheet"
+        [formGroup]="passwordForm"
+        (ngSubmit)="submitPasswordChange()"
+        (click)="$event.stopPropagation()"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Change password">
+
+    <div class="pf-sheet-bar">
+      <button type="button" class="pf-sheet-btn" (click)="closeChangePassword()">Cancel</button>
+      <h2 class="pf-sheet-title">Change Password</h2>
+      <button type="submit" class="pf-sheet-btn pf-strong" [disabled]="passwordForm.invalid">Save</button>
     </div>
 
-    <form [formGroup]="passwordForm" (ngSubmit)="submitPasswordChange()">
-      <div class="modal-body">
-        
-        <!-- Current Password -->
-        <div class="form-group">
-          <label for="currentPassword">Current Password</label>
-          <input 
-            type="password" 
-            id="currentPassword"
-            formControlName="currentPassword" 
-            placeholder="Enter current password"
-            [class.error]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched">
-          
-          <div class="error-msg" 
-               *ngIf="passwordForm.get('currentPassword')?.hasError('required') && passwordForm.get('currentPassword')?.touched">
-            Current password is required.
-          </div>
-          <div class="error-msg" *ngIf="modalErrorMessage">
-            {{ modalErrorMessage }}
+    <div class="pf-sheet-body">
+      <div class="pf-group">
+        <div class="pf-row">
+          <label class="pf-label" for="currentPassword">Current</label>
+          <div class="pf-value">
+            <input class="pf-input"
+                   type="password"
+                   id="currentPassword"
+                   formControlName="currentPassword"
+                   placeholder="Required"
+                   autocomplete="current-password">
           </div>
         </div>
-
-        <!-- New Password -->
-        <div class="form-group">
-          <label for="newPassword">New Password</label>
-          <input 
-            type="password" 
-            id="newPassword"
-            formControlName="newPassword" 
-            placeholder="Enter new password"
-            [class.error]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched">
-          
-          <div class="error-msg" 
-               *ngIf="passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched">
-            New password is required.
-          </div>
-          <div class="error-msg info" 
-               *ngIf="passwordForm.get('newPassword')?.hasError('invalidPassword') && passwordForm.get('newPassword')?.touched">
-            Must be 8+ chars, with 1 uppercase, 1 digit, & 1 special char.
+        <div class="pf-row">
+          <label class="pf-label" for="newPassword">New</label>
+          <div class="pf-value">
+            <input class="pf-input"
+                   type="password"
+                   id="newPassword"
+                   formControlName="newPassword"
+                   placeholder="Required"
+                   autocomplete="new-password">
           </div>
         </div>
-
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="modal-btn secondary" (click)="closeChangePassword()">
-          Cancel
-        </button>
-        <button type="submit" class="modal-btn primary" [disabled]="passwordForm.invalid">
-          Save Changes
-        </button>
+      <div class="pf-footer"
+           *ngIf="passwordForm.get('currentPassword')?.hasError('required') && passwordForm.get('currentPassword')?.touched"
+           [class.pf-err]="true">
+        Enter your current password.
       </div>
-    </form>
-  </div>
+
+      <div class="pf-footer"
+           [class.pf-err]="passwordForm.get('newPassword')?.hasError('invalidPassword') && passwordForm.get('newPassword')?.touched">
+        Use 8 or more characters with 1 uppercase letter, 1 digit and 1 special character.
+      </div>
+
+      <div class="pf-footer pf-err" *ngIf="modalErrorMessage">{{ modalErrorMessage }}</div>
+    </div>
+
+  </form>
 </div>

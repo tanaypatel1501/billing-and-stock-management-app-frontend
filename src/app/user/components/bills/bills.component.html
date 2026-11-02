@@ -1,4 +1,4 @@
-<app-loading-spinner *ngIf="isLoading && bills.length === 0" text="Loading Bills"></app-loading-spinner>
+<app-loading-spinner *ngIf="isLoading && bills.length === 0" text="Loading Bills" skeleton="bills" [skeletonPadded]="true"></app-loading-spinner>
 
 <ng-template #noBillsMessage>
   <div class="empty-state-wrapper">
@@ -90,7 +90,7 @@
 
         <!-- Bills List -->
         <div class="bills-container">
-          <div *ngFor="let bill of bills" class="bill-card"
+          <div *ngFor="let bill of bills; trackBy: trackByBillId" class="bill-card"
             [class.selected]="isSelected(bill.id)"
             (click)="openBill(bill.id)">
             <div class="bill-select-circle"
@@ -185,7 +185,7 @@
         </div>
 
         <!-- Mobile Loading Spinner -->
-        <app-loading-spinner *ngIf="isLoading && bills.length > 0" mode="inline" text="Loading more bills..." class="d-md-none"></app-loading-spinner>
+        <app-loading-spinner *ngIf="isLoading && bills.length > 0" mode="inline" text="Loading more bills..." class="d-md-none" skeleton="bills"></app-loading-spinner>
 
       </div>
     </div>

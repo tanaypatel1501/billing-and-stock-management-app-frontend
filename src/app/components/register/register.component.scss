@@ -160,6 +160,10 @@ input {
   width: 100%;
 }
 
+.google-wrapper.native .google-custom-btn {
+  pointer-events: auto;
+}
+
 .google-wrapper:hover .google-custom-btn {
   transform: translateY(-2px);
   background-color: var(--gstm-input-bg);

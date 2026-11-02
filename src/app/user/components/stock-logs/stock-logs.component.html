@@ -1,7 +1,7 @@
 <div class="logs-page-wrapper">
 
   <!-- Initial Loading (no data yet) -->
-  <app-loading-spinner *ngIf="isLoading && filteredLogs.length === 0" text="Loading History"></app-loading-spinner>
+  <app-loading-spinner *ngIf="isLoading && filteredLogs.length === 0" text="Loading History" skeleton="logs"></app-loading-spinner>
 
   <!-- Main Content (header + results) — hidden during initial load -->
   <ng-container *ngIf="!isLoading || filteredLogs.length > 0">
@@ -95,7 +95,7 @@
     </div>
 
     <!-- Mobile infinite scroll loader -->
-    <app-loading-spinner *ngIf="isLoading && filteredLogs.length > 0" mode="inline" class="d-md-none"></app-loading-spinner>
+    <app-loading-spinner *ngIf="isLoading && filteredLogs.length > 0" mode="inline" class="d-md-none" skeleton="logs"></app-loading-spinner>
 
   </ng-container>
 

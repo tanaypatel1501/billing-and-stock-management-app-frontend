@@ -18,6 +18,8 @@ import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
 import { AlertService } from 'src/app/services/alert-service/alert.service';
 import { AppStateService } from 'src/app/services/app-state.service';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 @Component({
   selector: 'app-bills',
@@ -81,6 +83,7 @@ export class BillsComponent implements OnInit, OnDestroy {
   private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
   private exportStartedAt = 0;
   private readonly minInfoDisplayMs = 1200;
+  private isLoadingMore: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -145,6 +148,10 @@ export class BillsComponent implements OnInit, OnDestroy {
     this.scrollThrottle.destroy();
   }
 
+  trackByBillId(index: number, bill: any): number {
+    return bill.id;
+  }
+
   private restoreInfiniteScrollUpTo(targetPage: number, onComplete: () => void): void {
     const loadNext = (page: number) => {
       this.loadData(page, page > 0, () => {
@@ -192,10 +199,14 @@ export class BillsComponent implements OnInit, OnDestroy {
     this.loadData(0, false);
   }
 
-  loadData(page: number = 0, append: boolean = false, onComplete?: () => void){
-    this.isLoading = true;
-    if (!append && page === 0) {
-      this.bills = [];
+  loadData(page: number = 0, append: boolean = false, onComplete?: () => void) {
+    if (append) {
+      this.isLoadingMore = true;
+    } else {
+      this.isLoading = true;
+      if (page === 0) {
+        this.bills = [];
+      }
     }
 
     const searchRequest = {
@@ -229,6 +240,7 @@ export class BillsComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error(err);
         this.isLoading = false;
+        this.isLoadingMore = false;
         this.initialLoadComplete = true;
         onComplete?.();
       }
@@ -240,8 +252,18 @@ export class BillsComponent implements OnInit, OnDestroy {
     this.isLastPage = data.last;
     this.currentPage = data.number;
     this.totalElements = data.totalElements;
-    this.bills = append ? [...this.bills, ...data.content] : data.content;
+
+    if (append && this.bills.length > 0) {
+      const billMap = new Map();
+      this.bills.forEach(b => billMap.set(b.id, b));
+      data.content.forEach((b: any) => billMap.set(b.id, b)); 
+      this.bills = Array.from(billMap.values());
+    } else {
+      this.bills = data.content;
+    }
+
     this.isLoading = false;
+    this.isLoadingMore = false; 
     this.initialLoadComplete = true;
     this.suggestions = [];
   }
@@ -266,6 +288,9 @@ export class BillsComponent implements OnInit, OnDestroy {
 
   handleSearch(eventData: any) {
     this.currentPage = 0;
+    this.isLastPage = false;
+    this.isLoadingMore = false;
+    
     if (typeof eventData === 'string') {
       this.searchText = eventData;
     } else {
@@ -286,6 +311,9 @@ export class BillsComponent implements OnInit, OnDestroy {
     this.sortDirection = event.direction;
     this.fromDate = event.fromDate ?? '';
     this.toDate   = event.toDate   ?? '';
+    this.currentPage = 0;
+    this.isLastPage = false;
+    this.isLoadingMore = false;
     this.loadInitialData();
   }
 
@@ -308,15 +336,20 @@ export class BillsComponent implements OnInit, OnDestroy {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
-    this.scrollThrottle.trigger();
+    if (!this.isLoadingMore && !this.isLoading) {
+      this.scrollThrottle.trigger();
+    }
   }
 
   private checkScrollPosition() {
-    if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading && this.initialLoadComplete) {
-      const pos = (document.documentElement.scrollTop || document.body.scrollTop)
-                  + document.documentElement.offsetHeight;
-      const max = document.documentElement.scrollHeight;
-      if (pos >= max - 100) {
+    if (window.innerWidth < 768 && !this.isLastPage && !this.isLoading && !this.isLoadingMore && this.initialLoadComplete) {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const offsetHeight = document.documentElement.offsetHeight;
+      const scrollHeight = document.documentElement.scrollHeight;
+      
+      // Trigger when within 200px of the bottom
+      if (scrollTop + offsetHeight >= scrollHeight - 200) {
+        this.isLoadingMore = true; // immediately lock
         this.loadData(this.currentPage + 1, true);
       }
     }
@@ -509,50 +542,136 @@ export class BillsComponent implements OnInit, OnDestroy {
     }
   }
 
+  private sanitizeFilename(value: string): string {
+    return value
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, '-')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   private downloadSinglePdf(id: number): void {
     const bill = this.bills.find(b => b.id === id);
+
     const filename = bill
-      ? `Invoice-${bill.purchaserName}-${this.datePipe.transform(bill.invoiceDate, 'dd-MM-yyyy')}.pdf`
+      ? `Invoice-${this.sanitizeFilename(bill.purchaserName)}-${this.datePipe.transform(bill.invoiceDate, 'dd-MM-yyyy')}.pdf`
       : `Invoice-${id}.pdf`;
 
     this.authService.getPdfBlob(id).subscribe({
-      next: (blob) => {
-        this.triggerDownload(blob, filename);
-        this.finishExport();
-        this.showAfterMinDisplay(() => this.alertService.success('Invoice downloaded.'));
+      next: async (blob) => {
+        try {
+          await this.triggerDownload(blob, filename);
+
+          this.finishExport();
+
+          this.showAfterMinDisplay(() =>
+            this.alertService.success('Invoice downloaded.')
+          );
+        } catch (error) {
+          console.error('Failed to save exported invoice:', error);
+
+          this.isExporting = false;
+
+          this.showAfterMinDisplay(() =>
+            this.alertService.error('Failed to save exported invoice.')
+          );
+        }
       },
+
       error: () => {
         this.isExporting = false;
-        this.showAfterMinDisplay(() => this.alertService.error(`Failed to export bill ID ${id}`));
+
+        this.showAfterMinDisplay(() =>
+          this.alertService.error(`Failed to export bill ID ${id}`)
+        );
       }
     });
   }
 
   private downloadBillsZip(ids: number[]): void {
-    if (ids.length === 0) { this.isExporting = false; return; }
+    if (ids.length === 0) {
+      this.isExporting = false;
+      return;
+    }
 
     this.authService.downloadBillsZip(ids).subscribe({
-      next: (blob) => {
-        this.triggerDownload(blob, `Invoices-${this.today()}.zip`);
-        this.finishExport();
-        this.showAfterMinDisplay(() => this.alertService.success(`${ids.length} invoices exported.`));
+      next: async (blob) => {
+        try {
+          await this.triggerDownload(
+            blob,
+            `Invoices-${this.today()}.zip`
+          );
+
+          this.finishExport();
+
+          this.showAfterMinDisplay(() =>
+            this.alertService.success(`${ids.length} invoices exported.`)
+          );
+        } catch (error) {
+          console.error('Failed to save exported ZIP:', error);
+
+          this.isExporting = false;
+
+          this.showAfterMinDisplay(() =>
+            this.alertService.error('Failed to save exported bills.')
+          );
+        }
       },
+
       error: () => {
         this.isExporting = false;
-        this.showAfterMinDisplay(() => this.alertService.error('Failed to export bills.'));
+
+        this.showAfterMinDisplay(() =>
+          this.alertService.error('Failed to export bills.')
+        );
       }
     });
   }
 
-  private triggerDownload(blob: Blob, filename: string): void {
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        try {
+          const result = reader.result as string;
+          const base64 = result.split(',')[1];
+          resolve(base64);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+  
+  private async triggerDownload(blob: Blob, filename: string): Promise<void> {
+    if (Capacitor.isNativePlatform()) {
+      const base64Data = await this.blobToBase64(blob);
+
+      await Filesystem.writeFile({
+        path: filename,
+        data: base64Data,
+        directory: Directory.Documents,
+        recursive: true
+      });
+
+      return;
+    }
+
     const url = URL.createObjectURL(blob);
-    const a   = document.createElement('a');
-    a.href     = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } finally {
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
   }
 
   private finishExport(): void {

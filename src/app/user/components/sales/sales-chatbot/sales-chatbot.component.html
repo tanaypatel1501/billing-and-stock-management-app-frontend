@@ -1,0 +1,105 @@
+<ng-container *ngIf="loggedIn">
+
+  <!-- Chat panel -->
+  <section class="chat-panel" [class.open]="open" role="dialog" aria-label="Sales assistant"
+           [attr.aria-hidden]="!open" (keydown.escape)="toggle()">
+    <header class="chat-head">
+      <div class="head-avatar">
+        <ng-container *ngTemplateOutlet="face"></ng-container>
+      </div>
+      <div class="head-text">
+        <strong>Sales Assistant</strong>
+        <span>Ask about your sales and bills</span>
+      </div>
+      <button class="icon-btn" (click)="toggle()" aria-label="Close assistant">
+        <fa-icon [icon]="faXmark"></fa-icon>
+      </button>
+    </header>
+
+    <div class="chat-body" #scrollBox>
+      <div class="msg" *ngFor="let m of messages" [ngClass]="[m.role, m.status || '']" [class.wide]="!!m.columns">
+        <div class="bubble">
+          <span class="text">{{ m.text }}</span>
+
+          <div class="table-wrap" *ngIf="m.columns && m.rows">
+            <table>
+              <thead>
+                <tr><th *ngFor="let c of m.columns">{{ label(c) }}</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of m.rows">
+                  <td *ngFor="let v of r; let i = index" [class.num]="isNumber(v)">
+                    {{ formatCell(m.columns[i], v) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="chips inline" *ngIf="m.options?.length">
+            <button *ngFor="let o of m.options" (click)="choose(m, o)" [disabled]="loading">{{ o }}</button>
+          </div>
+
+          <ng-container *ngIf="m.sql">
+            <button class="sql-toggle" (click)="m.showSql = !m.showSql">
+              {{ m.showSql ? 'Hide query' : 'Show query' }}
+            </button>
+            <pre class="sql" *ngIf="m.showSql">{{ m.sql }}</pre>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="msg bot" *ngIf="loading">
+        <div class="bubble typing" aria-label="Assistant is thinking"><i></i><i></i><i></i></div>
+      </div>
+
+      <div class="chips" *ngIf="messages.length === 1 && !loading">
+        <button *ngFor="let s of suggestions" (click)="useSuggestion(s)">{{ s }}</button>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <input #inputEl type="text" [(ngModel)]="draft" [maxLength]="maxLen"
+             placeholder="Ask about sales, bills, products"
+             (keydown.enter)="send()" [disabled]="loading" aria-label="Your question" />
+      <button class="send-btn" (click)="send()" [disabled]="loading || !draft.trim()" aria-label="Send">
+        <fa-icon [icon]="faPaperPlane"></fa-icon>
+      </button>
+    </div>
+  </section>
+
+  <!-- Edge tab: the only thing that catches taps while the avatar is tucked away -->
+  <button *ngIf="dock === 'peek'" class="edge-tab" (click)="toggle()" aria-label="Open sales assistant"></button>
+
+  <!-- Avatar (slides in, waves, hops to the edge, pops back out) -->
+  <div class="dock" [attr.data-state]="dock">
+    <div class="greet-bubble" *ngIf="showBubble">Hi! I can help with your sales and bills.</div>
+
+    <button class="fab" [class.thinking]="loading" (click)="toggle()"
+            [attr.aria-expanded]="open" [attr.tabindex]="dock === 'peek' ? -1 : 0"
+            aria-label="Open sales assistant">
+      <ng-container *ngTemplateOutlet="face"></ng-container>
+    </button>
+  </div>
+
+</ng-container>
+
+<!-- Shared avatar face -->
+<ng-template #face>
+  <svg class="face" viewBox="0 0 64 64" aria-hidden="true">
+    <!-- waving hand (only visible during the greeting) -->
+    <g class="hand">
+      <line class="arm" x1="13" y1="46" x2="5" y2="33" />
+      <ellipse class="palm" cx="4" cy="27" rx="6.2" ry="7.2" />
+    </g>
+
+    <line class="antenna" x1="32" y1="9" x2="32" y2="15" />
+    <circle class="antenna-tip" cx="32" cy="7" r="3" />
+    <rect class="head" x="10" y="15" width="44" height="36" rx="14" />
+    <g class="eyes">
+      <ellipse class="eye" cx="24" cy="31" rx="3.6" ry="4.6" />
+      <ellipse class="eye" cx="40" cy="31" rx="3.6" ry="4.6" />
+    </g>
+    <path class="mouth" d="M26 41 Q32 46 38 41" />
+  </svg>
+</ng-template>

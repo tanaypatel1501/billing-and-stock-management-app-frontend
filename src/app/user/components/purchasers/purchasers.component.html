@@ -1,7 +1,7 @@
 <div class="purchasers-wrapper">
 
   <!-- Initial loading screen (matches stock-logs) -->
-  <app-loading-spinner *ngIf="isLoading && allPurchasers.length === 0" text="Loading Purchasers"></app-loading-spinner>
+  <app-loading-spinner *ngIf="isLoading && allPurchasers.length === 0" text="Loading Purchasers" skeleton="purchasers"></app-loading-spinner>
 
   <ng-container *ngIf="!isLoading || allPurchasers.length > 0">
 
@@ -104,13 +104,13 @@
     </div>
 
     <!-- Mobile infinite scroll loader -->
-    <app-loading-spinner *ngIf="isLoading && allPurchasers.length > 0" mode="inline" class="d-md-none"></app-loading-spinner>
+    <app-loading-spinner *ngIf="isLoading && allPurchasers.length > 0" mode="inline" class="d-md-none" skeleton="purchasers"></app-loading-spinner>
     
   </ng-container>
 </div>
 
 <!-- Edit Modal -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal" appSuppressDock (click)="closeModal()">
   <div class="modal-card" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Edit Purchaser</h3>

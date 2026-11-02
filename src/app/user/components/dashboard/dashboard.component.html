@@ -1,4 +1,4 @@
-<app-loading-spinner *ngIf="isLoading && stock.length === 0" text="Loading Stock"></app-loading-spinner>
+<app-loading-spinner *ngIf="isLoading && stock.length === 0" text="Loading Stock"skeleton="stock" [skeletonPadded]="true"></app-loading-spinner>
 
 <ng-template #noProductsMessage>
   <div class="empty-state-wrapper">
@@ -277,7 +277,7 @@
         </div>
 
         <!-- Loading Spinner for Mobile -->
-        <app-loading-spinner *ngIf="isLoading && stock.length > 0" mode="inline" class="d-md-none"></app-loading-spinner>
+        <app-loading-spinner *ngIf="isLoading && stock.length > 0" mode="inline" class="d-md-none"skeleton="stock"></app-loading-spinner>
       </div>
     </div>
 

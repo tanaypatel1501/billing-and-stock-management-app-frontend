@@ -1,5 +1,5 @@
 <!-- Loading -->
-<app-loading-spinner *ngIf="isLoading" text="Loading Sales"></app-loading-spinner>
+<app-loading-spinner *ngIf="isLoading" text="Loading Sales" skeleton="sales" [skeletonPadded]="true"></app-loading-spinner>
 
 <!-- No bills at all -->
 <ng-template #noSalesMessage>

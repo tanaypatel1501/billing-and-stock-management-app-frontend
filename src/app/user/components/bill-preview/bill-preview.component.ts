@@ -1,12 +1,21 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild  } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
-import { faArrowLeft, faPrint, faDownload, faShare, faTimes, faEnvelope, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faPrint, faDownload, faShare, faTimes, faEnvelope, faRotateLeft, faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { DatePipe } from '@angular/common';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { getDocument, GlobalWorkerOptions, PDFDocumentProxy } from 'pdfjs-dist';
 import { InvoiceData } from 'src/app/models/invoice-data.model';
+import { AlertService } from 'src/app/services/alert-service/alert.service';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+import panzoom, { PanZoom } from 'panzoom';
+import { NativeDockService } from 'src/app/services/native-dock/native-dock.service';
+import { NativePrintService } from 'src/app/services/native-print/native-print.service';
+
+GlobalWorkerOptions.workerSrc = 'assets/pdfjs/pdf.worker.min.js';
 
 @Component({
   selector: 'app-bill-preview',
@@ -27,11 +36,16 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
   showPdfModal = false;
   pdfLoading = false;
   pdfError = false;
-  pdfBlobUrl: string | null = null;
-  safePdfUrl: SafeResourceUrl | null = null;
   pdfBlob: Blob | null = null;
+
+  private pdfDocument: PDFDocumentProxy | null = null;
+
+  @ViewChild('pdfViewer')
+  pdfViewer?: ElementRef<HTMLDivElement>;
+
   showShareSheet = false;
   private logoBlobUrl: string | null = null;
+  private panzoomInstance: PanZoom | null = null;
 
   faArrowLeft = faArrowLeft;
   faPrint = faPrint;
@@ -41,62 +55,269 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
   faEnvelope = faEnvelope;
   faWhatsapp = faWhatsapp;
   faRotateLeft = faRotateLeft;
+  faChevronLeft = faChevronLeft;
+  isAndroid = Capacitor.getPlatform() === 'android';
+  private dockRelease: (() => void) | null = null;
 
   constructor(
     private authService: AuthService,
     private userStorageService: UserStorageService,
     private router: Router,
     private datePipe: DatePipe,
-    private sanitizer: DomSanitizer
+    private alertService: AlertService,
+    private nativeDock: NativeDockService,
+    private nativePrint: NativePrintService
   ) {}
 
   // ── PDF Modal ──
 
-  openPdfPreview(): void {
-    this.showPdfModal = true;
-    this.pdfLoading = true;
-    this.pdfError = false;
+  private async renderPdf(blob: Blob): Promise<void> {
+    if (!this.pdfViewer?.nativeElement) {
+      throw new Error('PDF viewer container is not available.');
+    }
 
-    this.authService.getPdfBlob(this.billId).subscribe({
-      next: (blob: Blob) => {
-        this.pdfBlob = blob;
-        const url = URL.createObjectURL(blob);
-        this.pdfBlobUrl = url;
-        this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-        this.pdfLoading = false;
-      },
-      error: (err) => {
-        console.error('PDF generation failed:', err);
-        this.pdfLoading = false;
-        this.pdfError = true;
+    // Clean up any previous PDF
+    if (this.pdfDocument) {
+      await this.pdfDocument.destroy();
+      this.pdfDocument = null;
+    }
+
+    const container = this.pdfViewer.nativeElement;
+
+    // Remove previous pages
+    container.innerHTML = '';
+
+    const arrayBuffer = await blob.arrayBuffer();
+
+    const loadingTask = getDocument({
+      data: new Uint8Array(arrayBuffer)
+    });
+
+    this.pdfDocument = await loadingTask.promise;
+
+    for (let pageNumber = 1; pageNumber <= this.pdfDocument.numPages; pageNumber++) {
+      const page = await this.pdfDocument.getPage(pageNumber);
+      const baseViewport = page.getViewport({ scale: 1 });
+
+      const availableWidth = Math.max(container.clientWidth - 20, 280);
+      const fitScale = availableWidth / baseViewport.width;
+
+      const ZOOM_HEADROOM = 2;
+      const MAX_PIXELS = 5000000;                                   // per page
+      const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      let renderScale = fitScale * ZOOM_HEADROOM * devicePixelRatio;
+      const pixels = baseViewport.width * renderScale * baseViewport.height * renderScale;
+      if (pixels > MAX_PIXELS) {
+        renderScale *= Math.sqrt(MAX_PIXELS / pixels);
       }
+
+      const displayViewport = page.getViewport({ scale: fitScale });
+      const renderViewport = page.getViewport({ scale: renderScale });
+
+      const pageWrapper = document.createElement('div');
+      pageWrapper.className = 'pdf-page';
+
+      const canvas = document.createElement('canvas');
+      canvas.className = 'pdf-page-canvas';
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        throw new Error('Could not create PDF canvas context.');
+      }
+
+      canvas.width = Math.ceil(renderViewport.width);
+      canvas.height = Math.ceil(renderViewport.height);
+
+      canvas.style.width = `${Math.ceil(displayViewport.width)}px`;
+      canvas.style.height = `${Math.ceil(displayViewport.height)}px`;
+
+      pageWrapper.appendChild(canvas);
+      container.appendChild(pageWrapper);
+
+      await page.render({
+        canvasContext: context,
+        viewport: renderViewport
+      }).promise;
+    }
+
+    if (this.panzoomInstance) {
+      this.panzoomInstance.dispose();
+    }
+    this.panzoomInstance = panzoom(container, {
+      maxZoom: 3,
+      minZoom: 1,
+      bounds: true,
+      boundsPadding: 0.1
     });
   }
 
-  closePdfModal(): void {
-    this.showPdfModal = false;
-    if (this.pdfBlobUrl) {
-      URL.revokeObjectURL(this.pdfBlobUrl);
-      this.pdfBlobUrl = null;
-      this.safePdfUrl = null;
-      this.pdfBlob = null;
+  async openPdfPreview(): Promise<void> {
+    this.showPdfModal = true;
+    this.hideDock();
+    this.pdfLoading = true;
+    this.pdfError = false;
+
+    try {
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        this.authService.getPdfBlob(this.billId).subscribe({
+          next: resolve,
+          error: reject
+        });
+      });
+
+      this.pdfBlob = blob;
+
+      await this.renderPdf(blob);
+      this.pdfLoading = false;
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      this.pdfLoading = false;
+      this.pdfError = true;
     }
   }
 
+  async closePdfModal(): Promise<void> {
+    this.showPdfModal = false;
+    this.showShareSheet = false;
+    this.restoreDock();
+
+    if (this.panzoomInstance) {
+      this.panzoomInstance.dispose();
+      this.panzoomInstance = null;
+    }
+
+    if (this.pdfDocument) {
+      try {
+        await this.pdfDocument.destroy();
+      } catch (error) {
+        console.warn('Failed to destroy PDF document:', error);
+      }
+      this.pdfDocument = null;
+    }
+
+    this.pdfBlob = null;
+    this.freePdfCanvases();
+  }
+
+  private hideDock(): void {
+    if (!this.dockRelease) this.dockRelease = this.nativeDock.suppress();
+  }
+
+  private restoreDock(): void {
+    this.dockRelease?.();
+    this.dockRelease = null;
+  }
+
+  private freePdfCanvases(): void {
+    const el = this.pdfViewer?.nativeElement;
+    if (!el) return;
+    el.querySelectorAll('canvas').forEach(c => {
+      (c as HTMLCanvasElement).width = 0;     // releases the canvas memory immediately
+      (c as HTMLCanvasElement).height = 0;
+    });
+    el.innerHTML = '';
+  }
+
+  /* ---------------------- NATIVE FILE HELPERS ---------------------- */
+
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  private async writePdfToDevice(blob: Blob, filename: string): Promise<{ uri: string; location: 'Documents' | 'App storage' }> {
+    const base64Data = await this.blobToBase64(blob);
+
+    try {
+      const result = await Filesystem.writeFile({
+        path: filename,
+        data: base64Data,
+        directory: Directory.Documents,
+        recursive: true
+      });
+      return { uri: result.uri, location: 'Documents' };
+    } catch (err) {
+      console.warn('Write to Documents failed, falling back to app storage:', err);
+      const result = await Filesystem.writeFile({
+        path: filename,
+        data: base64Data,
+        directory: Directory.External,
+        recursive: true
+      });
+      return { uri: result.uri, location: 'App storage' };
+    }
+  }
+
+  private buildFilename(): string {
+    const date = this.datePipe.transform(this.bill.invoiceDate, 'dd-MM-yyyy');
+    return `Invoice-${this.bill.purchaserName}-${date}.pdf`;
+  }
+
+  /* ---------------------- DOWNLOAD ---------------------- */
+
   downloadPdf(): void {
     if (!this.pdfBlob) return;
+    const filename = this.buildFilename();
+
+    if (Capacitor.isNativePlatform()) {
+      this.writePdfToDevice(this.pdfBlob, filename)
+        .then(({ location }) => {
+          this.alertService.success(`Invoice saved to ${location}.`);
+        })
+        .catch((err) => {
+          console.error('Native download failed:', err);
+          this.alertService.error('Failed to save invoice.');
+        });
+      return;
+    }
+
+    // Web: unchanged
     const url = URL.createObjectURL(this.pdfBlob);
     const a = document.createElement('a');
-    const date = this.datePipe.transform(this.bill.invoiceDate, 'dd-MM-yyyy');
     a.href = url;
-    a.download = `Invoice-${this.bill.purchaserName}-${date}.pdf`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
   }
 
+  /* ---------------------- SHARE ---------------------- */
+
   openShareSheet(): void {
     if (!this.pdfBlob) return;
+
+    if (Capacitor.isNativePlatform()) {
+      this.shareNative();
+      return;
+    }
+
     this.showShareSheet = true;
+  }
+
+  private async shareNative(): Promise<void> {
+    if (!this.pdfBlob) return;
+    const filename = this.buildFilename();
+
+    try {
+      const { uri } = await this.writePdfToDevice(this.pdfBlob, filename);
+      await Share.share({
+        title: `Invoice - ${this.bill.purchaserName}`,
+        text: `Invoice dated ${this.datePipe.transform(this.bill.invoiceDate, 'dd-MM-yyyy')} from ${this.details.name}`,
+        url: uri,
+        dialogTitle: 'Share Invoice'
+      });
+    } catch (err: any) {
+      if (err?.message !== 'Share canceled') {
+        console.error('Native share failed:', err);
+        this.alertService.error('Failed to share invoice.');
+      }
+    }
   }
 
   closeShareSheet(): void {
@@ -109,7 +330,6 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
     const body = encodeURIComponent(
       `Please find attached the invoice for ${this.bill.purchaserName} dated ${date}.\n\nRegards,\n${this.details.name}`
     );
-    // Opens mail client — user attaches the PDF manually after download
     this.downloadPdf();
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     this.closeShareSheet();
@@ -117,10 +337,9 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
 
   shareViaWhatsApp(): void {
     const date = this.datePipe.transform(this.bill.invoiceDate, 'dd-MM-yyyy');
-    const fileName = `Invoice-${this.bill.purchaserName}-${date}.pdf`;
+    const fileName = this.buildFilename();
     const file = new File([this.pdfBlob!], fileName, { type: 'application/pdf' });
 
-    // Use Web Share API for file attachment — WhatsApp picks it up on mobile
     if (navigator.share && navigator.canShare({ files: [file] })) {
       navigator.share({
         files: [file],
@@ -128,7 +347,6 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
         text: `Invoice dated ${date} from ${this.details.name}`
       }).catch(err => console.error('WhatsApp share failed:', err));
     } else {
-      // Fallback: open WhatsApp web with a pre-filled message + trigger download
       this.downloadPdf();
       const text = encodeURIComponent(
         `Invoice for ${this.bill.purchaserName} dated ${date} from ${this.details.name}. Please find the attached PDF.`
@@ -138,34 +356,81 @@ export class BillPreviewComponent implements OnInit, OnDestroy {
     this.closeShareSheet();
   }
 
-  printPdf(): void {
-    if (!this.pdfBlobUrl) return;
+  async printPdf(): Promise<void> {
+    if (!this.pdfBlob) return;
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    // Android app: open the system print screen (preview, printers, Save as PDF)
+    if (this.isAndroid) {
+      try {
+        await this.nativePrint.printPdf(
+          this.pdfBlob,
+          this.buildFilename().replace(/\.pdf$/i, '')
+        );
+      } catch (err) {
+        console.error('Native print failed:', err);
+        this.alertService.error('Could not open the print screen.');
+      }
+      return;
+    }
+
+    // Web: unchanged
+    const pdfUrl = URL.createObjectURL(this.pdfBlob);
+
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+      !(window as any).MSStream;
 
     if (isIOS) {
-      window.open(this.pdfBlobUrl, '_blank');
-    } else {
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = this.pdfBlobUrl;
-      document.body.appendChild(iframe);
-      iframe.onload = () => {
-        iframe.contentWindow?.print();
-        setTimeout(() => document.body.removeChild(iframe), 1000);
-      };
+      window.open(pdfUrl, '_blank');
+      setTimeout(() => {
+        URL.revokeObjectURL(pdfUrl);
+      }, 10000);
+      return;
     }
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.src = pdfUrl;
+    document.body.appendChild(iframe);
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      }, 300);
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        URL.revokeObjectURL(pdfUrl);
+      }, 1000);
+    };
   }
 
   ngOnDestroy(): void {
-    this.closePdfModal();
-      if (this.logoBlobUrl) {
+    this.restoreDock();
+    if (this.panzoomInstance) {
+      this.panzoomInstance.dispose();
+      this.panzoomInstance = null;
+    }
+    if (this.pdfDocument) {
+      this.pdfDocument.destroy();
+      this.pdfDocument = null;
+    }
+    this.pdfBlob = null;
+    if (this.pdfViewer?.nativeElement) {
+      this.pdfViewer.nativeElement.innerHTML = '';
+    }
+    if (this.logoBlobUrl) {
       URL.revokeObjectURL(this.logoBlobUrl);
       this.logoBlobUrl = null;
     }
   }
 
-  // ── Existing methods ──
+  // ── Existing methods (unchanged) ──
 
   getIdentificationLabel(value: string): string {
     if (!value) return 'GSTIN';

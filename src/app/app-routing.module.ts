@@ -11,10 +11,16 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
+import { NativeHomeGuard } from './guards/native-home/native-home.guard';
+import { MenuComponent } from './components/menu/menu.component';
+import { SettingsComponent } from './components/settings/settings.component';
 
 const routes: Routes = [
   {
-    path : "home", component : HomeComponent,canActivate:[NoauthGuard],title: 'GST Medicose'
+    path : "home", component : HomeComponent,canActivate:[NoauthGuard, NativeHomeGuard],title: 'GST Medicose'
+  },
+  { 
+    path: 'settings', component: SettingsComponent,title: 'Settings | GST Medicose' 
   },
   {
     path : "login", component : LoginComponent,canActivate:[NoauthGuard], title: 'Login | GST Medicose'
@@ -42,6 +48,12 @@ const routes: Routes = [
     component : ProfileComponent,
     canActivate:[UserGuard || AdminGuard],
     title: 'Profile | GST Medicose'
+  },
+  {
+    path : "menu", 
+    component : MenuComponent,
+    canActivate:[UserGuard || AdminGuard],
+    title: 'Menu | GST Medicose'
   },
   { 
     path: 'admin', 

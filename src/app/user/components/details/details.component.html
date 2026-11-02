@@ -325,12 +325,11 @@
             id="upiId"
             formControlName="upiId"
             placeholder="e.g., businessname@upi">
-            <div class="error-msg" *ngIf="detailsForm.get('upiId')?.hasError('pattern') && detailsForm.get('upiId')?.touched">
+          <div class="error-msg" *ngIf="detailsForm.get('upiId')?.hasError('pattern') && detailsForm.get('upiId')?.touched">
             Enter a valid UPI ID (e.g., name@upi, mobile@paytm).
           </div>
         </div>
 
-        <!-- Show QR toggle — only visible if UPI ID is filled -->
         <div class="qr-toggle-row" *ngIf="hasUpiId">
           <div class="qr-toggle-info">
             <span class="qr-toggle-label">Show QR Code on Bill</span>
@@ -347,72 +346,6 @@
             <span class="qr-toggle-text">{{ detailsForm.get('showQrOnBill')?.value ? 'On' : 'Off' }}</span>
           </button>
         </div>
-        <div class="divider"></div>
-        <div class="section-title">Tax Mode</div>
-        <div class="form-group full-width">
-          <label for="taxMode">Tax Mode on Invoice</label>
-          <select id="taxMode" formControlName="taxMode">
-            <option value="CGST_SGST">CGST + SGST (Intra-state)</option>
-            <option value="IGST">IGST (Inter-state)</option>
-          </select>
-        </div>
-        
-        <div class="divider"></div>
-        <!-- Template Selection -->
-        <div class="section-title">Invoice Template</div>
-
-        <div class="template-grid">
-          <div
-            *ngFor="let template of templates"
-            class="template-card"
-            [class.selected]="selectedTemplate === template.id"
-            (click)="selectTemplate(template.id)">
-
-            <!-- Template Preview Thumbnail -->
-            <div class="template-thumb" [style.border-color]="template.color">
-              <!-- Landscape preview -->
-              <div class="thumb-preview landscape" *ngIf="template.orientation === 'landscape'">
-                <div class="thumb-header-bar" [style.background]="'#f0f0f0'"></div>
-                <div class="thumb-body">
-                  <div class="thumb-row"></div>
-                  <div class="thumb-row short"></div>
-                  <div class="thumb-table">
-                    <div class="thumb-table-header"></div>
-                    <div class="thumb-table-row"></div>
-                    <div class="thumb-table-row"></div>
-                    <div class="thumb-table-row"></div>
-                  </div>
-                  <div class="thumb-footer"></div>
-                </div>
-              </div>
-              <!-- Portrait preview -->
-              <div class="thumb-preview portrait" *ngIf="template.orientation === 'portrait'">
-                <div class="thumb-header-bar colored" [style.background]="template.color"></div>
-                <div class="thumb-info-strip"></div>
-                <div class="thumb-body">
-                  <div class="thumb-parties">
-                    <div class="thumb-party-box"></div>
-                    <div class="thumb-party-box"></div>
-                  </div>
-                  <div class="thumb-table">
-                    <div class="thumb-table-header colored" [style.background]="template.color"></div>
-                    <div class="thumb-table-row"></div>
-                    <div class="thumb-table-row"></div>
-                    <div class="thumb-table-row"></div>
-                  </div>
-                  <div class="thumb-footer"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="template-info">
-              <span class="template-name">{{ template.name }}</span>
-              <span class="template-desc">{{ template.description }}</span>
-            </div>
-
-            <div class="template-check" *ngIf="selectedTemplate === template.id">✓</div>
-          </div>
-        </div>
 
         </div>
 
@@ -426,7 +359,7 @@
 
   </div>
 </div>
-<div class="modal-overlay" *ngIf="showCropModal">
+<div class="modal-overlay" *ngIf="showCropModal" appSuppressDock>
   <div class="crop-modal-card">
 
     <div class="modal-header">

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faFilter, faSortUp, faSortDown, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { SuppressDockDirective } from 'src/app/shared/suppress-dock/suppress-dock.directive';
 
 @Component({
   selector: 'app-filter-button',
   standalone: true,
-  imports: [CommonModule, FormsModule, FontAwesomeModule],
+  imports: [CommonModule, FormsModule, FontAwesomeModule, SuppressDockDirective],
   templateUrl: './filter-button.component.html',
   styleUrls: ['./filter-button.component.scss']
 })

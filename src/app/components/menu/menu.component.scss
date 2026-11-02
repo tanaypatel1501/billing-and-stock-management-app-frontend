@@ -1,0 +1,135 @@
+:host {
+  display: block;
+
+  --page-bg: #f2f2f7;
+  --group-bg: #ffffff;
+  --sep: rgba(60, 60, 67, 0.16);
+  --label: #000000;
+  --chevron: rgba(60, 60, 67, 0.3);
+  --press: rgba(60, 60, 67, 0.1);
+  --destructive: #ff3b30;
+}
+
+:host-context([data-theme='dark']) {
+  --page-bg: #000000;
+  --group-bg: #1c1c1e;
+  --sep: rgba(84, 84, 88, 0.6);
+  --label: #ffffff;
+  --chevron: rgba(235, 235, 245, 0.3);
+  --press: rgba(255, 255, 255, 0.1);
+  --destructive: #ff453a;
+}
+
+.menu-page {
+  min-height: calc(100vh - 60px);          /* below the 60px header */
+  box-sizing: border-box;
+  background: var(--page-bg);
+  color: var(--label);
+  padding: 20px 16px calc(120px + env(safe-area-inset-bottom)); /* room for the native dock */
+}
+
+.group {
+  background: var(--group-bg);
+  border-radius: 22px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+
+  gap: 4px; 
+  width: 100%;
+  min-height: 54px;
+  padding: 0 0 0 24px;
+  box-sizing: border-box;
+
+  background: transparent;
+  border: none;
+  text-align: left;
+  font: inherit;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+  color: var(--label);
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 80ms linear;
+}
+
+.row-icon {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.row-label {
+  flex: 1 1 auto;
+  min-width: 0;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-chevron {
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 12px;
+  min-width: 12px;
+
+  font-size: 0.8rem;
+  color: var(--chevron);
+}
+
+.row:active {
+  background: var(--press);
+}
+
+.row + .row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 36px; 
+  right: 0;
+  height: 0.5px;
+  background: var(--sep);
+}
+
+.ic-orange { background: #ff9f0a; }
+.ic-green  { background: #30d158; }
+.ic-blue   { background: #0a84ff; }
+.ic-purple { background: #bf5af2; }
+.ic-teal   { background: #1fbfa8; }
+.ic-gray   { background: #8e8e93; }
+
+.row-pill {
+  flex: none;
+  background: var(--destructive);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 10px;
+}
+
+.row.destructive {
+  justify-content: center;
+  color: var(--destructive);
+  font-weight: 600;
+}

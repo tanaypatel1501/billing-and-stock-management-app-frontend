@@ -5,6 +5,8 @@ import { UserStorageService } from '../storage/user-storage.service';
 import { ConfigService } from '../config.service';
 import jwt_decode from 'jwt-decode';
 import { RequestCacheService } from '../cache/request-cache.service';
+import { Capacitor } from '@capacitor/core';
+import { MobileSessionService } from '../mobile-session/mobile-session.service';
 
 const AUTH_HEADER = 'authorization';
 
@@ -46,7 +48,8 @@ export class AuthService {
     private http: HttpClient,
     private userStorageService: UserStorageService,
     private configService: ConfigService,
-    private requestCache: RequestCacheService
+    private requestCache: RequestCacheService,
+    private mobileSession: MobileSessionService
   ) {}
 
   private get baseUrl(): string {
@@ -55,14 +58,12 @@ export class AuthService {
     return url || '';
   }
 
-  initializeAuth(): Promise<void> {
-    return new Promise((resolve) => {
-      const token = UserStorageService.getToken();
-      if (token) {
-        // optional token validation
-      }
-      resolve();
-    });
+  async initializeAuth(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) return;
+    await Promise.race([
+      this.mobileSession.ensureSession(),
+      new Promise<void>(res => setTimeout(res, 8000))
+    ]);
   }
 
   getAvailableTemplates(): Observable<any[]> {
@@ -75,8 +76,13 @@ export class AuthService {
   /* ---------------------- AUTH ---------------------- */
 
   login(username: string, password: string): any {
+    const body: any = { username, password };
+    if (Capacitor.isNativePlatform()) {
+      body.clientType = 'MOBILE_APP';
+    }
+
     return this.http
-      .post<[]>(`${this.baseUrl}authenticate`, { username, password }, { observe: 'response' })
+      .post<any>(`${this.baseUrl}authenticate`, body, { observe: 'response' })
       .pipe(
         tap(() => console.log('User Authentication')),
         map((res: HttpResponse<any>) => {
@@ -92,6 +98,11 @@ export class AuthService {
             this.tokenRefreshed.emit();
           }
 
+          const mobileSessionToken = res.body?.mobileSessionToken;
+          if (mobileSessionToken) {
+            UserStorageService.saveMobileSessionToken(mobileSessionToken);
+          }
+
           return res;
         })
       );
@@ -102,6 +113,11 @@ export class AuthService {
   }
 
   signOut(): void {
+    const headers = this.createAuthorizationHeader();
+    UserStorageService.getMobileSessionToken().then(mobileSessionToken => {
+      const body = mobileSessionToken ? { mobileSessionToken } : {};
+      this.http.post(`${this.baseUrl}logout`, body, { headers }).subscribe({ error: () => {} });
+    });
     UserStorageService.signOut();
     this.updateNavBar();
     this.requestCache.clearAll();
@@ -163,8 +179,13 @@ export class AuthService {
   }
 
   googleSignIn(idToken: string): any {
+    const body: any = { idToken };
+    if (Capacitor.isNativePlatform()) {
+      body.clientType = 'MOBILE_APP';
+    }
+
     return this.http
-      .post<any>(`${this.baseUrl}auth/google`, { idToken }, { observe: 'response' })
+      .post<any>(`${this.baseUrl}auth/google`, body, { observe: 'response' })
       .pipe(
         map((res: HttpResponse<any>) => {
           const token = res.headers.get('authorization');
@@ -175,6 +196,10 @@ export class AuthService {
           if (decoded?.exp) {
             this.userStorageService.saveTokenExpiration(decoded.exp * 1000);
             this.tokenRefreshed.emit();
+          }
+          const mobileSessionToken = res.body?.mobileSessionToken;
+          if (mobileSessionToken) {
+            UserStorageService.saveMobileSessionToken(mobileSessionToken);
           }
           return res;
         })
@@ -425,6 +450,13 @@ export class AuthService {
     const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get(`${this.baseUrl}api/sales/user/years`, { headers });
   }
+
+  askSalesBot(question: string, token?: string, choice?: string,
+              history?: { role: string; text: string }[]): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post(`${this.baseUrl}api/chatbot/ask`,
+      { question, token, choice, history }, { headers });
+   }
 
   /* ---------------------- PROFILE ---------------------- */
 

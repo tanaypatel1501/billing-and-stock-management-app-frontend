@@ -1,97 +1,151 @@
 <div class="landing-container">
-  <!-- Hero Section -->
-   <h1 class="seo-hidden">GST Medicose – Billing & Stock Management for Pharma Businesses</h1>
-  <section class="hero-section">
-    <div class="container grid">
-      <div class="hero-content">
-        <h1 class="headline">Billing & Stock Management <span class="accent">Made Easy.</span></h1>
+  <h1 class="seo-hidden">GST Medicose – Billing & Stock Management for Pharma Businesses</h1>
+
+  <!-- HERO (pinned; later panels slide over it) -->
+  <section class="hero">
+    <div class="hero-top container">
+      <div class="pills" aria-hidden="true">
+        <span>Billing</span><span>Inventory</span><span>Pharma</span>
+      </div>
+      <span class="hero-note">Built for pharma businesses</span>
+    </div>
+
+    <ul class="names container">
+      <li>Smart Billing</li>
+      <li>Stock Management</li>
+      <li>Verified Products</li>
+      <li>Secure Data</li>
+    </ul>
+
+    <div class="stage">
+      <span class="disc"></span>
+      <div class="word" aria-hidden="true"><span>MEDICOSE</span></div>
+      <span class="vert" aria-hidden="true">[GST]</span>
+      <img class="fig" src="../../../assets/vectors/hero-illustration.svg" alt="Digital Pharma Management">
+      <div class="strip" aria-hidden="true"></div>
+    </div>
+
+    <div class="hero-bottom container">
+      <div class="story">
+        <h2 class="headline">Billing & Stock Management <span class="accent">Made Easy.</span></h2>
         <p class="sub-description">
-          Powered by <strong>GST Medicose</strong>, our platform provides a seamless 
+          Powered by <strong>GST Medicose</strong>, our platform provides a seamless
           pharma-focused ecosystem to manage inventory, generate bills, and scale your business efficiently.
         </p>
-        <div class="cta-group">
-          <button class="btn-primary" routerLink="/login">Get Started Now</button>
-          <button class="btn-secondary" (click)="scrollToFeatures(features)">Learn More</button>
-        </div>
       </div>
-      <div class="hero-visual">
-        <!-- SVG Illustration representing a modern dashboard/medical tech -->
-        <img src="../../../assets/vectors/hero-illustration.svg" alt="Digital Pharma Management" class="vector-graphic">
+      <div class="cta-group">
+        <button class="btn-primary" routerLink="/login">Get Started Now</button>
+        <button class="btn-secondary" (click)="scrollToFeatures(features)">Learn More</button>
       </div>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section #features class="features-section">
+  <!-- FEATURES (dark panel) -->
+  <section #features class="panel features-section">
+    <div class="panel-strip" aria-hidden="true"></div>
     <div class="container">
       <h2 class="section-title">Streamline Your Operations</h2>
-      <div class="feature-grid">
-        <div class="feature-card">
-          <div class="icon-box">📋</div>
-          <h3>Smart Billing</h3>
-          <p>Generate professional invoices instantly with automated GST calculations and printable formats.</p>
+
+      <!-- U-shaped carousel: one card in focus, neighbours curve up and away -->
+      <div class="wheel-wrap"
+           (pointerenter)="onPointerEnter($event)" (pointerleave)="onPointerLeave($event)"
+           (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (touchcancel)="startAutoplay()">
+        <div class="wheel" tabindex="0" role="group" aria-roledescription="carousel" aria-label="Features"
+             [style.--active]="activeFeature"
+             (keydown.arrowright)="next()" (keydown.arrowleft)="prev()">
+
+          <article class="feature-card" style="--i:0"
+                   [class.is-active]="activeFeature === 0" [class.is-near]="activeFeature === 1"
+                   [attr.aria-hidden]="activeFeature !== 0" (click)="goTo(0)">
+            <span class="card-no">01</span>
+            <div class="icon-box c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14v18l-2.33-1.5L14.33 21 12 19.5 9.67 21 7.33 19.5 5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></div>
+            <h3>Smart Billing</h3>
+            <p>Generate professional invoices instantly with automated GST calculations and printable formats.</p>
+          </article>
+
+          <article class="feature-card" style="--i:1"
+                   [class.is-active]="activeFeature === 1" [class.is-near]="activeFeature === 0 || activeFeature === 2"
+                   [attr.aria-hidden]="activeFeature !== 1" (click)="goTo(1)">
+            <span class="card-no">02</span>
+            <div class="icon-box c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></div>
+            <h3>Stock Management</h3>
+            <p>Real-time inventory tracking with low-stock alerts and comprehensive medicine categorization.</p>
+          </article>
+
+          <article class="feature-card" style="--i:2"
+                   [class.is-active]="activeFeature === 2" [class.is-near]="activeFeature === 1"
+                   [attr.aria-hidden]="activeFeature !== 2" (click)="goTo(2)">
+            <span class="card-no">03</span>
+            <div class="icon-box c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8.2-8 9-4.8-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
+            <h3>Verified Products</h3>
+            <p>Request new products effortlessly. Our admin team verifies all entries to ensure catalog integrity.</p>
+          </article>
         </div>
-        <div class="feature-card">
-          <div class="icon-box">📦</div>
-          <h3>Stock Management</h3>
-          <p>Real-time inventory tracking with low-stock alerts and comprehensive medicine categorization.</p>
-        </div>
-        <div class="feature-card">
-          <div class="icon-box">🛡️</div>
-          <h3>Verified Products</h3>
-          <p>Request new products effortlessly. Our admin team verifies all entries to ensure catalog integrity.</p>
+
+        <div class="wheel-controls">
+          <button class="wheel-btn" type="button" aria-label="Previous feature" (click)="prev()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <span class="wheel-count">0{{ activeFeature + 1 }} <i>/</i> 03</span>
+          <button class="wheel-btn" type="button" aria-label="Next feature" (click)="next()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Illustration / Aesthetic Section -->
-  <section class="aesthetic-section">
-    <div class="container grid align-center">
-      <div class="illustration-box">
-        <img src="../../../assets/vectors/workflow-visual.svg" alt="Workflow Illustration" class="vector-graphic">
-      </div>
-      <div class="text-box">
-        <h2>A Modern Workflow for Modern Pharma</h2>
-        <p>Gone are the days of manual ledgers. Register your business, access the GST Medicose global catalog, and start billing in minutes.</p>
-        <ul class="feature-list">
-          <li><span class="tick">✔</span> Multi-user accessibility</li>
-          <li><span class="tick">✔</span> Mobile & Desktop responsive design</li>
-          <li><span class="tick">✔</span> Secure data encryption</li>
-        </ul>
+  <!-- WORKFLOW (light panel) -->
+  <section class="panel workflow-section">
+    <div class="container">
+      <h2 class="scatter">
+        <span>A modern</span>
+        <small>workflow for</small>
+        <span>modern pharma</span>
+      </h2>
+
+      <div class="grid workflow-grid">
+        <div class="illustration-box">
+          <img src="../../../assets/vectors/workflow-visual.svg" alt="Workflow Illustration" class="vector-graphic">
+        </div>
+        <div class="text-box">
+          <p>Gone are the days of manual ledgers. Register your business, access the GST Medicose global catalog, and start billing in minutes.</p>
+          <ul class="feature-list">
+            <li><span class="tick">✔</span> Multi-user accessibility</li>
+            <li><span class="tick">✔</span> Mobile & Desktop responsive design</li>
+            <li><span class="tick">✔</span> Secure data encryption</li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- About GST Medicose -->
-  <section class="about-section">
+  <!-- ABOUT + CTA + FOOTER -->
+  <section class="panel closing-section">
     <div class="container text-center">
       <span class="label">The Backbone of the Platform</span>
-      <h2>About GST Medicose</h2>
+      <h2 class="big-title">About GST Medicose</h2>
       <p class="about-text">
-        As a leader in medical drugs distribution, GST Medicose brings decades of industry credibility to this digital solution. 
+        As a leader in medical drugs distribution, GST Medicose brings decades of industry credibility to this digital solution.
         We built this tool specifically for the unique regulatory and operational needs of pharmaceutical businesses.
       </p>
-    </div>
-  </section>
 
-  <!-- Final CTA -->
-  <section class="final-cta">
-    <div class="cta-card">
-      <h2>Ready to modernize your pharmacy?</h2>
-      <p>Join hundreds of businesses managing their stock with GST Medicose.</p>
-      <button class="btn-primary-dark" routerLink="/register">Create Your Account</button>
+      <div class="cta-card">
+        <span class="cta-disc"></span>
+        <h2>Ready to modernize your pharmacy?</h2>
+        <p>Join hundreds of businesses managing their stock with GST Medicose.</p>
+        <button class="btn-primary-dark" routerLink="/register">Create Your Account</button>
+      </div>
     </div>
+
+    <footer class="footer-section">
+      <div class="container">
+        <p class="footer-help">
+          Need help? Contact us at
+          <a href="mailto:gstmedicose+support@gmail.com" class="footer-link">gstmedicose+support@gmail.com</a>
+        </p>
+        <p class="footer-copyright">&copy; 2026 GST Medicose. All Rights Reserved.</p>
+      </div>
+    </footer>
   </section>
-  <footer class="footer-section">
-    <div class="container">
-      <p class="footer-help">
-        Need help? Contact us at 
-        <a href="mailto:gstmedicose+support@gmail.com" class="footer-link">gstmedicose+support@gmail.com</a>
-      </p>
-      <p class="footer-copyright">
-        &copy; 2026 GST Medicose. All Rights Reserved.
-      </p>
-    </div>
-  </footer>
 </div>

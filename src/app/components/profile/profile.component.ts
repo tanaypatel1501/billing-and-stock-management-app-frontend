@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { NativeDockService } from 'src/app/services/native-dock/native-dock.service';
 import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
@@ -10,7 +11,7 @@ import { faPencil, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
 
   faPencil = faPencil;
   faCheck = faCheck;
@@ -37,10 +38,13 @@ export class ProfileComponent implements OnInit {
 
   modalErrorMessage: string | null = null;
 
+  private dockRelease: (() => void) | null = null;
+
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
-    private requestCache: RequestCacheService   
+    private requestCache: RequestCacheService,
+    private nativeDock: NativeDockService   
   ) {
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
@@ -146,11 +150,19 @@ export class ProfileComponent implements OnInit {
     this.passwordForm.reset();
     this.modalErrorMessage = null;
     this.feedbackMessage = null;
+    if (!this.dockRelease) this.dockRelease = this.nativeDock.suppress(); 
   }
 
   closeChangePassword() {
     this.showPasswordModal = false;
     this.modalErrorMessage = null;
+    this.dockRelease?.();
+    this.dockRelease = null;
+  }
+
+  ngOnDestroy(): void {
+    this.dockRelease?.();
+    this.dockRelease = null;
   }
 
   submitPasswordChange() {

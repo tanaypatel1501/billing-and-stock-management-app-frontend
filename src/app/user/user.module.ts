@@ -19,6 +19,7 @@ import { InvoiceTemplateTwoComponent } from './components/invoice-template-two/i
 import { UserProductRequestComponent } from './components/user-product-request/user-product-request.component';
 import { PurchasersComponent } from './components/purchasers/purchasers.component';
 import { LoadingSpinnerComponent } from '../shared/loading-spinner/loading-spinner.component';
+import { SuppressDockDirective } from '../shared/suppress-dock/suppress-dock.directive';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { LoadingSpinnerComponent } from '../shared/loading-spinner/loading-spinn
     ImageCropperComponent,
     QRCodeModule,
     PurchasersComponent,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    SuppressDockDirective
   ]
 })
 export class UserModule { }

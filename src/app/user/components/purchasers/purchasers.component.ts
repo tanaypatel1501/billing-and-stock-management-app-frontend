@@ -19,6 +19,7 @@ import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
 import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
+import { SuppressDockDirective } from 'src/app/shared/suppress-dock/suppress-dock.directive';
 
 const PATTERNS = {
   GST:     /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/i,
@@ -35,7 +36,8 @@ const PATTERNS = {
     ReactiveFormsModule,
     FontAwesomeModule,
     SearchBarComponent,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    SuppressDockDirective
   ],
   templateUrl: './purchasers.component.html',
   styleUrls: ['./purchasers.component.scss']

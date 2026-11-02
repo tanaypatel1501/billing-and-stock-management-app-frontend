@@ -1,0 +1,309 @@
+:host {
+  --bot-fab-size: 62px;
+  --bot-offset: 22px;
+  --bot-visible-edge: 22px;                                   // how much of the avatar shows when tucked away
+  --peek-x: calc(var(--bot-offset) + var(--bot-fab-size) - var(--bot-visible-edge));
+
+  position: fixed;
+  right: var(--bot-offset);
+  bottom: var(--bot-offset);
+  z-index: 1000;
+}
+
+@media print { :host { display: none; } }
+
+// =====================================================================
+//  Dock: moves the avatar between "offscreen / greeting / peek / open"
+// =====================================================================
+.dock {
+  position: relative;
+  width: var(--bot-fab-size);
+  height: var(--bot-fab-size);
+  transition: transform .55s cubic-bezier(.34, 1.56, .64, 1), opacity .25s ease;   // springy overshoot
+
+  &[data-state='offscreen'] { transform: translateX(calc(var(--peek-x) + 70px)); opacity: 0; pointer-events: none; }
+  &[data-state='greeting']  { transform: translateX(0); opacity: 1; transition-duration: .7s; }
+  &[data-state='open']      { transform: translateX(0); opacity: 1; }
+  &[data-state='peek']      { transform: translateX(var(--peek-x)); opacity: 1; transition-duration: .3s; transition-timing-function: ease; }
+  &[data-state='leaving']   { animation: hopAway .75s ease-in-out forwards; }
+}
+
+// a little hop, then slide to the edge with a tiny rebound
+@keyframes hopAway {
+  0%   { transform: translate(0, 0); }
+  28%  { transform: translate(0, -26px); }
+  62%  { transform: translate(calc(var(--peek-x) * .7), -12px); }
+  82%  { transform: translate(var(--peek-x), 0); }
+  91%  { transform: translate(calc(var(--peek-x) - 6px), 0); }
+  100% { transform: translate(var(--peek-x), 0); }
+}
+
+// Tucked away: sliver is calm, eyes glance toward the screen, no bobbing
+.dock[data-state='peek'] {
+  .fab { animation: none; pointer-events: none; }
+  .eyes { transform: translateX(-3px); }
+}
+// Reveal a bit more on hover / keyboard focus of the edge tab
+.edge-tab:hover ~ .dock[data-state='peek'],
+.edge-tab:focus-visible ~ .dock[data-state='peek'] { transform: translateX(calc(var(--peek-x) - 14px)); }
+
+// Invisible, comfortably tappable strip along the screen edge
+.edge-tab {
+  position: absolute;
+  right: calc(-1 * var(--bot-offset));
+  bottom: -6px;
+  width: 38px;
+  height: calc(var(--bot-fab-size) + 12px);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 2;
+  &:focus-visible { outline: 3px solid var(--gstm-primary-color); outline-offset: -3px; border-radius: 12px 0 0 12px; }
+}
+
+// =====================================================================
+//  Avatar
+// =====================================================================
+.fab {
+  width: var(--bot-fab-size);
+  height: var(--bot-fab-size);
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  background: linear-gradient(145deg, var(--gstm-primary-color), var(--gstm-primary-hover));
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .22);
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  animation: float 4.5s ease-in-out infinite;
+
+  &:focus-visible { outline: 3px solid var(--gstm-text-main); outline-offset: 3px; }
+  .face { width: 74%; height: 74%; overflow: visible; }
+}
+
+.face {
+  .head { fill: var(--gstm-card-bg); }
+  .antenna { stroke: var(--gstm-card-bg); stroke-width: 2.5; stroke-linecap: round; }
+  .antenna-tip { fill: var(--gstm-card-bg); }
+  .eyes { transition: transform .3s ease; }
+  .eye { fill: var(--gstm-text-main); transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; }
+  .mouth { fill: none; stroke: var(--gstm-text-main); stroke-width: 2.4; stroke-linecap: round; }
+
+  // waving hand: invisible except during the greeting
+  .hand { opacity: 0; transform-box: view-box; transform-origin: 13px 46px; }
+  .arm { stroke: var(--gstm-card-bg); stroke-width: 4.2; stroke-linecap: round; }
+  .palm { fill: var(--gstm-card-bg); stroke: var(--gstm-primary-hover); stroke-width: 1.2; }
+}
+
+.dock[data-state='greeting'] .hand { opacity: 1; animation: wave .55s ease-in-out .5s 5 alternate; }
+
+.fab.thinking .eyes { animation: glance 1s ease-in-out infinite; }
+
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes glance { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
+@keyframes wave { from { transform: rotate(-22deg); } to { transform: rotate(24deg); } }
+
+// Speech bubble next to the avatar during the greeting
+.greet-bubble {
+  position: absolute;
+  right: calc(var(--bot-fab-size) + 12px);
+  bottom: 10px;
+  width: max-content;
+  max-width: 200px;
+  padding: 9px 13px;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--gstm-card-bg);
+  color: var(--gstm-text-main);
+  font: 600 .82rem/1.35 sans-serif;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .18);
+  animation: bubbleIn .35s cubic-bezier(.34, 1.56, .64, 1) both;
+  transform-origin: bottom right;
+}
+@keyframes bubbleIn { from { opacity: 0; transform: scale(.6) translateY(6px); } to { opacity: 1; transform: none; } }
+
+// =====================================================================
+//  Chat panel
+// =====================================================================
+.chat-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--bot-fab-size) + 14px);
+  width: 400px;
+  height: 520px;
+  max-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  background: var(--gstm-card-bg);
+  border-radius: 20px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .22);
+  overflow: hidden;
+  transform-origin: bottom right;
+  opacity: 0;
+  transform: scale(.88) translateY(14px);
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity .22s ease, transform .35s cubic-bezier(.34, 1.4, .64, 1), visibility 0s linear .35s;
+
+  &.open { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: .12s, .12s, 0s; }
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, var(--gstm-primary-color), var(--gstm-primary-hover));
+  color: #000;
+
+  .head-avatar { width: 36px; height: 36px; background: rgba(255, 255, 255, .35); border-radius: 50%; display: grid; place-items: center; .face { width: 80%; height: 80%; } }
+  .head-text { flex: 1; display: flex; flex-direction: column; line-height: 1.2;
+    strong { font: 800 .95rem sans-serif; }
+    span { font: 500 .75rem sans-serif; opacity: .75; }
+  }
+}
+
+.icon-btn {
+  background: transparent; border: none; cursor: pointer; color: #000; font-size: 1.05rem; padding: 6px; border-radius: 8px;
+  &:hover { background: rgba(0, 0, 0, .1); }
+}
+
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--gstm-bg);
+}
+
+.msg {
+  display: flex;
+  &.user { justify-content: flex-end; }
+  &.bot { justify-content: flex-start; }
+}
+
+.bubble {
+  max-width: 84%;
+  padding: 9px 13px;
+  border-radius: 16px;
+  font: 500 .86rem/1.45 sans-serif;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.msg.bot .bubble {
+  background: var(--gstm-card-bg);
+  color: var(--gstm-text-main);
+  border-bottom-left-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+}
+.msg.user .bubble {
+  background: var(--gstm-primary-color);
+  color: #000;
+  border-bottom-right-radius: 5px;
+}
+.msg.bot.refused .bubble,
+.msg.bot.not_available .bubble,
+.msg.bot.failed .bubble { border-left: 3px solid var(--gstm-text-muted); }
+
+.sql-toggle {
+  display: block; margin-top: 6px; background: none; border: none; padding: 0;
+  font: 600 .72rem sans-serif; color: var(--gstm-text-muted); cursor: pointer; text-decoration: underline;
+}
+.sql {
+  margin: 6px 0 0; padding: 8px; border-radius: 8px; background: var(--gstm-input-bg);
+  color: var(--gstm-text-main); font: 500 .72rem/1.4 monospace; overflow-x: auto; white-space: pre-wrap;
+}
+
+// Typing dots
+.typing {
+  display: flex; gap: 4px; padding: 12px 14px;
+  i { width: 6px; height: 6px; border-radius: 50%; background: var(--gstm-text-muted); animation: dot 1s infinite ease-in-out; }
+  i:nth-child(2) { animation-delay: .15s; }
+  i:nth-child(3) { animation-delay: .3s; }
+}
+@keyframes dot { 0%, 80%, 100% { opacity: .3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+
+.chips {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;
+  button {
+    background: var(--gstm-input-bg); border: 1.5px solid var(--gstm-input-border); color: var(--gstm-text-main);
+    border-radius: 999px; padding: 6px 12px; font: 600 .76rem sans-serif; cursor: pointer; transition: .2s;
+    &:hover { border-color: var(--gstm-primary-color); }
+  }
+}
+
+.chat-input {
+  display: flex; gap: 8px; padding: 10px 12px; background: var(--gstm-card-bg);
+  border-top: 1px solid var(--gstm-input-border);
+
+  input {
+    flex: 1; background: var(--gstm-input-bg); border: 1.5px solid var(--gstm-input-border); border-radius: 10px;
+    padding: 9px 12px; font: 500 .86rem sans-serif; color: var(--gstm-text-main); outline: none; min-width: 0;
+    &:focus { border-color: var(--gstm-primary-color); }
+  }
+}
+.send-btn {
+  width: 40px; border: none; border-radius: 10px; background: var(--gstm-primary-color); color: #000; cursor: pointer; transition: .2s;
+  &:hover:not(:disabled) { background: var(--gstm-primary-hover); }
+  &:disabled { opacity: .45; cursor: not-allowed; }
+}
+
+// ---------- Result table & name choices ----------
+.msg.wide .bubble { max-width: 100%; width: 100%; }
+
+.table-wrap {
+  margin-top: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--gstm-input-border);
+  border-radius: 10px;
+
+  table { width: 100%; border-collapse: collapse; font: 500 .74rem/1.35 sans-serif; }
+  th, td { padding: 6px 9px; text-align: left; white-space: nowrap; }
+  th {
+    background: var(--gstm-input-bg);
+    color: var(--gstm-text-label);
+    font-weight: 700;
+    text-transform: capitalize;
+    border-bottom: 1px solid var(--gstm-input-border);
+  }
+  td { color: var(--gstm-text-main); border-bottom: 1px solid var(--gstm-input-border); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--gstm-table-hover); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+}
+
+.chips.inline { margin-top: 10px; flex-direction: column; align-items: stretch;
+  button { text-align: left; border-radius: 10px; &:disabled { opacity: .5; cursor: not-allowed; } }
+}
+
+// ---------- Mobile / tablet (your bottom nav appears at <= 992px) ----------
+@media (max-width: 992px) {
+  :host {
+    --bot-fab-size: 54px;
+    --bot-offset: 14px;
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));   // sit above the bottom dock
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-panel {
+    position: fixed;
+    right: 10px; left: 10px; width: auto;
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px) + 64px);
+    height: min(70vh, 520px);
+  }
+  .greet-bubble { max-width: 170px; }
+}
+
+// ---------- Reduced motion: no intro, no hopping, instant docking ----------
+@media (prefers-reduced-motion: reduce) {
+  .fab, .face .eye, .typing i, .face .hand { animation: none !important; }
+  .dock { transition: none !important; animation: none !important; }
+  .dock[data-state='leaving'] { transform: translateX(var(--peek-x)); }
+  .chat-panel { transition: none; }
+}

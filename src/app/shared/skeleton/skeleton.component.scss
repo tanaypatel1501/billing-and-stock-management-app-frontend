@@ -1,0 +1,214 @@
+:host {
+  display: block;
+  --sk-bone: rgba(120, 120, 128, 0.18);
+}
+
+:host-context([data-theme='dark']) {
+  --sk-bone: rgba(235, 235, 245, 0.12);
+}
+
+.sk {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* one animation for the whole skeleton: cheap in the Android WebView */
+  animation: skPulse 1.5s ease-in-out infinite;
+}
+
+.sk-padded {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 12px;
+  box-sizing: border-box;
+}
+@media (min-width: 769px) {
+  .sk-padded { padding: 20px; }
+}
+
+@keyframes skPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
+/* ---------- building blocks ---------- */
+.sk-bone {
+  display: block;
+  flex: none;
+  border-radius: 8px;
+  background: var(--sk-bone);
+}
+
+@each $w in 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80 {
+  .sk-w#{$w} { width: $w * 1%; }
+}
+@each $h in 12, 14, 16, 20, 28 {
+  .sk-h#{$h} { height: $h * 1px; }
+}
+
+.sk-round { border-radius: 999px; }
+
+.sk-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  border-radius: 12px;
+  background: var(--gstm-card-bg);
+  border: 1px solid var(--gstm-input-border);
+}
+
+.sk-split {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.sk-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sk-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sk-card.sk-row { flex-direction: row; }
+
+.sk-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* ---------- header placeholder ---------- */
+.sk-header {
+  gap: 12px;
+  padding: 15px;
+  border-radius: 16px;
+  margin-bottom: 4px;
+}
+.sk-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.sk-chip   { width: 100%; height: 52px; border-radius: 10px; }
+.sk-controls { display: flex; align-items: center; gap: 12px; }
+.sk-search { flex: 1; height: 42px; border-radius: 10px; }
+.sk-filter { width: 42px; height: 42px; border-radius: 10px; }
+
+/* ---------- stock card ---------- */
+.sk-expand {
+  align-self: center;
+  width: 34px;
+  height: 24px;
+  border-radius: 20px;
+}
+
+/* ---------- logs timeline ---------- */
+.sk-timeline { gap: 0; }
+.sk-tl {
+  display: flex;
+  gap: 14px;
+  padding-bottom: 20px;
+}
+.sk-tl:last-child { padding-bottom: 0; }
+.sk-dot {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border-radius: 50%;
+}
+.sk-tl-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--gstm-bg);
+  border: 1px solid var(--gstm-input-border);
+}
+
+/* ---------- bills ---------- */
+.sk-icon { width: 44px; height: 44px; border-radius: 12px; }
+.sk-footer {
+  padding-top: 12px;
+  border-top: 1px solid var(--gstm-input-border);
+}
+
+/* ---------- purchasers ---------- */
+.sk-avatar { width: 44px; height: 44px; border-radius: 50%; }
+.sk-tags { display: flex; gap: 8px; width: 100%; }
+.sk-actions { display: flex; gap: 8px; }
+.sk-btn { width: 32px; height: 32px; border-radius: 10px; }
+
+/* ---------- admin product cards ---------- */
+.sk-actions-end { justify-content: flex-end; gap: 4px; }
+
+/* ---------- sales ---------- */
+.sk-roomy { gap: 20px; }
+
+.sk-toggle {
+  width: 150px;
+  height: 38px;
+  border-radius: 10px;
+}
+
+.sk-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (min-width: 769px) {
+  .sk-summary { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+}
+
+.sk-chart { gap: 14px; padding: 18px 16px; }
+
+.sk-bar-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 55px;
+  align-items: center;
+  gap: 12px;
+}
+.sk-bar-track { height: 28px; border-radius: 6px; }
+
+/* ---------- profile ---------- */
+.sk-narrow { max-width: 720px; }
+
+.sk-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 0 8px;
+}
+.sk-hero-avatar { width: 84px; height: 84px; border-radius: 50%; }
+
+.sk-group {
+  gap: 0;
+  padding: 0;
+  border-radius: 22px;
+  overflow: hidden;
+}
+.sk-prow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 16px;
+}
+.sk-prow + .sk-prow { border-top: 1px solid var(--gstm-input-border); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sk { animation: none; }
+}

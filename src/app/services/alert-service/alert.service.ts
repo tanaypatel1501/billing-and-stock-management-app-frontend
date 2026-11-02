@@ -8,6 +8,7 @@ export interface AlertMessage {
   duration?: number;
   onClose?: () => void; 
   onConfirm?: () => void;
+  showButtons?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,0 +1,165 @@
+<div class="sk" [class.sk-padded]="padded" [class.sk-roomy]="type === 'sales'"
+     [class.sk-narrow]="type === 'profile'" 
+     role="status" aria-busy="true" aria-label="Loading">
+
+  <!-- infinite-scroll footer: a couple of placeholder items -->
+  <ng-container *ngIf="mode === 'inline'">
+    <ng-container *ngTemplateOutlet="items; context: { list: inlineRows }"></ng-container>
+  </ng-container>
+
+  <!-- first load: header placeholder + items -->
+  <ng-container *ngIf="mode === 'full'">
+    <div class="sk-card sk-header" *ngIf="type !== 'profile'">
+      <div class="sk-title">
+        <span class="sk-bone sk-w55 sk-h20"></span>
+        <span class="sk-bone sk-w30 sk-h12"></span>
+      </div>
+      <span class="sk-bone sk-chip" *ngIf="type === 'stock'"></span>
+      <span class="sk-bone sk-toggle" *ngIf="type === 'sales'"></span>
+      <div class="sk-controls" *ngIf="type !== 'sales'">
+        <span class="sk-bone sk-search"></span>
+        <span class="sk-bone sk-filter" *ngIf="type !== 'purchasers'"></span>
+      </div>
+    </div>
+    <ng-container *ngTemplateOutlet="items; context: { list: fullRows }"></ng-container>
+  </ng-container>
+
+  <ng-template #items let-list="list">
+    <ng-container [ngSwitch]="type">
+
+      <!-- Dashboard: stock cards -->
+      <ng-container *ngSwitchCase="'stock'">
+        <div class="sk-card" *ngFor="let i of list">
+          <span class="sk-bone sk-w60 sk-h16"></span>
+          <div class="sk-line" *ngFor="let r of [0, 1, 2]">
+            <span class="sk-bone sk-w25 sk-h12"></span>
+            <span class="sk-bone sk-w20 sk-h12"></span>
+          </div>
+          <span class="sk-bone sk-expand"></span>
+        </div>
+      </ng-container>
+
+      <!-- Admin dashboard: product cards -->
+      <ng-container *ngSwitchCase="'products'">
+        <div class="sk-card" *ngFor="let i of list">
+          <span class="sk-bone sk-w60 sk-h16"></span>
+          <div class="sk-line">
+            <span class="sk-bone sk-w20 sk-h12"></span>
+            <span class="sk-bone sk-w20 sk-h12"></span>
+          </div>
+          <div class="sk-actions sk-actions-end">
+            <span class="sk-bone sk-btn" *ngFor="let b of [0, 1]"></span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Stock Logs: timeline -->
+      <ng-container *ngSwitchCase="'logs'">
+        <div class="sk-card sk-timeline">
+          <div class="sk-tl" *ngFor="let i of list">
+            <span class="sk-bone sk-dot"></span>
+            <div class="sk-tl-body">
+              <div class="sk-split">
+                <span class="sk-bone sk-w40 sk-h12"></span>
+                <span class="sk-bone sk-w30 sk-h16 sk-round"></span>
+              </div>
+              <span class="sk-bone sk-w35 sk-h16"></span>
+              <span class="sk-bone sk-w80 sk-h12"></span>
+              <span class="sk-bone sk-w50 sk-h12"></span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Bills: bill cards -->
+      <ng-container *ngSwitchCase="'bills'">
+        <div class="sk-card" *ngFor="let i of list">
+          <div class="sk-row">
+            <span class="sk-bone sk-icon"></span>
+            <div class="sk-col">
+              <div class="sk-split">
+                <span class="sk-bone sk-w50 sk-h16"></span>
+                <span class="sk-bone sk-w25 sk-h16"></span>
+              </div>
+              <div class="sk-split">
+                <span class="sk-bone sk-w35 sk-h12"></span>
+                <span class="sk-bone sk-w30 sk-h12"></span>
+              </div>
+            </div>
+          </div>
+          <div class="sk-split sk-footer">
+            <span class="sk-bone sk-w30 sk-h20 sk-round"></span>
+            <span class="sk-bone sk-w25 sk-h12"></span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Purchasers: avatar cards -->
+      <ng-container *ngSwitchCase="'purchasers'">
+        <div class="sk-card sk-row" *ngFor="let i of list">
+          <span class="sk-bone sk-avatar"></span>
+          <div class="sk-col">
+            <span class="sk-bone sk-w50 sk-h16"></span>
+            <div class="sk-tags">
+              <span class="sk-bone sk-w30 sk-h16 sk-round"></span>
+              <span class="sk-bone sk-w35 sk-h16 sk-round"></span>
+            </div>
+          </div>
+          <div class="sk-actions">
+            <span class="sk-bone sk-btn" *ngFor="let b of [0, 1, 2]"></span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Sales: summary cards + two bar charts (fixed layout) -->
+      <ng-container *ngSwitchCase="'sales'">
+        <div class="sk-summary">
+          <div class="sk-card" *ngFor="let s of [0, 1, 2, 3]">
+            <span class="sk-bone sk-w50 sk-h12"></span>
+            <span class="sk-bone sk-w70 sk-h28"></span>
+          </div>
+        </div>
+
+        <div class="sk-card sk-chart">
+          <div class="sk-split">
+            <span class="sk-bone sk-w45 sk-h16"></span>
+            <span class="sk-bone sk-w25 sk-h12"></span>
+          </div>
+          <div class="sk-bar-row" *ngFor="let r of [0, 1, 2, 3, 4]">
+            <span class="sk-bone sk-h12"></span>
+            <span class="sk-bone sk-bar-track"></span>
+            <span class="sk-bone sk-h12"></span>
+          </div>
+        </div>
+
+        <div class="sk-card sk-chart">
+          <div class="sk-split">
+            <span class="sk-bone sk-w45 sk-h16"></span>
+            <span class="sk-bone sk-w25 sk-h16"></span>
+          </div>
+          <div class="sk-bar-row" *ngFor="let r of [0, 1, 2, 3, 4, 5]">
+            <span class="sk-bone sk-h12"></span>
+            <span class="sk-bone sk-bar-track"></span>
+            <span class="sk-bone sk-h12"></span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Profile: avatar hero + two grouped lists -->
+      <ng-container *ngSwitchCase="'profile'">
+        <div class="sk-hero">
+          <span class="sk-bone sk-hero-avatar"></span>
+          <span class="sk-bone sk-w40 sk-h20"></span>
+          <span class="sk-bone sk-w50 sk-h12"></span>
+        </div>
+        <div class="sk-card sk-group" *ngFor="let g of [0, 1]">
+          <div class="sk-prow" *ngFor="let r of [0, 1]">
+            <span class="sk-bone sk-w25 sk-h14"></span>
+            <span class="sk-bone sk-w40 sk-h14"></span>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+
+</div>

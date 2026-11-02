@@ -5,6 +5,7 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { GoogleAuthService } from 'src/app/services/google-auth/google-auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +19,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   unverifiedEmail = '';
   resendMessage: string | null = null;
   isResending = false;
+  isNative = Capacitor.isNativePlatform();
 
   constructor(
     private fb: FormBuilder,
@@ -57,6 +59,17 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.clearMessageAfterDelay();
       }
     });
+  }
+
+  async signInWithGoogleNative(): Promise<void> {
+    try {
+      const idToken = await this.googleAuth.nativeSignIn();
+      this.handleGoogleCredential({ credential: idToken });
+    } catch (err) {
+      console.error('Native Google sign-in failed:', err);
+      this.errorMessage = 'Google sign-in failed. Please try again.';
+      this.clearMessageAfterDelay();
+    }
   }
 
   login() {

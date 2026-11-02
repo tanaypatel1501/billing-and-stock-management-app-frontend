@@ -2,10 +2,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faExclamationTriangle, faTrash, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { SuppressDockDirective } from 'src/app/shared/suppress-dock/suppress-dock.directive';
 
 @Component({
   selector: 'app-confirm-delete-modal',
   standalone: true,
+  hostDirectives: [SuppressDockDirective],
   imports: [CommonModule, FontAwesomeModule],
   templateUrl: './confirm-delete-modal.component.html',
   styleUrls: ['./confirm-delete-modal.component.scss']

@@ -5,6 +5,7 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { GoogleAuthService } from 'src/app/services/google-auth/google-auth.service';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-register',
@@ -16,6 +17,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   successMessage: string | null = null;
   errorMessage: string | null = null;
   registered = false;
+  isNative = Capacitor.isNativePlatform();
 
   confirmPassword = (control: FormControl): { [s: string]: boolean } => {
     if (!control.value) {
@@ -51,6 +53,17 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.googleAuth.cancel();
+  }
+
+  async signInWithGoogleNative(): Promise<void> {
+    try {
+      const idToken = await this.googleAuth.nativeSignIn();
+      this.handleGoogleCredential({ credential: idToken });
+    } catch (err) {
+      console.error('Native Google sign-in failed:', err);
+      this.errorMessage = 'Google sign-up failed. Please try again.';
+      this.clearMessageAfterDelay();
+    }
   }
 
   handleGoogleCredential(response: any): void {

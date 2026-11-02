@@ -40,8 +40,6 @@ export class DetailsComponent implements OnInit, OnDestroy {
   zoomScale = 1;
   transform = { scale: 1 };
   fileInputRef: HTMLInputElement | null = null;
-  templates: any[] = [];
-  selectedTemplate: string = 'template1';
   private logoBlobUrl: string | null = null;
   isLoading = true;
   
@@ -71,18 +69,13 @@ export class DetailsComponent implements OnInit, OnDestroy {
       accountNumber: [null, [Validators.required, Validators.pattern(/^[0-9]{9,18}$/)]],
       ifscCode: [null, [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
       upiId: [null, [Validators.pattern(/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/)]],
-      showQrOnBill: [false],
-      taxMode: ['CGST_SGST']
-      
+      showQrOnBill: [false]
     });
 
     this.loadStates();
     this.setupListeners();
     this.appState.setDetailsValid(!!this.detailsForm.valid);
     this.checkAndPopulateExistingDetails();
-    this.authService.getAvailableTemplates().subscribe(t => {
-      this.templates = t;
-    });
   }
 
   onLogoSelected(event: Event): void {
@@ -215,16 +208,8 @@ export class DetailsComponent implements OnInit, OnDestroy {
         this.loadCities(details.state, details.city);
         this.loadPincodes(details.city, details.state, details.pincode);
       }
-      if (details.preferredTemplate) {
-        this.selectedTemplate = details.preferredTemplate;
-      }
     }
     this.isLoading = false;
-  }
-
-  selectTemplate(templateId: string): void {
-    this.selectedTemplate = templateId;
-    this.detailsForm.markAsDirty();
   }
 
   private setLogoUrl(url: string): void {
@@ -395,7 +380,6 @@ export class DetailsComponent implements OnInit, OnDestroy {
     const details = this.userHasDetails && this.originalDetails 
       ? { ...this.originalDetails, ...formValues } 
       : { ...formValues };
-    details.preferredTemplate = this.selectedTemplate;
 
     if (this.userHasDetails) {
       this.authService.editDetails(this.userId, details, this.selectedLogoFile || undefined)
@@ -467,8 +451,6 @@ export class DetailsComponent implements OnInit, OnDestroy {
       ifscCode: details.ifscCode,
       upiId: details.upiId || null,
       showQrOnBill: details.showQrOnBill || false,
-      taxMode: details.taxMode || 'CGST_SGST',
-      preferredTemplate: details.preferredTemplate || 'template1',
     }, { emitEvent: false });
     
     this.appState.setDetailsValid(!!this.detailsForm.valid);

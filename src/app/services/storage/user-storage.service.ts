@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import jwt_decode from 'jwt-decode';
+import { Preferences } from '@capacitor/preferences';
 
 const TOKEN = 'I_token';
 const EXP_TIME = 'I_exp_time';
 const BILL = 'I_bill';
+const MOBILE_SESSION_TOKEN = 'I_mobile_session_token';
 
 @Injectable({ providedIn: 'root' })
 export class UserStorageService {
@@ -66,6 +68,7 @@ export class UserStorageService {
     window.localStorage.removeItem(TOKEN);
     window.localStorage.removeItem(EXP_TIME);
     window.localStorage.removeItem(BILL);
+    Preferences.remove({ key: MOBILE_SESSION_TOKEN });
   }
 
   static isTokenExpired(): boolean {
@@ -95,5 +98,18 @@ export class UserStorageService {
     } catch (e) {
       return this.billId;
     }
+  }
+
+  static async saveMobileSessionToken(token: string): Promise<void> {
+    await Preferences.set({ key: MOBILE_SESSION_TOKEN, value: token });
+  }
+
+  static async getMobileSessionToken(): Promise<string | null> {
+    const result = await Preferences.get({ key: MOBILE_SESSION_TOKEN });
+    return result.value;
+  }
+
+  static async clearMobileSessionToken(): Promise<void> {
+    await Preferences.remove({ key: MOBILE_SESSION_TOKEN });
   }
 }

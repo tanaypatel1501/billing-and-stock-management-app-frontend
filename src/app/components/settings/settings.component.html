@@ -1,50 +1,125 @@
-<div class="settings-overlay" *ngIf="themeService.isSettingsOpen()" (click)="close()">
-  <div class="settings-card" (click)="$event.stopPropagation()">
-    
-    <div class="settings-header">
-      <h2>Appearance</h2>
-      <button class="close-btn" (click)="close()">
-        <fa-icon [icon]="faTimes"></fa-icon>
+<div class="settings-page">
+  <h1 class="page-title">Settings</h1>
+
+  <!-- ============ APPEARANCE ============ -->
+  <div class="section-header">Appearance</div>
+  <div class="group">
+    <div class="theme-tiles">
+      <button
+        type="button"
+        class="tile"
+        *ngFor="let t of themeOptions"
+        [class.selected]="themeService.currentTheme() === t.value"
+        (click)="selectTheme(t.value)">
+        <span class="preview" [ngClass]="'pv-' + t.value" aria-hidden="true">
+          <span class="pv-bar"></span>
+          <span class="pv-line"></span>
+          <span class="pv-line short"></span>
+        </span>
+        <span class="tile-label">{{ t.label }}</span>
+        <span class="tile-check"><fa-icon [icon]="faCheck"></fa-icon></span>
       </button>
     </div>
+  </div>
+  <div class="group-footer">System follows your device's light or dark setting.</div>
 
-    <div class="settings-body">
-      <p class="helper-text">Choose how GST Medicose looks to you.</p>
+  <!-- ============ BUSINESS SETTINGS (shop owners only) ============ -->
+  <ng-container *ngIf="isUser">
 
-      <div class="theme-options">
-        
-        <button 
-          class="theme-btn" 
-          [class.active]="themeService.currentTheme() === 'light'"
-          (click)="selectTheme('light')">
-          <div class="icon-wrapper light">
-            <fa-icon [icon]="faSun"></fa-icon>
+    <div class="loading" *ngIf="isLoading">Loading…</div>
+
+    <div class="notice" *ngIf="!isLoading && !hasDetails">
+      Complete your <a routerLink="/user/details">Business Details</a> first to choose a tax mode and invoice template.
+    </div>
+
+    <!-- TAX MODE -->
+    <div class="section-header">Tax Mode</div>
+    <div class="group" [class.disabled]="!hasDetails || isLoading">
+      <button
+        type="button"
+        class="srow"
+        *ngFor="let m of taxModes"
+        [disabled]="!canEdit"
+        (click)="selectTax(m.value)">
+        <span class="srow-text">
+          <span class="srow-label">{{ m.label }}</span>
+          <span class="srow-sub">{{ m.sub }}</span>
+        </span>
+        <fa-icon class="srow-check" *ngIf="taxMode === m.value" [icon]="faCheck"></fa-icon>
+      </button>
+    </div>
+    <div class="group-footer"
+         [class.ok]="status?.section === 'tax' && !status?.error"
+         [class.err]="status?.section === 'tax' && status?.error">
+      <ng-container *ngIf="status?.section === 'tax'; else taxHint">{{ status?.text }}</ng-container>
+      <ng-template #taxHint>Choose how tax is shown on your invoices.</ng-template>
+    </div>
+
+    <!-- INVOICE TEMPLATE -->
+    <div class="section-header">Invoice Template</div>
+    <div class="group" [class.disabled]="!hasDetails || isLoading">
+      <div class="template-grid">
+        <div
+          class="template-card"
+          role="button"
+          tabindex="0"
+          *ngFor="let template of templates"
+          [class.selected]="selectedTemplate === template.id"
+          [class.is-disabled]="!canEdit"
+          (click)="selectTemplate(template.id)"
+          (keydown.enter)="selectTemplate(template.id)">
+
+          <div class="template-thumb" [style.border-color]="template.color">
+            <div class="thumb-preview landscape" *ngIf="template.orientation === 'landscape'">
+              <div class="thumb-header-bar"></div>
+              <div class="thumb-body">
+                <div class="thumb-row"></div>
+                <div class="thumb-row short"></div>
+                <div class="thumb-table">
+                  <div class="thumb-table-header"></div>
+                  <div class="thumb-table-row"></div>
+                  <div class="thumb-table-row"></div>
+                  <div class="thumb-table-row"></div>
+                </div>
+                <div class="thumb-footer"></div>
+              </div>
+            </div>
+            <div class="thumb-preview portrait" *ngIf="template.orientation === 'portrait'">
+              <div class="thumb-header-bar colored" [style.background]="template.color"></div>
+              <div class="thumb-info-strip"></div>
+              <div class="thumb-body">
+                <div class="thumb-parties">
+                  <div class="thumb-party-box"></div>
+                  <div class="thumb-party-box"></div>
+                </div>
+                <div class="thumb-table">
+                  <div class="thumb-table-header colored" [style.background]="template.color"></div>
+                  <div class="thumb-table-row"></div>
+                  <div class="thumb-table-row"></div>
+                  <div class="thumb-table-row"></div>
+                </div>
+                <div class="thumb-footer"></div>
+              </div>
+            </div>
           </div>
-          <span class="label">Light</span>
-        </button>
 
-        <button 
-          class="theme-btn" 
-          [class.active]="themeService.currentTheme() === 'dark'"
-          (click)="selectTheme('dark')">
-          <div class="icon-wrapper dark">
-            <fa-icon [icon]="faMoon"></fa-icon>
+          <div class="template-info">
+            <span class="template-name">{{ template.name }}</span>
+            <span class="template-desc">{{ template.description }}</span>
           </div>
-          <span class="label">Dark</span>
-        </button>
 
-        <button 
-          class="theme-btn" 
-          [class.active]="themeService.currentTheme() === 'system'"
-          (click)="selectTheme('system')">
-          <div class="icon-wrapper system">
-            <fa-icon [icon]="faDesktop"></fa-icon>
-          </div>
-          <span class="label">System</span>
-        </button>
-
+          <span class="template-check" *ngIf="selectedTemplate === template.id">
+            <fa-icon [icon]="faCheck"></fa-icon>
+          </span>
+        </div>
       </div>
     </div>
-    
-  </div>
+    <div class="group-footer"
+         [class.ok]="status?.section === 'template' && !status?.error"
+         [class.err]="status?.section === 'template' && status?.error">
+      <ng-container *ngIf="status?.section === 'template'; else tplHint">{{ status?.text }}</ng-container>
+      <ng-template #tplHint>The layout used for new invoices and PDFs.</ng-template>
+    </div>
+
+  </ng-container>
 </div>

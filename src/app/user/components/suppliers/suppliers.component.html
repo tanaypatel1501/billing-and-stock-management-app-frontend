@@ -1,0 +1,195 @@
+<div class="purchasers-wrapper">
+
+  <app-loading-spinner *ngIf="isLoading && allSuppliers.length === 0" text="Loading Suppliers" skeleton="purchasers"></app-loading-spinner>
+
+  <ng-container *ngIf="!isLoading || allSuppliers.length > 0">
+
+    <!-- Header -->
+    <div class="logs-header">
+      <div class="header-left">
+        <button class="back-btn" *ngIf="isSearchActive" (click)="resetView()" title="Clear search">
+          <fa-icon [icon]="faArrowLeft"></fa-icon>
+        </button>
+        <div class="header-title-wrapper">
+          <h1 class="header-title">
+            <span class="title-text">Suppliers</span>
+            <fa-icon [icon]="faTruck" class="title-icon"></fa-icon>
+          </h1>
+          <span class="stock-count">
+            {{ totalElements }} {{ isSearchActive ? 'result(s) found' : 'supplier(s)' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <app-search-bar
+          [suggestions]="suggestions"
+          [isLoading]="isSuggestionLoading"
+          [labelKey]="'name'"
+          (onType)="handleTyping($event)"
+          (onSelect)="handleSearch($event)"
+          (onSearch)="handleSearch($event)"
+          notFoundText="suppliers">
+        </app-search-bar>
+        <button class="add-btn" (click)="openAdd()" title="Add supplier">
+          <fa-icon [icon]="faPlus"></fa-icon>
+          <span>Add Supplier</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isLoading && allSuppliers.length === 0" class="empty-state-wrapper">
+      <div class="empty-state-card">
+        <div class="empty-state-icon">🚚</div>
+        <h2>No Suppliers Found</h2>
+        <p>{{ isSearchActive ? 'Try a different name.' : 'Add the distributors you buy stock from.' }}</p>
+        <button class="add-btn" *ngIf="!isSearchActive" (click)="openAdd()">
+          <fa-icon [icon]="faPlus"></fa-icon>
+          <span>Add Supplier</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="purchaser-list" *ngIf="allSuppliers.length > 0">
+      <div class="purchaser-card" *ngFor="let s of allSuppliers" (click)="openEdit(s)">
+
+        <div class="card-main">
+          <div class="card-avatar">
+            <fa-icon [icon]="faTruck"></fa-icon>
+          </div>
+          <div class="card-info">
+            <h3 class="purchaser-name">{{ s.name }}</h3>
+            <div class="card-meta">
+              <span class="meta-tag" *ngIf="s.state">
+                <fa-icon [icon]="faLocationDot"></fa-icon> {{ s.state }}
+              </span>
+              <span class="meta-tag" *ngIf="s.phoneNumber">
+                <fa-icon [icon]="faPhone"></fa-icon> {{ s.phoneNumber }}
+              </span>
+              <span class="meta-tag id-tag" *ngIf="s.gstin">
+                <fa-icon [icon]="faIdCard"></fa-icon> GSTIN: {{ s.gstin }}
+              </span>
+              <span class="meta-tag" *ngIf="s.dl1">DL1: {{ s.dl1 }}</span>
+              <span class="meta-tag" *ngIf="s.dl2">DL2: {{ s.dl2 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions" (click)="$event.stopPropagation()">
+          <button class="action-btn edit-btn" (click)="openEdit(s)" title="Edit">
+            <fa-icon [icon]="faPencil"></fa-icon>
+          </button>
+          <button class="action-btn delete-btn" (click)="confirmDelete(s)" title="Delete">
+            <fa-icon [icon]="faTrashCan"></fa-icon>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Desktop pagination -->
+    <div class="modern-pagination d-none d-md-flex" *ngIf="totalPages > 1">
+      <nav>
+        <ul class="pagination-list">
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="goToPage(0)"><span>«</span></a>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="goToPage(currentPage - 1)"><span>‹</span></a>
+          </li>
+          <li class="page-item" *ngFor="let p of getVisiblePages()" [class.active]="currentPage === p">
+            <a class="page-link" (click)="goToPage(p)">{{ p + 1 }}</a>
+          </li>
+          <li class="page-item" [class.disabled]="isLastPage">
+            <a class="page-link" (click)="goToPage(currentPage + 1)"><span>›</span></a>
+          </li>
+          <li class="page-item" [class.disabled]="isLastPage">
+            <a class="page-link" (click)="goToPage(totalPages - 1)"><span>»</span></a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Mobile infinite scroll loader -->
+    <app-loading-spinner *ngIf="isLoading && allSuppliers.length > 0" mode="inline" class="d-md-none" skeleton="purchasers"></app-loading-spinner>
+
+  </ng-container>
+</div>
+
+<!-- Add / Edit modal -->
+<div class="modal-overlay" *ngIf="showModal" appSuppressDock (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingId ? 'Edit Supplier' : 'Add Supplier' }}</h3>
+      <button class="modal-close" (click)="closeModal()">
+        <fa-icon [icon]="faXmark"></fa-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" class="modal-body">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" formControlName="name" placeholder="Supplier name"
+          [class.error]="form.get('name')?.invalid && form.get('name')?.touched">
+        <div class="error-msg" *ngIf="form.get('name')?.hasError('required') && form.get('name')?.touched">
+          Name is required.
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone <span class="optional">Optional</span></label>
+          <input type="tel" formControlName="phoneNumber" placeholder="10-digit number" maxlength="10"
+            [class.error]="form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched">
+          <div class="error-msg info" *ngIf="form.get('phoneNumber')?.hasError('pattern') && form.get('phoneNumber')?.touched">
+            Enter a 10-digit number.
+          </div>
+        </div>
+        <div class="form-group">
+          <label>State <span class="optional">Optional</span></label>
+          <select formControlName="state">
+            <option [ngValue]="null">Select a state</option>
+            <option *ngFor="let st of states" [ngValue]="st">{{ st }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>GSTIN <span class="optional">Optional</span></label>
+        <input type="text" formControlName="gstin" placeholder="Enter GSTIN"
+          [class.error]="form.get('gstin')?.invalid && form.get('gstin')?.touched">
+        <div class="error-msg info" *ngIf="form.get('gstin')?.hasError('pattern') && form.get('gstin')?.touched">
+          Format: 2 digits, 10 chars (PAN), 1 char, 1 char, 'Z', 1 char.
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>DL No. 1 <span class="optional">Optional</span></label>
+          <input type="text" formControlName="dl1" placeholder="DL No. 1"
+            [class.error]="form.get('dl1')?.invalid && form.get('dl1')?.touched">
+          <div class="error-msg info" *ngIf="form.get('dl1')?.hasError('pattern') && form.get('dl1')?.touched">
+            10–30 characters allowed.
+          </div>
+        </div>
+        <div class="form-group">
+          <label>DL No. 2 <span class="optional">Optional</span></label>
+          <input type="text" formControlName="dl2" placeholder="DL No. 2"
+            [class.error]="form.get('dl2')?.invalid && form.get('dl2')?.touched">
+          <div class="error-msg info" *ngIf="form.get('dl2')?.hasError('pattern') && form.get('dl2')?.touched">
+            10–30 characters allowed.
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn-primary" (click)="save()" [disabled]="saving">
+        {{ saving ? 'Saving...' : (editingId ? 'Save Changes' : 'Add Supplier') }}
+      </button>
+    </div>
+  </div>
+</div>

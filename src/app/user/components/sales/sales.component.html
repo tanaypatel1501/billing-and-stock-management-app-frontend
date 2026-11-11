@@ -73,6 +73,87 @@
           </div>
         </div>
 
+        <!-- Profit -->
+        <div class="chart-card profit-card">
+          <div class="chart-header profit-header">
+            <div>
+              <h2 class="chart-title">Profit</h2>
+              <span class="chart-sub">sales excluding GST, minus the cost of goods sold</span>
+            </div>
+            <div class="profit-chips">
+              <button *ngFor="let p of profitPeriods" type="button" class="profit-chip"
+                [class.active]="profitPeriod === p.id" (click)="onProfitPeriod(p.id)">
+                {{ p.label }}
+              </button>
+            </div>
+          </div>
+
+          <div class="profit-loading" *ngIf="profitLoading && !profit">Loading profit...</div>
+
+          <ng-container *ngIf="profit">
+
+            <ng-container *ngIf="profit.costedLines > 0; else noProfitData">
+              <div class="profit-grid" [class.dim]="profitLoading">
+                <div class="profit-stat main" [class.negative]="profit.profit < 0">
+                  <span class="profit-label">Profit</span>
+                  <span class="profit-value">₹{{ profit.profit | number:'1.0-2' }}</span>
+                </div>
+                <div class="profit-stat">
+                  <span class="profit-label">Margin</span>
+                  <span class="profit-value">{{ profit.marginPercent | number:'1.0-1' }}%</span>
+                </div>
+                <div class="profit-stat">
+                  <span class="profit-label">Sales with cost</span>
+                  <span class="profit-value">₹{{ profit.salesWithCost | number:'1.0-2' }}</span>
+                </div>
+                <div class="profit-stat">
+                  <span class="profit-label">Cost of goods</span>
+                  <span class="profit-value">₹{{ profit.cost | number:'1.0-2' }}</span>
+                </div>
+              </div>
+
+              <div class="coverage">
+                <div class="coverage-top">
+                  <span>Based on <strong>{{ profit.coveragePercent | number:'1.0-0' }}%</strong> of sales in this period</span>
+                  <span class="coverage-sub">
+                    {{ profit.costedLines | number }} of {{ profit.totalLines | number }} items had a known cost
+                    · total sales excl. GST ₹{{ profit.salesExGst | number:'1.0-2' }}
+                  </span>
+                </div>
+                <div class="coverage-track">
+                  <div class="coverage-fill" [style.width.%]="profit.coveragePercent"></div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #noProfitData>
+              <div class="profit-empty" *ngIf="!profit.trackingSince">
+                No cost data yet. Record purchases, or enter a cost when you add stock, and profit will
+                appear for the bills you make after that.
+              </div>
+              <div class="profit-empty" *ngIf="profit.trackingSince">
+                No bills with cost data in this period.
+              </div>
+            </ng-template>
+
+            <div class="profit-foot" *ngIf="profit.trackingSince">
+              Cost tracking since {{ profit.trackingSince | date:'dd MMM yyyy' }}.
+              Earlier bills have no cost data and are not counted.
+            </div>
+
+            <div class="missing-banner" *ngIf="profit.batchesMissingCost > 0">
+              <span>
+                <strong>{{ profit.batchesMissingCost | number }}</strong>
+                {{ profit.batchesMissingCost === 1 ? 'batch' : 'batches' }} in stock
+                {{ profit.batchesMissingCost === 1 ? 'has' : 'have' }} no cost, so sales from
+                {{ profit.batchesMissingCost === 1 ? 'it' : 'them' }} won't count towards profit.
+              </span>
+              <button type="button" class="missing-btn" (click)="goToMissingCost()">Fill in cost</button>
+            </div>
+
+          </ng-container>
+        </div>
+
         <!-- Top Products -->
         <div class="chart-card" *ngIf="topProducts.length > 0">
           <div class="chart-header">

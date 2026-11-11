@@ -654,6 +654,25 @@ input, .form-control {
   100% { width: 54px; height: 54px; opacity: 0;   }
 }
 
+.purchase-hint {
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--gstm-input-border);
+  border-left: 3px solid var(--gstm-primary-color);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+
+  a {
+    color: var(--gstm-primary-color);
+    font-weight: 700;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
+
 /* Mobile View */
 @media (max-width: 500px) {
   .auth-wrapper { padding: 16px; display: block; }

@@ -27,6 +27,8 @@ import {
   faClipboardList,
   faBars,
   faUsers,
+  faTruck,
+  faTruckRampBox,
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -61,6 +63,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   faClipboardList = faClipboardList;
   faBars = faBars;
   faUsers = faUsers;
+  faTruck = faTruck;
+  faTruckRampBox = faTruckRampBox;
   faChevronRight = faChevronRight;
 
   pendingRequestCount = 0;
@@ -485,13 +489,13 @@ private syncNativeDock(): void {
       : url.startsWith('/profile') ? 'profile' : '';
   } else {
     routeActive = url.startsWith('/user/dashboard') ? 'home'
-      : url.startsWith('/user/stock/add') ? 'add'
+      : url.startsWith('/user/create-purchase') ? 'add'
       : url.startsWith('/user/create-bill') ? 'action'
       : url.startsWith('/profile') ? 'profile' : '';
   }
 
   // Menu stays highlighted on the Menu screen and on pages opened from it.
-  const menuPages = ['/menu', '/user/stock-logs', '/user/bills', '/user/purchasers', '/user/sales', '/user/details','/settings'];
+  const menuPages = ['/menu', '/user/stock', '/user/bills', '/user/purchasers', '/user/purchases', '/user/suppliers', '/user/sales', '/user/missing-cost', '/user/details', '/settings'];
   const activeId = routeActive || (menuPages.some(p => url.startsWith(p)) ? 'menu' : '');
 
   // The Menu screen is a flat page, so freeze the WebView capture there (avoids the Settings pop-up flicker).
@@ -507,7 +511,7 @@ private syncNativeDock(): void {
       ]
     : [
         { id: 'home', label: 'Home', ...I(faChartLine) },
-        { id: 'add', label: 'Add Stock', ...I(faBoxes) },
+        { id: 'add', label: 'Purchase', ...I(faTruckRampBox) },
         { id: 'action', label: 'Create Bill', ...I(faFileInvoice), disabled: !this.detailsValid },
         { id: 'profile', label: 'Profile', ...I(faUser) },
         { id: 'menu', label: 'Menu', ...I(faBars) }
@@ -523,7 +527,7 @@ private onNativeDockTap(id: string): void {
       this.router.navigateByUrl(admin ? '/admin/dashboard' : '/user/dashboard');
       break;
     case 'add':
-      this.router.navigateByUrl(admin ? '/admin/add-product' : '/user/stock/add');
+      this.router.navigateByUrl(admin ? '/admin/add-product' : '/user/create-purchase');
       break;
     case 'action':
       if (admin) {

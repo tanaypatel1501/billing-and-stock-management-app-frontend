@@ -12,6 +12,10 @@ import { SalesComponent } from './components/sales/sales.component';
 import { StockLogsComponent } from './components/stock-logs/stock-logs.component';
 import { UserProductRequestComponent } from './components/user-product-request/user-product-request.component';
 import { PurchasersComponent } from './components/purchasers/purchasers.component';
+import { SuppliersComponent } from './components/suppliers/suppliers.component';
+import { PurchasesComponent } from './components/purchases/purchases.component';
+import { CreatePurchaseComponent } from './components/create-purchase/create-purchase.component';
+import { MissingCostComponent } from './components/missing-cost/missing-cost.component';
 
 const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent ,canActivate:[UserGuard],title: 'Dashboard | GST Medicose'},
@@ -25,6 +29,10 @@ const routes: Routes = [
   { path: 'stock-logs', component: StockLogsComponent ,canActivate:[UserGuard],title: 'Stock Logs | GST Medicose'},
   { path: 'product-request', component: UserProductRequestComponent, canActivate:[UserGuard], title: 'Product Request | GST Medicose' },
   { path: 'purchasers', component: PurchasersComponent, canActivate: [UserGuard], title: 'Purchasers | GST Medicose' },
+  { path: 'suppliers', component: SuppliersComponent, canActivate: [UserGuard], title: 'Suppliers | GST Medicose' },
+  { path: 'purchases', component: PurchasesComponent, canActivate: [UserGuard], title: 'Purchases | GST Medicose' },
+  { path: 'create-purchase', component: CreatePurchaseComponent, canActivate: [UserGuard], title: 'Create Purchase | GST Medicose' },
+  { path: 'missing-cost', component: MissingCostComponent, canActivate: [UserGuard], title: 'Missing Cost | GST Medicose' },
 ];
 
 @NgModule({

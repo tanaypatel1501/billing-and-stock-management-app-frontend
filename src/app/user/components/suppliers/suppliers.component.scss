@@ -1,0 +1,41 @@
+/* Extra styles for suppliers. The rest comes from purchasers.component.scss. */
+
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--gstm-primary-color);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover { background: var(--gstm-primary-hover); }
+}
+
+.empty-state-card .add-btn {
+  margin-top: 20px;
+}
+
+.form-group select {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-main);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus { border-color: var(--gstm-primary-color); }
+}
+
+@media (max-width: 540px) {
+  .logs-header .add-btn span { display: none; }
+  .logs-header .add-btn { padding: 10px 14px; }
+}

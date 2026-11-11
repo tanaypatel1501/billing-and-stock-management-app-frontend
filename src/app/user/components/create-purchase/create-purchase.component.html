@@ -1,0 +1,393 @@
+<div class="billing-wrapper">
+
+  <!-- Items added so far -->
+  <div class="bill-items-container" *ngIf="items.length > 0">
+    <div class="table-header">
+      <h3>Purchase Items</h3>
+      <span class="item-count">{{ items.length }} item(s)</span>
+    </div>
+
+    <div class="table-wrapper" (click)="collapseAll()">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Product Name</th>
+            <th>Batch No.</th>
+            <th>Expiry Date</th>
+            <th>Quantity</th>
+            <th>Free</th>
+            <th>Rate</th>
+            <th>Disc %</th>
+            <th>Amount</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of items; index as i"
+              class="mobile-card"
+              [class.expanded]="expandedIndex === i"
+              (click)="toggleCard(i); $event.stopPropagation()">
+            <th class="expandable" data-label="#" scope="row">{{ i + 1 }}</th>
+            <td data-label="Product Name">{{ item.productName }}</td>
+            <td class="expandable" data-label="Batch No.">{{ item.batchNo }}</td>
+            <td data-label="Expiry Date">{{ item.expiryDate | date:'MM/yyyy' }}</td>
+            <td data-label="Quantity">{{ item.quantity | number }}</td>
+            <td class="expandable" data-label="Free">{{ item.freeQuantity | number }}</td>
+            <td class="expandable" data-label="Rate">₹{{ item.purchaseRate | number:'1.2-2' }}</td>
+            <td class="expandable" data-label="Disc %">{{ item.discountPercent }}%</td>
+            <td data-label="Amount"><strong>₹{{ item.amount | number:'1.2-2' }}</strong></td>
+            <td data-label="Actions">
+              <button class="delete-button" (click)="deleteItem(i); $event.stopPropagation()">
+                <fa-icon [icon]="faTrashCan"></fa-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="auth-container">
+    <div class="auth-card">
+
+      <div class="step-indicator">
+        <div class="step-badge">Step {{ currentStep }} of 3</div>
+      </div>
+
+      <!-- ============ Step 1: supplier and invoice ============ -->
+      <div class="form-step" *ngIf="currentStep === 1">
+        <div class="auth-header">
+          <h1>Supplier Details</h1>
+          <p>Who did you buy from?</p>
+        </div>
+
+        <form [formGroup]="form1">
+          <div class="form-group">
+            <label for="supplierName">Supplier</label>
+            <div class="custom-dropdown-container">
+              <input
+                type="text"
+                id="supplierName"
+                placeholder="Enter supplier name"
+                formControlName="supplierName"
+                (input)="onSupplierInput()"
+                (blur)="onSupplierBlur()"
+                autocomplete="off"
+                [class.error]="form1.get('supplierName')?.invalid && form1.get('supplierName')?.touched">
+
+              <div class="input-loader" *ngIf="isSupplierLoading">
+                <div class="spinner-small"></div>
+              </div>
+
+              <ul class="suggestion-dropdown" *ngIf="showSupplierDropdown && supplierSuggestions.length > 0">
+                <li *ngFor="let s of supplierSuggestions" (mousedown)="selectSupplier(s)">
+                  {{ s.name }}
+                  <span class="sub-label" *ngIf="s.state">| {{ s.state }}</span>
+                </li>
+              </ul>
+            </div>
+            <div class="error-msg" *ngIf="form1.get('supplierName')?.hasError('required') && form1.get('supplierName')?.touched">
+              Supplier name is required.
+            </div>
+
+            <!-- Selected supplier summary -->
+            <div class="supplier-chip" *ngIf="supplier">
+              <span>✓ Existing supplier</span>
+              <span *ngIf="supplier.state">· {{ supplier.state }}</span>
+              <span *ngIf="supplier.gstin">· GSTIN {{ supplier.gstin }}</span>
+            </div>
+            <div class="supplier-chip new" *ngIf="!supplier && (form1.get('supplierName')?.value || '').trim().length > 1">
+              <span>New supplier will be saved when you continue.</span>
+            </div>
+          </div>
+
+          <!-- Only for a new supplier -->
+          <ng-container *ngIf="!supplier">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="state">State <span class="mrp-hint" style="color:#777;font-weight:400;">Optional</span></label>
+                <select id="state" formControlName="state">
+                  <option [ngValue]="null">Select a state</option>
+                  <option *ngFor="let st of states" [ngValue]="st">{{ st }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="gstin">GSTIN <span class="mrp-hint" style="color:#777;font-weight:400;">Optional</span></label>
+                <input type="text" id="gstin" placeholder="Enter GSTIN" formControlName="gstin"
+                  [class.error]="form1.get('gstin')?.invalid && form1.get('gstin')?.touched">
+                <div class="error-msg info" *ngIf="form1.get('gstin')?.hasError('pattern') && form1.get('gstin')?.touched">
+                  Format: 2 digits, 10 chars (PAN), 1 char, 1 char, 'Z', 1 char.
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="invoiceNo">Supplier Invoice No.</label>
+              <input type="text" id="invoiceNo" placeholder="Invoice number" formControlName="invoiceNo"
+                [class.error]="form1.get('invoiceNo')?.invalid && form1.get('invoiceNo')?.touched">
+              <div class="error-msg" *ngIf="form1.get('invoiceNo')?.hasError('required') && form1.get('invoiceNo')?.touched">
+                Invoice number is required.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="invoiceDate">Invoice Date</label>
+              <input type="date" id="invoiceDate" formControlName="invoiceDate" [max]="today"
+                [class.error]="form1.get('invoiceDate')?.invalid && form1.get('invoiceDate')?.touched">
+              <div class="error-msg" *ngIf="form1.get('invoiceDate')?.hasError('required') && form1.get('invoiceDate')?.touched">
+                Invoice date is required.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Tax type</label>
+            <div class="tax-switch">
+              <button type="button" [class.active]="taxMode === 'CGST_SGST'" (click)="setTaxMode('CGST_SGST')">CGST + SGST</button>
+              <button type="button" [class.active]="taxMode === 'IGST'" (click)="setTaxMode('IGST')">IGST</button>
+            </div>
+            <div class="tax-hint" *ngIf="taxHint">{{ taxHint }}</div>
+          </div>
+
+          <button type="button" class="submit-btn" (click)="nextStep()" [disabled]="savingSupplier">
+            {{ savingSupplier ? 'Saving supplier...' : 'Next Step →' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- ============ Step 2: items ============ -->
+      <div class="form-step" *ngIf="currentStep === 2">
+        <div class="auth-header">
+          <h1>Add Items</h1>
+          <p>Enter what the supplier delivered</p>
+        </div>
+
+        <form [formGroup]="form2">
+          <div class="form-group">
+            <label for="productName">Product Name</label>
+            <div class="custom-dropdown-container">
+              <input
+                type="text"
+                id="productName"
+                placeholder="Start typing product name..."
+                formControlName="productName"
+                (input)="onProductInput()"
+                (blur)="onProductBlur()"
+                autocomplete="off"
+                [class.error]="form2.get('productId')?.invalid && form2.get('productName')?.touched" />
+
+              <div class="input-loader" *ngIf="isProductLoading">
+                <div class="spinner-small"></div>
+              </div>
+
+              <ul class="suggestion-dropdown" *ngIf="showProductDropdown && products.length > 0">
+                <li *ngFor="let p of products" (mousedown)="selectProduct(p)">
+                  {{ p.name }}
+                  <span class="sub-label" *ngIf="p.packing">| {{ p.packing }}</span>
+                </li>
+              </ul>
+              <ul class="suggestion-dropdown" *ngIf="showProductDropdown && products.length === 0">
+                <li class="no-results">No product found</li>
+              </ul>
+            </div>
+            <div class="error-msg" *ngIf="form2.get('productId')?.invalid && form2.get('productName')?.touched">
+              Select a product from the list.
+            </div>
+          </div>
+
+          <div class="form-row-batch-expiry">
+            <div class="form-group">
+              <label for="batchNo">Batch No.</label>
+              <input type="text" id="batchNo" placeholder="Batch number" formControlName="batchNo"
+                [class.error]="form2.get('batchNo')?.invalid && form2.get('batchNo')?.touched">
+              <div class="error-msg" *ngIf="form2.get('batchNo')?.hasError('required') && form2.get('batchNo')?.touched">
+                Batch number is required.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Expiry</label>
+              <div class="expiry-pair">
+                <select formControlName="expiryMonth"
+                  [class.error]="form2.get('expiryMonth')?.invalid && form2.get('expiryMonth')?.touched">
+                  <option [ngValue]="null" disabled>Month</option>
+                  <option *ngFor="let m of months; index as i" [ngValue]="i + 1">{{ m }}</option>
+                </select>
+                <select formControlName="expiryYear"
+                  [class.error]="form2.get('expiryYear')?.invalid && form2.get('expiryYear')?.touched">
+                  <option [ngValue]="null" disabled>Year</option>
+                  <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+                </select>
+              </div>
+              <div class="error-msg" *ngIf="(form2.get('expiryMonth')?.invalid || form2.get('expiryYear')?.invalid) && (form2.get('expiryMonth')?.touched || form2.get('expiryYear')?.touched)">
+                Expiry month and year are required.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="quantity">Quantity</label>
+              <input type="number" id="quantity" placeholder="Quantity" formControlName="quantity" min="1"
+                [class.error]="form2.get('quantity')?.invalid && form2.get('quantity')?.touched">
+              <div class="error-msg" *ngIf="form2.get('quantity')?.invalid && form2.get('quantity')?.touched">
+                Enter a whole number, 1 or more.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="freeQuantity">Free</label>
+              <input type="number" id="freeQuantity" placeholder="Free units" formControlName="freeQuantity" min="0"
+                [class.error]="form2.get('freeQuantity')?.invalid && form2.get('freeQuantity')?.touched">
+              <div class="error-msg" *ngIf="form2.get('freeQuantity')?.invalid && form2.get('freeQuantity')?.touched">
+                Enter a whole number, 0 or more.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="purchaseRate">Purchase Rate (₹)</label>
+              <input type="number" id="purchaseRate" placeholder="Rate per unit" formControlName="purchaseRate" min="0"
+                [class.error]="form2.get('purchaseRate')?.invalid && form2.get('purchaseRate')?.touched">
+              <div class="error-msg" *ngIf="form2.get('purchaseRate')?.invalid && form2.get('purchaseRate')?.touched">
+                Purchase rate is required.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="discountPercent">Discount %</label>
+              <input type="number" id="discountPercent" placeholder="0" formControlName="discountPercent" min="0" max="100"
+                [class.error]="form2.get('discountPercent')?.invalid && form2.get('discountPercent')?.touched">
+              <div class="error-msg" *ngIf="form2.get('discountPercent')?.invalid && form2.get('discountPercent')?.touched">
+                Between 0 and 100.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="mrp">
+                MRP (₹)
+                <span *ngIf="selectedProduct?.mrp != null" class="mrp-hint">
+                  Default: ₹{{ selectedProduct.mrp | number:'1.2-2' }}
+                </span>
+              </label>
+              <input type="number" id="mrp" placeholder="MRP" formControlName="mrp" min="0">
+            </div>
+
+            <div class="form-group">
+              <label>Amount (₹)</label>
+              <input type="text" [value]="previewAmount | number:'1.2-2'" readonly>
+            </div>
+          </div>
+
+          <div class="cost-hint" *ngIf="previewUnitCost > 0">
+            Cost per unit, free units included: ₹{{ previewUnitCost | number:'1.2-4' }}
+          </div>
+
+          <div class="button-group">
+            <button type="button" class="submit-btn secondary" (click)="prevStep()">← Previous</button>
+            <button type="button" class="submit-btn" (click)="addItem()">Add Item</button>
+            <button type="button" class="submit-btn primary" (click)="goToReview()">Review →</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ============ Step 3: review ============ -->
+      <div class="form-step" *ngIf="currentStep === 3">
+        <div class="auth-header">
+          <h1>Review Purchase</h1>
+          <p>Confirm details before saving</p>
+        </div>
+
+        <div class="review-section">
+          <div class="review-section-title">Supplier and Invoice</div>
+          <div class="review-grid">
+            <div class="review-field">
+              <span class="review-label">Supplier</span>
+              <span class="review-value">{{ supplier?.name }}</span>
+            </div>
+            <div class="review-field" *ngIf="supplier?.gstin">
+              <span class="review-label">GSTIN</span>
+              <span class="review-value">{{ supplier?.gstin }}</span>
+            </div>
+            <div class="review-field" *ngIf="supplier?.state">
+              <span class="review-label">State</span>
+              <span class="review-value">{{ supplier?.state }}</span>
+            </div>
+            <div class="review-field">
+              <span class="review-label">Invoice No.</span>
+              <span class="review-value">{{ form1.value.invoiceNo }}</span>
+            </div>
+            <div class="review-field">
+              <span class="review-label">Invoice Date</span>
+              <span class="review-value">{{ form1.value.invoiceDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label>Tax type</label>
+            <div class="tax-switch">
+              <button type="button" [class.active]="taxMode === 'CGST_SGST'" (click)="setTaxMode('CGST_SGST')">CGST + SGST</button>
+              <button type="button" [class.active]="taxMode === 'IGST'" (click)="setTaxMode('IGST')">IGST</button>
+            </div>
+            <div class="tax-hint" *ngIf="taxHint">{{ taxHint }}</div>
+          </div>
+        </div>
+
+        <div class="review-section">
+          <div class="review-section-title">Summary</div>
+          <div class="review-grid">
+            <div class="review-field">
+              <span class="review-label">Total Items</span>
+              <span class="review-value">{{ items.length }}</span>
+            </div>
+            <div class="review-field">
+              <span class="review-label">Total Units</span>
+              <span class="review-value">{{ totalUnits | number }}</span>
+            </div>
+            <div class="review-field">
+              <span class="review-label">Taxable Amount</span>
+              <span class="review-value">₹{{ totals.taxable | number:'1.2-2' }}</span>
+            </div>
+            <ng-container *ngIf="taxMode === 'IGST'; else splitTax">
+              <div class="review-field">
+                <span class="review-label">IGST</span>
+                <span class="review-value">₹{{ totals.igst | number:'1.2-2' }}</span>
+              </div>
+            </ng-container>
+            <ng-template #splitTax>
+              <div class="review-field">
+                <span class="review-label">CGST</span>
+                <span class="review-value">₹{{ totals.cgst | number:'1.2-2' }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">SGST</span>
+                <span class="review-value">₹{{ totals.sgst | number:'1.2-2' }}</span>
+              </div>
+            </ng-template>
+            <div class="review-field highlight">
+              <span class="review-label">Grand Total</span>
+              <span class="review-value">₹{{ totals.total | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <p class="review-hint review-hint-desktop">You can remove individual items in the table on the left.</p>
+          <p class="review-hint review-hint-mobile">Scroll up to view or remove individual items before saving.</p>
+        </div>
+
+        <div class="button-group-two">
+          <button type="button" class="submit-btn secondary" (click)="prevStep()">← Previous</button>
+          <button type="button" class="submit-btn primary" (click)="submit()" [disabled]="submitting">
+            {{ submitting ? 'Saving...' : 'Save Purchase' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

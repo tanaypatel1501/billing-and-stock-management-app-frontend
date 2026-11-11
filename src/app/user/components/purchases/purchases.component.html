@@ -1,0 +1,210 @@
+<app-loading-spinner *ngIf="!initialLoadComplete" text="Loading Purchases" skeleton="bills" [skeletonPadded]="true"></app-loading-spinner>
+
+<ng-container *ngIf="initialLoadComplete">
+
+  <!-- Nothing recorded yet -->
+  <div *ngIf="isInitialEmpty" class="empty-state-wrapper">
+    <div class="empty-state-card">
+      <div class="empty-state-icon">📦</div>
+      <h2>No Purchases Yet</h2>
+      <p>Record the stock you buy from suppliers to track cost and input GST.</p>
+      <button class="new-btn" (click)="newPurchase()">
+        <fa-icon [icon]="faPlus"></fa-icon>
+        <span>New Purchase</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="bills-wrapper" *ngIf="!isInitialEmpty">
+    <div class="main-content">
+
+      <!-- Header -->
+      <div class="modern-header">
+        <div class="header-left">
+          <button class="back-btn" (click)="goBack()" title="Reset search and filters"
+            *ngIf="isSearchActive || isDateFilterActive">
+            <fa-icon [icon]="faArrowLeft"></fa-icon>
+          </button>
+
+          <div class="header-title-wrapper">
+            <h1 class="header-title">
+              <span class="title-text">Purchases</span>
+              <fa-icon [icon]="faTruckRampBox" class="title-icon"></fa-icon>
+            </h1>
+            <span class="bill-count">{{ totalElements }} {{ (isSearchActive || isDateFilterActive) ? ' purchase(s) found' : ' purchase(s)' }}</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <app-search-bar
+            [suggestions]="suggestions"
+            [isLoading]="isSuggestionLoading"
+            [labelKey]="'name'"
+            (onType)="handleTyping($event)"
+            (onSelect)="handleSearch($event)"
+            (onSearch)="handleSearch($event)"
+            notFoundText="suppliers">
+          </app-search-bar>
+          <app-filter-button
+            [columns]="[]"
+            [showSort]="false"
+            [showDateFilter]="true"
+            [currentFromDate]="fromDate"
+            [currentToDate]="toDate"
+            (onApplySort)="handleFilterSort($any($event))">
+          </app-filter-button>
+          <button class="new-btn" (click)="newPurchase()" title="New purchase">
+            <fa-icon [icon]="faPlus"></fa-icon>
+            <span>New Purchase</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- List -->
+      <div class="bills-container">
+        <div *ngFor="let p of purchases; trackBy: trackById" class="bill-card" (click)="openDetail(p)">
+          <div class="bill-header">
+            <div class="bill-icon">
+              <fa-icon [icon]="faTruckRampBox"></fa-icon>
+            </div>
+            <div class="bill-info">
+              <div class="bill-info-top">
+                <h3 class="bill-purchaser">{{ p.supplierName }}</h3>
+                <span class="bill-amount">₹{{ p.totalAmount | number:'1.2-2' }}</span>
+              </div>
+              <div class="bill-meta">
+                <span class="bill-date">
+                  <fa-icon [icon]="faCalendar"></fa-icon>
+                  {{ p.invoiceDate | date:'dd MMM yyyy' }}
+                </span>
+                <span class="invoice-number">
+                  <span>Invoice No:</span> {{ p.supplierInvoiceNo }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bill-footer">
+            <span class="tax-badge" [class.igst]="p.taxMode === 'IGST'">{{ taxLabel(p.taxMode) }}</span>
+            <span class="view-link">
+              View Details
+              <fa-icon [icon]="faArrowRight"></fa-icon>
+            </span>
+          </div>
+        </div>
+
+        <div *ngIf="purchases.length === 0 && !isLoading" class="empty-search-state">
+          <div class="empty-icon">🔍</div>
+          <p>No purchases found matching your criteria.</p>
+        </div>
+      </div>
+
+      <!-- Desktop pagination -->
+      <div *ngIf="purchases.length > 0 && totalPages > 1" class="modern-pagination d-none d-md-flex">
+        <nav aria-label="Page navigation">
+          <ul class="pagination-list">
+            <li class="page-item" [class.disabled]="currentPage === 0">
+              <a class="page-link" (click)="goToPage(0)"><span>«</span></a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === 0">
+              <a class="page-link" (click)="goToPage(currentPage - 1)"><span>‹</span></a>
+            </li>
+            <li class="page-item" *ngFor="let n of getVisiblePages()" [class.active]="currentPage === n">
+              <a class="page-link" (click)="goToPage(n)">{{ n + 1 }}</a>
+            </li>
+            <li class="page-item" [class.disabled]="isLastPage">
+              <a class="page-link" (click)="goToPage(currentPage + 1)"><span>›</span></a>
+            </li>
+            <li class="page-item" [class.disabled]="isLastPage">
+              <a class="page-link" (click)="goToPage(totalPages - 1)"><span>»</span></a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Mobile infinite-scroll loader -->
+      <app-loading-spinner *ngIf="isLoading && purchases.length > 0" mode="inline" text="Loading more purchases..." class="d-md-none" skeleton="bills"></app-loading-spinner>
+
+    </div>
+  </div>
+</ng-container>
+
+<!-- Detail popup -->
+<div class="pd-overlay" *ngIf="selected" appSuppressDock (click)="closeDetail()">
+  <div class="pd-card" (click)="$event.stopPropagation()">
+
+    <div class="pd-header">
+      <div>
+        <h3>{{ selected.supplierName }}</h3>
+        <div class="pd-sub">
+          Invoice {{ selected.supplierInvoiceNo }} · {{ selected.invoiceDate | date:'dd MMM yyyy' }}
+        </div>
+      </div>
+      <button class="pd-close" (click)="closeDetail()" title="Close">
+        <fa-icon [icon]="faXmark"></fa-icon>
+      </button>
+    </div>
+
+    <div class="pd-body">
+      <div class="pd-meta">
+        <span class="tax-badge" [class.igst]="selected.taxMode === 'IGST'">{{ taxLabel(selected.taxMode) }}</span>
+        <span class="pd-gstin" *ngIf="selected.supplierGstin">GSTIN: {{ selected.supplierGstin }}</span>
+      </div>
+
+      <app-loading-spinner *ngIf="isDetailLoading" mode="inline" text="Loading items"></app-loading-spinner>
+
+      <div class="pd-table-wrap" *ngIf="!isDetailLoading && selected.purchaseItems?.length">
+        <table class="pd-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Batch</th>
+              <th>Expiry</th>
+              <th class="num">Qty</th>
+              <th class="num">Rate</th>
+              <th class="num">Disc</th>
+              <th class="num">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let i of selected.purchaseItems">
+              <td>
+                <div class="pd-prod">{{ i.snapshotProductName }}</div>
+                <div class="pd-pack" *ngIf="i.snapshotPacking">{{ i.snapshotPacking }}</div>
+              </td>
+              <td>{{ i.batchNo }}</td>
+              <td>{{ i.expiryDate | date:'MM/yy' }}</td>
+              <td class="num">
+                {{ i.quantity }}<span class="pd-free" *ngIf="i.freeQuantity > 0"> +{{ i.freeQuantity }} free</span>
+              </td>
+              <td class="num">₹{{ i.purchaseRate | number:'1.2-2' }}</td>
+              <td class="num">{{ i.discountPercent }}%</td>
+              <td class="num">₹{{ i.amount | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pd-totals" *ngIf="!isDetailLoading">
+        <div><span>Taxable amount</span><span>₹{{ selected.taxableAmount | number:'1.2-2' }}</span></div>
+        <ng-container *ngIf="selected.taxMode === 'IGST'; else splitTax">
+          <div><span>IGST</span><span>₹{{ selected.igstAmount | number:'1.2-2' }}</span></div>
+        </ng-container>
+        <ng-template #splitTax>
+          <div><span>CGST</span><span>₹{{ selected.cgstAmount | number:'1.2-2' }}</span></div>
+          <div><span>SGST</span><span>₹{{ selected.sgstAmount | number:'1.2-2' }}</span></div>
+        </ng-template>
+        <div class="pd-total"><span>Total</span><span>₹{{ selected.totalAmount | number:'1.2-2' }}</span></div>
+      </div>
+    </div>
+
+    <div class="pd-footer">
+      <button class="pd-btn danger" (click)="confirmRevert()" [disabled]="isReverting || isDetailLoading">
+        <fa-icon [icon]="isReverting ? faSpinner : faRotateLeft"></fa-icon>
+        <span>{{ isReverting ? 'Reverting...' : 'Revert Purchase' }}</span>
+      </button>
+      <button class="pd-btn" (click)="closeDetail()">Close</button>
+    </div>
+
+  </div>
+</div>

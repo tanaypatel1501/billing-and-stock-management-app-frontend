@@ -64,7 +64,7 @@
               <span class="log-date">{{ log.timestamp | date:'MMM d, y, h:mm a' }}</span>
               <span class="log-product" *ngIf="log.productName">{{ log.productName }}</span>
             </div>
-            <h4 class="log-action">{{ log.action }}</h4>
+            <h4 class="log-action">{{ log.action.split('_').join(' ') }}</h4>
             <p class="log-notes" *ngIf="log.notes" [innerHTML]="getSafeHtml(log.notes)"></p>
           </div>
         </li>

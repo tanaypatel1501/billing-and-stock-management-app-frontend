@@ -11,7 +11,10 @@ import {
   faChartBar,
   faBuilding,
   faGear,
-  faChevronRight
+  faChevronRight,
+  faTruck,
+  faTruckRampBox,
+  faBoxes
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -27,6 +30,9 @@ export class MenuComponent implements OnInit, OnDestroy {
   faBuilding = faBuilding;
   faGear = faGear;
   faChevronRight = faChevronRight;
+  faTruck = faTruck;
+  faTruckRampBox = faTruckRampBox;
+  faBoxes = faBoxes;
 
   hasPurchasers = false;
   detailsValid = false;

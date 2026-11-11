@@ -166,6 +166,24 @@
             <span>Purchasers</span>
           </a>
         </li>
+                <li class="nav-item">
+          <a class="nav-link"
+            routerLink="/user/purchases"
+            routerLinkActive="active"
+            (click)="closeMobileMenu()">
+            <fa-icon [icon]="faTruckRampBox"></fa-icon>
+            <span>Purchases</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+            routerLink="/user/suppliers"
+            routerLinkActive="active"
+            (click)="closeMobileMenu()">
+            <fa-icon [icon]="faTruck"></fa-icon>
+            <span>Suppliers</span>
+          </a>
+        </li>
         <li class="nav-item">
           <a class="nav-link"
             routerLink="/user/sales"
@@ -271,14 +289,14 @@
     <a
       class="dock-item"
       *ngIf="!isAdminLoggedIn"
-      routerLink="/user/stock/add"
+      routerLink="/user/create-purchase"
       routerLinkActive="active"
       (click)="onDockItemClick($event)"
     >
       <div class="dock-icon">
-        <fa-icon [icon]="faBoxes"></fa-icon>
+        <fa-icon [icon]="faTruckRampBox"></fa-icon>
       </div>
-      <span class="dock-label">Add Stock</span>
+      <span class="dock-label">Purchase</span>
     </a>
 
     <!-- Requests / Create Bill -->

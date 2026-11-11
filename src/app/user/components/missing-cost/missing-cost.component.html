@@ -1,0 +1,75 @@
+<app-loading-spinner *ngIf="!initialLoaded" text="Loading Stock" skeleton="bills" [skeletonPadded]="true"></app-loading-spinner>
+
+<div class="bills-wrapper" *ngIf="initialLoaded">
+  <div class="main-content">
+
+    <div class="modern-header">
+      <div class="header-left">
+        <button class="back-btn" (click)="goToSales()" title="Back to Sales">
+          <fa-icon [icon]="faArrowLeft"></fa-icon>
+        </button>
+        <div class="header-title-wrapper">
+          <h1 class="header-title">
+            <span class="title-text">Missing Cost</span>
+            <fa-icon [icon]="faCoins" class="title-icon"></fa-icon>
+          </h1>
+          <span class="bill-count">{{ totalElements }} {{ totalElements === 1 ? 'batch' : 'batches' }} without a cost</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="mc-note">
+      Enter what each batch cost you <strong>per unit, excluding GST</strong> (after any discount).
+      Profit is calculated from this when the batch is sold. Largest stock value is listed first.
+    </p>
+
+    <!-- All set -->
+    <div class="mc-done" *ngIf="totalElements === 0">
+      <div class="mc-done-icon">✅</div>
+      <h2>All set</h2>
+      <p>Every batch in stock has a cost.</p>
+      <button class="mc-save" (click)="goToSales()">Back to Sales</button>
+    </div>
+
+    <!-- List -->
+    <div class="mc-list" *ngIf="items.length > 0">
+      <div class="mc-card" *ngFor="let row of items; trackBy: trackById">
+        <div class="mc-info">
+          <h3 class="mc-name">{{ row.product?.name }}</h3>
+          <div class="mc-meta">
+            <span *ngIf="row.product?.packing">{{ row.product.packing }}</span>
+            <span>Batch {{ row.batchNo }}</span>
+            <span>Exp {{ row.expiryDate | date:'MM/yy' }}</span>
+            <span>Qty {{ row.quantity | number }}</span>
+            <span *ngIf="row.mrp != null">MRP ₹{{ row.mrp | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="mc-entry">
+          <div class="mc-input-wrap">
+            <span class="mc-currency">₹</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Cost / unit"
+              [(ngModel)]="costInput[row.id]"
+              (keyup.enter)="save(row)">
+          </div>
+          <button class="mc-save" (click)="save(row)" [disabled]="savingId === row.id">
+            <fa-icon [icon]="savingId === row.id ? faSpinner : faCheck"></fa-icon>
+            <span>Save</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mc-pager" *ngIf="totalPages > 1">
+      <button class="mc-page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">‹ Previous</button>
+      <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+      <button class="mc-page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1">Next ›</button>
+    </div>
+
+  </div>
+</div>

@@ -103,7 +103,8 @@ export class StockFormComponent implements OnInit, OnDestroy {
       batchNo: ['', Validators.required],
       expiryDate: ['', Validators.required],
       quantity: [null, [Validators.required, Validators.min(0)]],
-      mrp: [null, [Validators.required, Validators.min(0)]]
+      mrp: [null, [Validators.required, Validators.min(0)]],
+      costRate: [null, [Validators.min(0)]]
     });
   }
 
@@ -162,7 +163,8 @@ export class StockFormComponent implements OnInit, OnDestroy {
           batchNo: res.batchNo,
           expiryDate: this.formatDateForDisplay(res.expiryDate),
           quantity: res.quantity,
-          mrp: res.mrp ?? null
+          mrp: res.mrp ?? null,
+          costRate: res.costRate ?? null
         });
         this.originalStockValues = this.productForm.getRawValue();
         this.fetchProductName(res.productId);
@@ -256,13 +258,14 @@ export class StockFormComponent implements OnInit, OnDestroy {
     }
 
     this.errorMessage = null; // Clear any previous errors
-
+    const rawCost = this.productForm.value.costRate
     const payload: any = {
       productId: this.selectedProductId,
       batchNo: this.productForm.value.batchNo,
       expiryDate: this.productForm.value.expiryDate,
       quantity: this.productForm.value.quantity,
-      mrp: this.productForm.value.mrp 
+      mrp: this.productForm.value.mrp,
+      costRate: rawCost === null || rawCost === '' ? null : Number(rawCost)
     };
 
     if (this.mode === 'edit') {
@@ -295,6 +298,7 @@ export class StockFormComponent implements OnInit, OnDestroy {
               stockId: generatedId,
               action: 'ADD',
               notes: `Added ${payload.quantity} quantity of ${this.productForm.value.name} | Batch: ${payload.batchNo} | MRP: ₹${payload.mrp}`
+                + (payload.costRate != null ? ` | Cost: ₹${Number(payload.costRate).toFixed(2)}/unit` : '')
             }).subscribe({ error: () => {} });
           }
         },
@@ -620,6 +624,14 @@ export class StockFormComponent implements OnInit, OnDestroy {
     // 4. Check Expiry Date
     if (oldVal.expiryDate !== payload.expiryDate) {
       changes.push(`Expiry Date changed from ${oldVal.expiryDate} to ${payload.expiryDate}`);
+    }
+
+    // 5. Check Cost (an empty field means "leave as is", so only report real changes)
+    const oldCost = oldVal.costRate != null && oldVal.costRate !== '' ? Number(oldVal.costRate) : null;
+    const newCost = payload.costRate != null ? Number(payload.costRate) : null;
+    if (newCost !== null && oldCost !== newCost) {
+      const oldCostStr = oldCost != null ? `₹${oldCost.toFixed(2)}` : 'None';
+      changes.push(`Cost changed from ${oldCostStr} to ₹${newCost.toFixed(2)}`);
     }
 
     // Build final message

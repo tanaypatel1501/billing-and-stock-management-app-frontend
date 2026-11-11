@@ -299,24 +299,37 @@ $ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 @keyframes disc-in { from { transform: translateX(-50%) scale(.55); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
 
 /* Scroll-linked effects (Chromium / Safari 26+; others see the static layout) */
+/* Scroll-linked effects (Chromium / Safari 26+) */
 @supports (animation-timeline: view()) {
-  @keyframes stage-out { to { transform: translateY(-4vh) scale(1.03); } }
-  @keyframes strip-merge { from { transform: rotate(3deg); } to { transform: rotate(-2deg); } }
+  @keyframes stage-out {
+    to { transform: translateY(-4vh) scale(1.03); }
+  }
+
+  @keyframes strip-merge {
+    from { transform: rotate(-2deg); }
+    to   { transform: rotate(-2deg); }
+  }
+
   @keyframes tighten {
     from { letter-spacing: .28em; opacity: .15; }
-    to   { letter-spacing: 0;     opacity: 1; }
+    to   { letter-spacing: 0; opacity: 1; }
   }
 
-  .stage { animation: stage-out linear both; animation-timeline: scroll(root); animation-range: 0 100vh; }
+  .stage {
+    animation: stage-out linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 100vh;
+  }
 
-  /* inverted strip swings from the opposite tilt into line with the hero strip */
   .panel-strip {
-    animation: flowCapsulesReverse 2s linear infinite, strip-merge linear both;
-    animation-timeline: auto, scroll(root);
-    animation-range: normal, 0px var(--merge-dist);
+    animation: flowCapsulesReverse 2s linear infinite;
+    transform: rotate(-2deg);
   }
+
   .scatter span, .scatter small {
-    animation: tighten linear both; animation-timeline: view(); animation-range: entry 5% cover 45%;
+    animation: tighten linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 45%;
   }
 }
 

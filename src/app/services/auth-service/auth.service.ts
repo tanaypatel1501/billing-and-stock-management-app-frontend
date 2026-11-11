@@ -7,6 +7,7 @@ import jwt_decode from 'jwt-decode';
 import { RequestCacheService } from '../cache/request-cache.service';
 import { Capacitor } from '@capacitor/core';
 import { MobileSessionService } from '../mobile-session/mobile-session.service';
+import { Purchase, Supplier } from '../../models/purchase.model';
 
 const AUTH_HEADER = 'authorization';
 
@@ -424,6 +425,53 @@ export class AuthService {
     return this.http.get<PageResponse<any>>(`${this.baseUrl}api/purchaser/page?search=${encodeURIComponent(searchText)}&page=${page}&size=${size}`, { headers });
   }
 
+  /* ---------------------- SUPPLIER ---------------------- */
+
+  searchSuppliers(name: string): Observable<Supplier[]> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<Supplier[]>(`${this.baseUrl}api/supplier/search?name=${encodeURIComponent(name)}`, { headers });
+  }
+
+  saveSupplier(data: Supplier): Observable<Supplier> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post<Supplier>(`${this.baseUrl}api/supplier/save`, data, { headers });
+  }
+
+  deleteSupplier(supplierId: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}api/supplier/${supplierId}`, { headers: this.createAuthorizationHeader() });
+  }
+
+  getSuppliersPage(params: { page?: number; size?: number; searchText?: string } = {}): Observable<PageResponse<Supplier>> {
+    const { page = 0, size = 20, searchText = '' } = params;
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<PageResponse<Supplier>>(`${this.baseUrl}api/supplier/page?search=${encodeURIComponent(searchText)}&page=${page}&size=${size}`, { headers });
+  }
+
+  /* ---------------------- PURCHASE ---------------------- */
+
+  createPurchase(data: Purchase): Observable<Purchase> {
+    return this.http.post<Purchase>(`${this.baseUrl}api/purchase/add`, data, { headers: this.createAuthorizationHeader() });
+  }
+
+  getPurchasesPage(params: { page?: number; size?: number; searchText?: string; fromDate?: string; toDate?: string } = {}): Observable<PageResponse<Purchase>> {
+    const { page = 0, size = 20, searchText = '', fromDate = '', toDate = '' } = params;
+    let url = `${this.baseUrl}api/purchase/page?search=${encodeURIComponent(searchText)}&page=${page}&size=${size}`;
+    if (fromDate) url += `&fromDate=${fromDate}`;
+    if (toDate) url += `&toDate=${toDate}`;
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<PageResponse<Purchase>>(url, { headers });
+  }
+
+  getPurchaseById(purchaseId: number): Observable<Purchase> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<Purchase>(`${this.baseUrl}api/purchase/${purchaseId}`, { headers });
+  }
+
+  revertPurchase(purchaseId: number): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post(`${this.baseUrl}api/purchase/${purchaseId}/revert`, null, { headers });
+  }
+
   /* ---------------------- SALES ---------------------- */
 
   getSalesSummary(userId: any, paidOnly: boolean = false): Observable<any> {
@@ -449,6 +497,25 @@ export class AuthService {
   getAvailableYears(userId: any): Observable<any> {
     const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get(`${this.baseUrl}api/sales/user/years`, { headers });
+  }
+
+  getProfitSummary(params: { paidOnly?: boolean; fromDate?: string; toDate?: string } = {}): Observable<any> {
+    const { paidOnly = false, fromDate = '', toDate = '' } = params;
+    let url = `${this.baseUrl}api/sales/user/profit?paidOnly=${paidOnly}`;
+    if (fromDate) url += `&fromDate=${fromDate}`;
+    if (toDate) url += `&toDate=${toDate}`;
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get(url, { headers });
+  }
+
+  getMissingCostStock(page: number = 0, size: number = 15): Observable<PageResponse<any>> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<PageResponse<any>>(`${this.baseUrl}api/stock/user/missing-cost?page=${page}&size=${size}`, { headers });
+  }
+
+  updateStockCost(stockId: number, costRate: number): Observable<any> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.patch(`${this.baseUrl}api/stock/${stockId}/cost`, { costRate }, { headers });
   }
 
   askSalesBot(question: string, token?: string, choice?: string,

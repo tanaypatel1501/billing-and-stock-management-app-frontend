@@ -1,6 +1,11 @@
 <div class="menu-page">
   <ng-container *ngIf="isUser">
     <div class="group">
+      <a class="row" routerLink="/user/stock/add">
+        <span class="row-icon ic-blue"><fa-icon [icon]="faBoxes"></fa-icon></span>
+        <span class="row-label">Add Stock</span>
+        <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
+      </a>
       <a class="row" routerLink="/user/stock-logs">
         <span class="row-icon ic-orange"><fa-icon [icon]="faClockRotateLeft"></fa-icon></span>
         <span class="row-label">Stock Logs</span>
@@ -14,6 +19,16 @@
       <a class="row" *ngIf="hasPurchasers" routerLink="/user/purchasers">
         <span class="row-icon ic-blue"><fa-icon [icon]="faUsers"></fa-icon></span>
         <span class="row-label">Purchasers</span>
+        <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
+      </a>
+            <a class="row" routerLink="/user/purchases">
+        <span class="row-icon ic-teal"><fa-icon [icon]="faTruckRampBox"></fa-icon></span>
+        <span class="row-label">Purchases</span>
+        <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
+      </a>
+      <a class="row" routerLink="/user/suppliers">
+        <span class="row-icon ic-orange"><fa-icon [icon]="faTruck"></fa-icon></span>
+        <span class="row-label">Suppliers</span>
         <fa-icon class="row-chevron" [icon]="faChevronRight"></fa-icon>
       </a>
       <a class="row" routerLink="/user/sales">

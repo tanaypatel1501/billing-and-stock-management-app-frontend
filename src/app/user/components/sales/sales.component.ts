@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +36,14 @@ export class SalesComponent implements OnInit {
   availableYears: number[] = [];
   selectedYear: number = new Date().getFullYear();
   totalBillsOverall: number = 0;
+  profit: any = null;
+  profitLoading = false;
+  profitPeriod: 'month' | 'fy' | 'all' = 'month';
+  readonly profitPeriods: { id: 'month' | 'fy' | 'all'; label: string }[] = [
+    { id: 'month', label: 'This month' },
+    { id: 'fy', label: 'This financial year' },
+    { id: 'all', label: 'All time' }
+  ];
 
   // Chart dimensions
   readonly BAR_HEIGHT = 32;
@@ -43,7 +52,8 @@ export class SalesComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private requestCache: RequestCacheService
+    private requestCache: RequestCacheService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +76,7 @@ export class SalesComponent implements OnInit {
   }
 
   loadAll(): void {
+    this.loadProfit();
     this.isLoading = true;
     let completed = 0;
     const done = () => { if (++completed === 4) this.isLoading = false; };
@@ -136,6 +147,44 @@ export class SalesComponent implements OnInit {
 
   monthChartHeight(): number {
     return 12 * (this.BAR_HEIGHT + this.BAR_GAP) + this.CHART_PADDING;
+  }
+
+  /* ---------- Profit ---------- */
+
+  loadProfit(): void {
+    this.profitLoading = true;
+    const { from, to } = this.periodRange(this.profitPeriod);
+    const key = `sales:profit:${this.userId}:${this.paidOnly}:${this.profitPeriod}:${from}:${to}`;
+    this.fetchCached(key, () => this.authService.getProfitSummary({ paidOnly: this.paidOnly, fromDate: from, toDate: to }))
+      .subscribe({
+        next: (data: any) => { this.profit = data; this.profitLoading = false; },
+        error: () => { this.profitLoading = false; }
+      });
+  }
+
+  onProfitPeriod(period: 'month' | 'fy' | 'all'): void {
+    if (this.profitPeriod === period) return;
+    this.profitPeriod = period;
+    this.loadProfit();
+  }
+
+  private periodRange(period: 'month' | 'fy' | 'all'): { from: string; to: string } {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    if (period === 'month') {
+      return { from: fmt(new Date(now.getFullYear(), now.getMonth(), 1)), to: fmt(now) };
+    }
+    if (period === 'fy') {
+      // Indian financial year: 1 April to 31 March
+      const startYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+      return { from: `${startYear}-04-01`, to: fmt(now) };
+    }
+    return { from: '', to: '' };
+  }
+
+  goToMissingCost(): void {
+    this.router.navigate(['/user/missing-cost']);
   }
 
   formatCurrency(val: number): string {

@@ -1,0 +1,140 @@
+/* Extra styles for Missing Cost. Header and layout come from bills.component.scss. */
+
+.mc-note {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--gstm-input-border);
+  border-left: 3px solid var(--gstm-primary-color);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+
+  strong { color: var(--gstm-text-main); }
+}
+
+.mc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--gstm-card-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.mc-info { min-width: 0; }
+
+.mc-name {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gstm-text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--gstm-text-muted);
+}
+
+.mc-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mc-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+
+  &:focus-within { border-color: var(--gstm-primary-color); }
+
+  .mc-currency { color: var(--gstm-text-muted); }
+
+  input {
+    width: 110px;
+    padding: 10px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--gstm-text-main);
+    font-size: 0.95rem;
+  }
+}
+
+.mc-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--gstm-primary-color);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { background: var(--gstm-primary-hover); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.mc-done {
+  margin-top: 24px;
+  padding: 40px 20px;
+  text-align: center;
+  border-radius: 16px;
+  background: var(--gstm-card-bg);
+
+  .mc-done-icon { font-size: 2.5rem; }
+  h2 { margin: 8px 0 4px; color: var(--gstm-text-main); }
+  p { margin: 0 0 18px; color: var(--gstm-text-muted); }
+}
+
+.mc-pager {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-size: 0.85rem;
+  color: var(--gstm-text-muted);
+}
+
+.mc-page-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-main);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+@media (max-width: 640px) {
+  .mc-card { flex-direction: column; align-items: stretch; }
+  .mc-entry { width: 100%; }
+  .mc-input-wrap { flex: 1; input { width: 100%; } }
+}

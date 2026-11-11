@@ -5,6 +5,11 @@
         <h1>{{ mode === 'edit' ? 'Edit Stock' : 'Add Stock' }}</h1>
         <p>Update your inventory</p>
       </div>
+      <div class="purchase-hint" *ngIf="mode !== 'edit'">
+        Received goods with a supplier invoice?
+        <a routerLink="/user/create-purchase">Record a purchase</a>
+        so cost, GST and stock update together. Use this form for opening stock and adjustments.
+      </div>
 
       <!-- Alert -->
       <div class="alert alert-danger" *ngIf="errorMessage" (click)="errorMessage = null">
@@ -158,6 +163,24 @@
             <div class="error-msg" *ngIf="productForm.get('mrp')?.hasError('required') && productForm.get('mrp')?.touched">
               MRP is required.
             </div>
+          </div>
+        </div>
+        <!-- Optional cost, used later for profit -->
+        <div class="form-group">
+          <label for="costRate">
+            Cost per unit (₹)
+            <span style="color:#777;font-weight:400;">Optional</span>
+          </label>
+          <input
+            type="number"
+            id="costRate"
+            formControlName="costRate"
+            step="0.01"
+            min="0"
+            placeholder="Your cost per unit, excluding GST"
+            [class.error]="productForm.get('costRate')?.invalid && productForm.get('costRate')?.touched">
+          <div class="error-msg" *ngIf="productForm.get('costRate')?.hasError('min') && productForm.get('costRate')?.touched">
+            Cost cannot be negative.
           </div>
         </div>
 

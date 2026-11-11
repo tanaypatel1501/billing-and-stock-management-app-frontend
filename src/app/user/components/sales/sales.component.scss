@@ -365,3 +365,157 @@
     transform: translateY(-1px);
   }
 }
+/* ── Profit card ── */
+.profit-header {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.profit-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profit-chip {
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &.active {
+    border-color: var(--gstm-primary-color);
+    background: rgba(72, 227, 204, 0.1);
+    color: var(--gstm-primary-color);
+  }
+}
+
+.profit-loading,
+.profit-empty {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.profit-grid {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  transition: opacity 0.15s ease;
+
+  &.dim { opacity: 0.5; }
+}
+
+.profit-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--gstm-input-bg);
+
+  .profit-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gstm-text-muted);
+  }
+
+  .profit-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--gstm-text-main);
+  }
+
+  &.main {
+    border: 1px solid var(--gstm-primary-color);
+    .profit-value { color: var(--gstm-success-text); }
+
+    &.negative {
+      border-color: var(--gstm-error);
+      .profit-value { color: var(--gstm-error); }
+    }
+  }
+}
+
+.coverage {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--gstm-text-main);
+
+  .coverage-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .coverage-sub { color: var(--gstm-text-muted); font-size: 0.8rem; }
+
+  .coverage-track {
+    height: 8px;
+    border-radius: 6px;
+    background: var(--gstm-input-border);
+    overflow: hidden;
+  }
+
+  .coverage-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: var(--gstm-primary-color);
+    transition: width 0.3s ease;
+  }
+}
+
+.profit-foot {
+  margin-top: 12px;
+  font-size: 0.78rem;
+  color: var(--gstm-text-muted);
+}
+
+.missing-banner {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--gstm-input-border);
+  border-left: 3px solid var(--gstm-primary-color);
+  background: var(--gstm-input-bg);
+  font-size: 0.85rem;
+  color: var(--gstm-text-main);
+}
+
+.missing-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--gstm-primary-color);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover { background: var(--gstm-primary-hover); }
+}
+
+@media (max-width: 768px) {
+  .profit-grid { grid-template-columns: repeat(2, 1fr); }
+  .profit-stat .profit-value { font-size: 1.15rem; }
+}

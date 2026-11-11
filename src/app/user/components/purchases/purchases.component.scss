@@ -1,0 +1,200 @@
+/* Extra styles for purchases. Cards, header and pagination come from bills.component.scss. */
+
+.new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--gstm-primary-color);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover { background: var(--gstm-primary-hover); }
+}
+
+.empty-state-card .new-btn { margin-top: 20px; }
+
+.tax-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(72, 227, 204, 0.12);
+  color: var(--gstm-primary-color);
+  border: 1px solid var(--gstm-primary-color);
+
+  &.igst {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border-color: #f59e0b;
+  }
+}
+
+/* ── Detail popup ── */
+.pd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+  animation: pdFade 0.2s ease;
+}
+
+.pd-card {
+  background: var(--gstm-card-bg);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 780px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: pdSlide 0.2s ease;
+  overflow: hidden;
+}
+
+@keyframes pdFade  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pdSlide { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.pd-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--gstm-input-border);
+
+  h3 { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--gstm-text-main); }
+  .pd-sub { margin-top: 4px; font-size: 0.85rem; color: var(--gstm-text-muted); }
+}
+
+.pd-close {
+  background: transparent;
+  border: none;
+  color: var(--gstm-text-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  &:hover { color: var(--gstm-text-main); }
+}
+
+.pd-body {
+  padding: 16px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pd-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .pd-gstin { font-size: 0.82rem; color: var(--gstm-text-muted); }
+}
+
+.pd-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--gstm-input-border);
+  border-radius: 12px;
+}
+
+.pd-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  color: var(--gstm-text-main);
+
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--gstm-input-border);
+    vertical-align: top;
+  }
+  th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gstm-text-muted);
+    background: var(--gstm-input-bg);
+  }
+  tr:last-child td { border-bottom: none; }
+  .num { text-align: right; white-space: nowrap; }
+  .pd-prod { font-weight: 600; }
+  .pd-pack { font-size: 0.75rem; color: var(--gstm-text-muted); }
+  .pd-free { font-size: 0.75rem; color: var(--gstm-primary-color); font-weight: 600; }
+}
+
+.pd-totals {
+  align-self: flex-end;
+  width: 100%;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--gstm-text-main);
+
+  > div { display: flex; justify-content: space-between; }
+  .pd-total {
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--gstm-input-border);
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+}
+
+.pd-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 24px 18px;
+  border-top: 1px solid var(--gstm-input-border);
+}
+
+.pd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { color: var(--gstm-text-main); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &.danger {
+    border-color: var(--gstm-error);
+    color: var(--gstm-error);
+    background: transparent;
+    &:hover:not(:disabled) { background: var(--gstm-error); color: #fff; }
+  }
+}
+
+@media (max-width: 540px) {
+  .modern-header .new-btn span { display: none; }
+  .modern-header .new-btn { padding: 10px 14px; }
+
+  .pd-overlay { align-items: flex-end; padding: 0; }
+  .pd-card { border-radius: 16px 16px 0 0; max-height: 92vh; }
+  .pd-header, .pd-body, .pd-footer { padding-left: 16px; padding-right: 16px; }
+}

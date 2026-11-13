@@ -10,8 +10,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     element.scrollIntoView({ behavior: 'smooth' });
   }
 
-  activeFeature = 0;
+  activePosition = 3;
+  isResetting = false;
   private readonly featureCount = 3;
+  private pendingLoopReset: number | null = null;
   private autoplay?: ReturnType<typeof setInterval>;
   private touchX = 0;
   private touchY = 0;
@@ -19,9 +21,111 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void { this.startAutoplay(); }
   ngOnDestroy(): void { this.stopAutoplay(); }
 
-  goTo(i: number): void { this.activeFeature = (i + this.featureCount) % this.featureCount; }
-  next(): void { this.goTo(this.activeFeature + 1); }
-  prev(): void { this.goTo(this.activeFeature - 1); }
+  readonly features = [
+    {
+      number: '01',
+      title: 'Smart Billing',
+      description: 'Generate professional invoices instantly with automated GST calculations and printable formats.',
+      icon: 'billing',
+      iconClass: 'c1'
+    },
+    {
+      number: '02',
+      title: 'Stock Management',
+      description: 'Real-time inventory tracking with low-stock alerts and comprehensive medicine categorization.',
+      icon: 'stock',
+      iconClass: 'c2'
+    },
+    {
+      number: '03',
+      title: 'Verified Products',
+      description: 'Request new products effortlessly. Our admin team verifies all entries to ensure catalog integrity.',
+      icon: 'verified',
+      iconClass: 'c3'
+    }
+  ];
+
+  readonly renderedFeatures = [
+    ...this.features,
+    ...this.features,
+    ...this.features
+  ];
+
+
+  get activeFeature(): number {
+    return this.activePosition % this.featureCount;
+  }
+
+  isNear(index: number): boolean {
+    return Math.abs(index - this.activePosition) === 1;
+  }
+
+  goTo(index: number): void {
+    if (this.pendingLoopReset !== null) return;
+
+    const logicalIndex = index % this.featureCount;
+
+    const candidates = [
+      logicalIndex,
+      logicalIndex + this.featureCount,
+      logicalIndex + this.featureCount * 2
+    ];
+
+    this.activePosition = candidates.reduce((closest, candidate) =>
+      Math.abs(candidate - this.activePosition) <
+      Math.abs(closest - this.activePosition)
+        ? candidate
+        : closest
+    );
+  }
+
+  next(): void {
+    if (this.pendingLoopReset !== null || this.activePosition >= 6) return;
+
+    // 3 -> 4 -> 5 -> 6 (clone of card 1)
+    if (this.activePosition === 5) {
+      this.pendingLoopReset = 3;
+    }
+
+    this.activePosition++;
+  }
+
+  prev(): void {
+    if (this.pendingLoopReset !== null || this.activePosition <= 0) return;
+
+    // 3 -> 2 (previous-cycle clone of card 3)
+    if (this.activePosition === 3) {
+      this.pendingLoopReset = 5;
+    }
+
+    this.activePosition--;
+  }
+
+  onCardTransitionEnd(event: TransitionEvent): void {
+    const card = event.target as HTMLElement;
+
+    if (
+      event.propertyName !== 'transform' ||
+      !card.classList.contains('feature-card') ||
+      Number(card.dataset['index']) !== this.activePosition ||
+      this.pendingLoopReset === null
+    ) {
+      return;
+    }
+
+    const resetPosition = this.pendingLoopReset;
+
+    // Disable transitions for the invisible index reset.
+    this.isResetting = true;
+    this.activePosition = resetPosition;
+    this.pendingLoopReset = null;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.isResetting = false;
+      });
+    });
+  }
 
   startAutoplay(): void {
     this.stopAutoplay();

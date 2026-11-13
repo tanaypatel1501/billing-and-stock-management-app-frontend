@@ -215,6 +215,9 @@ $ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   h3 { font-family: $display; font-weight: 400; font-size: 2rem; letter-spacing: .02em; margin: 26px 0 10px; }
   p { color: rgba(255,255,255,.7); line-height: 1.65; margin: 0; }
 }
+.wheel.no-transition .feature-card {
+  transition: none !important;
+}
 .card-no { position: absolute; top: 28px; right: 32px; font-family: $display; font-size: 1.6rem; color: rgba(255,255,255,.45); }
 
 .wheel-controls { display: flex; justify-content: center; align-items: center; gap: 24px; margin-top: 24px; }
@@ -322,7 +325,6 @@ $ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   .panel-strip {
-    animation: flowCapsulesReverse 2s linear infinite;
     transform: rotate(-2deg);
   }
 
@@ -396,7 +398,7 @@ $ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   .hero { position: relative; top: auto; height: auto; }
   .stage { min-height: 320px; }
   .sub-description { display: none; }
-  .panel-strip { animation: flowCapsulesReverse 2s linear infinite; transform: rotate(-2deg); }
+  .panel-strip { transform: rotate(-2deg) }
   .stage { animation: none; }
 }
 
@@ -420,4 +422,3 @@ $ease: cubic-bezier(0.2, 0.8, 0.2, 1);
     .disc { width: min(46vw, 520px, 90cqh); }                 /* never spills onto the headline */
   }
 }
- 

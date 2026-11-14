@@ -8,11 +8,12 @@ import { AuthService, PageResponse } from 'src/app/services/auth-service/auth.se
 import { AlertService } from 'src/app/services/alert-service/alert.service';
 import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-spinner.component';
+import { CollapsibleHeaderDirective } from 'src/app/shared/collapsible-header/collapsible-header.directive';
 
 @Component({
   selector: 'app-missing-cost',
   standalone: true,
-  imports: [CommonModule, FormsModule, FontAwesomeModule, LoadingSpinnerComponent],
+  imports: [CommonModule, FormsModule, FontAwesomeModule, LoadingSpinnerComponent, CollapsibleHeaderDirective],
   templateUrl: './missing-cost.component.html',
   styleUrls: ['../bills/bills.component.scss', './missing-cost.component.scss']
 })

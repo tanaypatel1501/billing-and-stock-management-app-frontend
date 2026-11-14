@@ -1079,3 +1079,11 @@
 .navbar-menu.native-hidden {
   display: none !important;
 }
+
+@media (min-width: 1451px) and (max-width: 1750px) {
+  .nav-link {
+    padding: 8px 11px;
+    font-size: 0.9rem;
+    gap: 8px;
+  }
+}

@@ -5,36 +5,38 @@
   <ng-container *ngIf="!isLoading || allSuppliers.length > 0">
 
     <!-- Header -->
-    <div class="logs-header">
-      <div class="header-left">
-        <button class="back-btn" *ngIf="isSearchActive" (click)="resetView()" title="Clear search">
-          <fa-icon [icon]="faArrowLeft"></fa-icon>
-        </button>
-        <div class="header-title-wrapper">
-          <h1 class="header-title">
-            <span class="title-text">Suppliers</span>
-            <fa-icon [icon]="faTruck" class="title-icon"></fa-icon>
-          </h1>
-          <span class="stock-count">
-            {{ totalElements }} {{ isSearchActive ? 'result(s) found' : 'supplier(s)' }}
-          </span>
+    <div class="gstm-sticky-wrap" appCollapsibleHeader>
+      <div class="logs-header">
+        <div class="header-left">
+          <button class="back-btn" *ngIf="isSearchActive" (click)="resetView()" title="Clear search">
+            <fa-icon [icon]="faArrowLeft"></fa-icon>
+          </button>
+          <div class="header-title-wrapper">
+            <h1 class="header-title">
+              <span class="title-text">Suppliers</span>
+              <fa-icon [icon]="faTruck" class="title-icon"></fa-icon>
+            </h1>
+            <span class="stock-count">
+              {{ totalElements }} {{ isSearchActive ? 'result(s) found' : 'supplier(s)' }}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div class="header-right">
-        <app-search-bar
-          [suggestions]="suggestions"
-          [isLoading]="isSuggestionLoading"
-          [labelKey]="'name'"
-          (onType)="handleTyping($event)"
-          (onSelect)="handleSearch($event)"
-          (onSearch)="handleSearch($event)"
-          notFoundText="suppliers">
-        </app-search-bar>
-        <button class="add-btn" (click)="openAdd()" title="Add supplier">
-          <fa-icon [icon]="faPlus"></fa-icon>
-          <span>Add Supplier</span>
-        </button>
+        <div class="header-right">
+          <app-search-bar
+            [suggestions]="suggestions"
+            [isLoading]="isSuggestionLoading"
+            [labelKey]="'name'"
+            (onType)="handleTyping($event)"
+            (onSelect)="handleSearch($event)"
+            (onSearch)="handleSearch($event)"
+            notFoundText="suppliers">
+          </app-search-bar>
+          <button class="add-btn" (click)="openAdd()" title="Add supplier">
+            <fa-icon [icon]="faPlus"></fa-icon>
+            <span>Add Supplier</span>
+          </button>
+        </div>
       </div>
     </div>
 

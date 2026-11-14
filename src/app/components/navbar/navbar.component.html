@@ -106,11 +106,11 @@
         </li>
       </ul>
 
-      <!-- User Links -->
+            <!-- User Links -->
       <ul class="nav-list" *ngIf="(isAuthenticated$ | async) && isUserLoggedIn && !isAdminLoggedIn">
         <li class="nav-item">
-          <a class="nav-link" 
-             routerLink="/user/dashboard" 
+          <a class="nav-link"
+             routerLink="/user/dashboard"
              routerLinkActive="active"
              [routerLinkActiveOptions]="{exact: true}"
              (click)="closeMobileMenu()">
@@ -119,8 +119,65 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" 
-             routerLink="/user/stock/add" 
+          <a class="nav-link"
+
+            routerLinkActive="active"
+            [class.disabled]="!detailsValid"
+            [attr.aria-disabled]="!detailsValid"
+             (click)="onCreateBill($event)">
+            <fa-icon [icon]="faFileInvoice"></fa-icon>
+            <span>Create Bill</span>
+            <span class="disabled-badge" *ngIf="!detailsValid">Complete Details</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+            routerLink="/user/create-purchase"
+            routerLinkActive="active"
+            (click)="closeMobileMenu()">
+            <fa-icon [icon]="faCartPlus"></fa-icon>
+            <span>New Purchase</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             routerLink="/user/bills"
+             routerLinkActive="active"
+             (click)="closeMobileMenu()">
+            <fa-icon [icon]="faMoneyBillWave"></fa-icon>
+            <span>Bills</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+            routerLink="/user/purchases"
+            routerLinkActive="active"
+            (click)="closeMobileMenu()">
+            <fa-icon [icon]="faTruckRampBox"></fa-icon>
+            <span>Purchases</span>
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="hasPurchasers">
+          <a class="nav-link"
+            routerLink="/user/purchasers"
+            routerLinkActive="active"
+            (click)="closeMobileMenu()">
+            <fa-icon [icon]="faUsers"></fa-icon>
+            <span>Purchasers</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+            routerLink="/user/suppliers"
+            routerLinkActive="active"
+            (click)="closeMobileMenu()">
+            <fa-icon [icon]="faTruck"></fa-icon>
+            <span>Suppliers</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             routerLink="/user/stock/add"
              routerLinkActive="active"
              (click)="closeMobileMenu()">
             <fa-icon [icon]="faBoxes"></fa-icon>
@@ -134,54 +191,6 @@
             (click)="closeMobileMenu()">
             <fa-icon [icon]="faClockRotateLeft"></fa-icon>
             <span>Stock Logs</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" 
-
-            routerLinkActive="active"
-            [class.disabled]="!detailsValid"
-            [attr.aria-disabled]="!detailsValid"
-             (click)="onCreateBill($event)">
-            <fa-icon [icon]="faFileInvoice"></fa-icon>
-            <span>Create Bill</span>
-            <span class="disabled-badge" *ngIf="!detailsValid">Complete Details</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" 
-             routerLink="/user/bills" 
-             routerLinkActive="active"
-             (click)="closeMobileMenu()">
-            <fa-icon [icon]="faMoneyBillWave"></fa-icon>
-            <span>Bills</span>
-          </a>
-        </li>
-        <li class="nav-item" *ngIf="hasPurchasers">
-          <a class="nav-link"
-            routerLink="/user/purchasers"
-            routerLinkActive="active"
-            (click)="closeMobileMenu()">
-            <fa-icon [icon]="faUsers"></fa-icon>
-            <span>Purchasers</span>
-          </a>
-        </li>
-                <li class="nav-item">
-          <a class="nav-link"
-            routerLink="/user/purchases"
-            routerLinkActive="active"
-            (click)="closeMobileMenu()">
-            <fa-icon [icon]="faTruckRampBox"></fa-icon>
-            <span>Purchases</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link"
-            routerLink="/user/suppliers"
-            routerLinkActive="active"
-            (click)="closeMobileMenu()">
-            <fa-icon [icon]="faTruck"></fa-icon>
-            <span>Suppliers</span>
           </a>
         </li>
         <li class="nav-item">

@@ -6,32 +6,34 @@
   <ng-container *ngIf="!isLoading || allPurchasers.length > 0">
 
     <!-- Header -->
-    <div class="logs-header">
-      <div class="header-left">
-        <button class="back-btn" *ngIf="isSearchActive" (click)="resetView()" title="Clear search">
-          <fa-icon [icon]="faArrowLeft"></fa-icon>
-        </button>
-        <div class="header-title-wrapper">
-          <h1 class="header-title">
-            <span class="title-text">Purchasers</span>
-            <fa-icon [icon]="faUsers" class="title-icon"></fa-icon>
-          </h1>
-          <span class="stock-count">
-            {{ totalElements }} {{ isSearchActive ? 'result(s) found' : 'purchaser(s)' }}
-          </span>
+    <div class="gstm-sticky-wrap" appCollapsibleHeader>
+      <div class="logs-header">
+        <div class="header-left">
+          <button class="back-btn" *ngIf="isSearchActive" (click)="resetView()" title="Clear search">
+            <fa-icon [icon]="faArrowLeft"></fa-icon>
+          </button>
+          <div class="header-title-wrapper">
+            <h1 class="header-title">
+              <span class="title-text">Purchasers</span>
+              <fa-icon [icon]="faUsers" class="title-icon"></fa-icon>
+            </h1>
+            <span class="stock-count">
+              {{ totalElements }} {{ isSearchActive ? 'result(s) found' : 'purchaser(s)' }}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div class="header-right">
-        <app-search-bar
-          [suggestions]="suggestions"
-          [isLoading]="isSuggestionLoading"
-          [labelKey]="'name'"
-          (onType)="handleTyping($event)"
-          (onSelect)="handleSearch($event)"
-          (onSearch)="handleSearch($event)"
-          notFoundText="purchasers">
-        </app-search-bar>
+        <div class="header-right">
+          <app-search-bar
+            [suggestions]="suggestions"
+            [isLoading]="isSuggestionLoading"
+            [labelKey]="'name'"
+            (onType)="handleTyping($event)"
+            (onSelect)="handleSearch($event)"
+            (onSearch)="handleSearch($event)"
+            notFoundText="purchasers">
+          </app-search-bar>
+        </div>
       </div>
     </div>
 

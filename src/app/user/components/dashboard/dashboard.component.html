@@ -17,59 +17,61 @@
       <div class="main-content">
         
         <!-- Modern Header -->
-        <div class="modern-header">
-          <div class="header-left">
-            <button
-              class="back-btn"
-              (click)="resetView()"
-              title="Reset Filters & Search"
-              *ngIf="searchText.length > 0">
-              <fa-icon [icon]="faArrowLeft"></fa-icon>
-            </button>
-            
-            <div class="header-title-wrapper">
-              <h1 class="header-title">
-                <span class="title-text">Products in Stock</span>
-                <fa-icon [icon]="faCartFlatbed" class="title-icon"></fa-icon>
-              </h1>
-              <span class="stock-count">{{ totalElements }} {{ isSearchActive ? ' item(s) found' : ' item(s)' }}</span>
+        <div class="gstm-sticky-wrap" appCollapsibleHeader>
+          <div class="modern-header">
+            <div class="header-left">
+              <button
+                class="back-btn"
+                (click)="resetView()"
+                title="Reset Filters & Search"
+                *ngIf="searchText.length > 0">
+                <fa-icon [icon]="faArrowLeft"></fa-icon>
+              </button>
+              
+              <div class="header-title-wrapper">
+                <h1 class="header-title">
+                  <span class="title-text">Products in Stock</span>
+                  <fa-icon [icon]="faCartFlatbed" class="title-icon"></fa-icon>
+                </h1>
+                <span class="stock-count">{{ totalElements }} {{ isSearchActive ? ' item(s) found' : ' item(s)' }}</span>
+              </div>
+            </div>
+
+            <div class="inventory-value-chip"
+              [class.expired-mode]="showingExpired"
+              [class.clickable]="expiredInventoryValue > 0"
+              [class.refreshing]="isRefreshingInventoryValue"
+              (click)="toggleInventoryChip()">
+            <span class="chip-label">{{ showingExpired ? 'Expired Value' : 'Inventory Value' }}</span>
+            <div class="chip-value-block">
+              <span class="chip-amount skeleton-text" *ngIf="isLoadingInventoryValue"></span>
+              <span class="chip-amount" *ngIf="!isLoadingInventoryValue">
+                ₹{{ (showingExpired ? expiredInventoryValue : totalInventoryValue) | number:'1.2-2' }}
+              </span>
+              <span class="chip-sub" *ngIf="!isLoadingInventoryValue && expiredInventoryValue > 0">
+                {{ showingExpired ? 'Active' : 'Expired' }}: ₹{{ (showingExpired ? totalInventoryValue : expiredInventoryValue) | number:'1.2-2' }}
+              </span>
             </div>
           </div>
 
-          <div class="inventory-value-chip"
-            [class.expired-mode]="showingExpired"
-            [class.clickable]="expiredInventoryValue > 0"
-            [class.refreshing]="isRefreshingInventoryValue"
-            (click)="toggleInventoryChip()">
-          <span class="chip-label">{{ showingExpired ? 'Expired Value' : 'Inventory Value' }}</span>
-          <div class="chip-value-block">
-            <span class="chip-amount skeleton-text" *ngIf="isLoadingInventoryValue"></span>
-            <span class="chip-amount" *ngIf="!isLoadingInventoryValue">
-              ₹{{ (showingExpired ? expiredInventoryValue : totalInventoryValue) | number:'1.2-2' }}
-            </span>
-            <span class="chip-sub" *ngIf="!isLoadingInventoryValue && expiredInventoryValue > 0">
-              {{ showingExpired ? 'Active' : 'Expired' }}: ₹{{ (showingExpired ? totalInventoryValue : expiredInventoryValue) | number:'1.2-2' }}
-            </span>
-          </div>
-        </div>
-
-          <div class="header-right">
-            <app-search-bar
-              [suggestions]="suggestions"
-              [isLoading]="isSuggestionLoading"
-              [labelKey]="'product.name'" 
-              [subLabelKey]="'product.packing'"
-              (onType)="handleTyping($event)"
-              (onSelect)="handleSearch($event)"
-              (onSearch)="handleSearch($event)"
-              notFoundText="products">
-            </app-search-bar>
-            <app-filter-button 
-              [columns]="filterColumns" 
-              [currentSortBy]="sortColumn"
-              [currentDirection]="sortDirection"
-              (onApplySort)="handleFilterSort($any($event))">
-            </app-filter-button>
+            <div class="header-right">
+              <app-search-bar
+                [suggestions]="suggestions"
+                [isLoading]="isSuggestionLoading"
+                [labelKey]="'product.name'" 
+                [subLabelKey]="'product.packing'"
+                (onType)="handleTyping($event)"
+                (onSelect)="handleSearch($event)"
+                (onSearch)="handleSearch($event)"
+                notFoundText="products">
+              </app-search-bar>
+              <app-filter-button 
+                [columns]="filterColumns" 
+                [currentSortBy]="sortColumn"
+                [currentDirection]="sortDirection"
+                (onApplySort)="handleFilterSort($any($event))">
+              </app-filter-button>
+            </div>
           </div>
         </div>
 

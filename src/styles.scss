@@ -188,3 +188,89 @@ body {
     padding-bottom: 0 !important;
   }
 }
+
+/* ── Sticky, collapsing page headers (see CollapsibleHeaderDirective) ── */
+:root {
+  --gstm-navbar-h: 60px;
+}
+
+.gstm-sticky-wrap {
+  position: sticky;
+  top: calc(var(--gstm-navbar-h) + 4px);
+  z-index: 900;
+  display: flow-root;
+  pointer-events: none;                 /* only the header card itself is clickable */
+
+  /* hides content peeking through the small gap under the navbar */
+  &::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    right: -16px;
+    top: -6px;
+    height: 6px;
+    background: var(--gstm-bg);
+    pointer-events: none;
+  }
+
+  > :first-child {
+    pointer-events: auto;
+    transition: max-height 0.28s ease, padding 0.28s ease, box-shadow 0.28s ease;
+  }
+
+  &.gstm-collapsed > :first-child {
+    position: relative;
+    max-height: 54px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 0 !important;
+    overflow: hidden !important;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18) !important;
+
+    /* keep the title, hide search, filters and chips */
+    > :not(.header-left) {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .header-title-wrapper > :not(h1) { display: none !important; }
+    .header-title { font-size: 1.05rem !important; }
+    .back-btn { width: 34px; height: 34px; }
+
+    /* the "pull down to expand" hint: a small grabber and a nudging chevron */
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 3px;
+      width: 34px;
+      height: 4px;
+      border-radius: 4px;
+      background: var(--gstm-input-border);
+      transform: translateX(-50%);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      border-right: 2px solid var(--gstm-text-muted);
+      border-bottom: 2px solid var(--gstm-text-muted);
+      transform: translateY(-70%) rotate(45deg);
+      animation: gstm-nudge 2.4s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes gstm-nudge {
+  0%, 100% { transform: translateY(-70%) rotate(45deg); }
+  50%      { transform: translateY(-35%) rotate(45deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gstm-sticky-wrap.gstm-collapsed > :first-child::after { animation: none; }
+}

@@ -16,6 +16,7 @@ import { SuppressDockDirective } from 'src/app/shared/suppress-dock/suppress-doc
 import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
 import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { Supplier } from 'src/app/models/purchase.model';
+import { CollapsibleHeaderDirective } from 'src/app/shared/collapsible-header/collapsible-header.directive';
 
 const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/i;
 const DL_PATTERN = /^[A-Z0-9\-\/\s]{10,30}$/i;
@@ -31,7 +32,8 @@ const PHONE_PATTERN = /^[0-9]{10}$/;
     FontAwesomeModule,
     SearchBarComponent,
     LoadingSpinnerComponent,
-    SuppressDockDirective
+    SuppressDockDirective,
+    CollapsibleHeaderDirective
   ],
   templateUrl: './suppliers.component.html',
   styleUrls: ['../purchasers/purchasers.component.scss', './suppliers.component.scss']

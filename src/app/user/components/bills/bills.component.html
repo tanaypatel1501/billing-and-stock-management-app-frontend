@@ -17,7 +17,7 @@
       <div class="main-content">
         
         <!-- Modern Header -->
-        <div class="gstm-sticky-wrap" appCollapsibleHeader>
+        <div class="gstm-sticky-wrap" appCollapsibleHeader [class.selection-hidden]="hasSelection">
           <div class="modern-header">
             <div class="header-left">
               <button
@@ -61,7 +61,7 @@
           </div>
         </div>
                 <!-- Floating selection bar: always visible while bills are selected -->
-        <div class="selection-bar" *ngIf="selectedBillIds.size > 0 || selectAllPages"
+        <div class="selection-bar" *ngIf="hasSelection"
              role="toolbar" aria-label="Actions for selected bills">
           <button type="button" class="sel-close" (click)="clearSelection()" title="Clear selection">
             <fa-icon [icon]="faTimes"></fa-icon>
@@ -77,7 +77,6 @@
               Select all {{ totalElements }}
             </button>
           </div>
-
           <div class="sel-actions">
             <button type="button" class="sel-btn revert"
                     *ngIf="selectedBillIds.size === 1 && !selectAllPages"
@@ -87,8 +86,15 @@
               <fa-icon [icon]="isReverting ? faSpinner : faRotateLeft"></fa-icon>
               <span>{{ isReverting ? 'Reverting...' : 'Revert' }}</span>
             </button>
+            <button type="button" class="sel-btn share"
+                    [disabled]="isSharing || isExporting"
+                    (click)="shareSelected()"
+                    aria-label="Share selected bills">
+              <fa-icon [icon]="isSharing ? faSpinner : faShare"></fa-icon>
+              <span>{{ isSharing ? 'Preparing...' : 'Share' }}</span>
+            </button>
             <button type="button" class="sel-btn export"
-                    [disabled]="isExporting"
+                    [disabled]="isExporting || isSharing"
                     (click)="exportSelectedAsPdf()">
               <fa-icon [icon]="isExporting ? faSpinner : faDownload"></fa-icon>
               <span>{{ isExporting ? 'Exporting...' : 'Export PDF' }}</span>

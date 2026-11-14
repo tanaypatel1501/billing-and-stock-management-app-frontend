@@ -429,6 +429,11 @@
   flex: 1;
 }
 
+.gstm-sticky-wrap.selection-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 // Selection mode styles
 .select-mode-btn {
   display: flex;
@@ -601,9 +606,50 @@
 
     &:hover:not(:disabled) { background: var(--gstm-primary-hover); }
   }
+    &.share {
+    background: transparent;
+    border-color: var(--gstm-primary-color);
+    color: var(--gstm-text-main);
+
+    &:hover:not(:disabled) {
+      background: var(--gstm-primary-color);
+      color: #000;
+    }
+  }
 }
 
-@media (max-width: 420px) {
-  .sel-btn.revert span { display: none; }   /* icon only on very narrow phones */
-  .sel-btn { padding: 9px 12px; }
+/* Phones / Android app: two rows — [close + count] on top, actions below */
+@media (max-width: 600px) {
+  .selection-bar {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 10px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    transform: none;
+    animation: none;
+  }
+
+  .sel-info {
+    flex: 1 1 0;        /* takes the rest of row 1 next to the close button */
+    min-width: 0;
+  }
+
+  .sel-actions {
+    flex: 1 1 100%;     /* forces its own row */
+    width: 100%;
+    gap: 8px;
+  }
+
+  .sel-btn {
+    flex: 1 1 0;        /* equal-width buttons, labels always visible */
+    justify-content: center;
+    padding: 10px 8px;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .sel-btn { font-size: 0.8rem; gap: 4px; padding: 10px 6px; }
 }

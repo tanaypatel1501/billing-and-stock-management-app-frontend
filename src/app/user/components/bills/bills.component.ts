@@ -6,7 +6,7 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import {
   faArrowLeft, faMoneyBillTrendUp, faFileInvoice, faCalendar,
-  faArrowRight, faCircleCheck, faCircle, faCheckSquare, faDownload, faSpinner, faTimes, faRotateLeft
+  faArrowRight, faCircleCheck, faCircle, faCheckSquare, faDownload, faSpinner, faTimes, faRotateLeft, faShare
 } from '@fortawesome/free-solid-svg-icons';
 import { CommonModule, DatePipe } from '@angular/common';
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
@@ -19,6 +19,7 @@ import { LoadingSpinnerComponent } from 'src/app/shared/loading-spinner/loading-
 import { AlertService } from 'src/app/services/alert-service/alert.service';
 import { AppStateService } from 'src/app/services/app-state.service';
 import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CollapsibleHeaderDirective } from 'src/app/shared/collapsible-header/collapsible-header.directive';
 
@@ -49,6 +50,7 @@ export class BillsComponent implements OnInit, OnDestroy {
   faSpinner = faSpinner;
   faTimes = faTimes;
   faRotateLeft = faRotateLeft;
+  faShare = faShare;
 
   isSearchActive: boolean = false;
   currentPage: number = 0;
@@ -77,6 +79,7 @@ export class BillsComponent implements OnInit, OnDestroy {
   toDate: string = '';
   selectAllPages: boolean = false;
   isReverting = false;
+  isSharing = false;
 
   cameFromPurchaser: boolean = false;
 
@@ -431,6 +434,10 @@ export class BillsComponent implements OnInit, OnDestroy {
     return !!this.fromDate || !!this.toDate;
   }
 
+  get hasSelection(): boolean {
+    return this.selectedBillIds.size > 0 || this.selectAllPages;
+  }
+
   toggleSelectAll(): void {
     if (this.selectAllPages || this.allCurrentPageSelected) {
       // Currently selected (either mode) — clicking again deselects everything
@@ -700,5 +707,105 @@ export class BillsComponent implements OnInit, OnDestroy {
 
   private today(): string {
     return new Date().toISOString().slice(0, 10);
+  }
+
+  // ── Share ──
+  shareSelected(): void {
+    if (this.isSharing || this.isExporting) return;
+    this.isSharing = true;
+
+    this.resolveSelectedIds(
+      ids => this.shareBills(ids),
+      () => {
+        this.isSharing = false;
+        this.alertService.error('Failed to fetch bills for sharing.');
+      }
+    );
+  }
+
+  /** Resolves ids for the current selection, including "select all pages". */
+  private resolveSelectedIds(onDone: (ids: number[]) => void, onError: () => void): void {
+    if (!this.selectAllPages) {
+      onDone(Array.from(this.selectedBillIds));
+      return;
+    }
+
+    this.authService.searchBills({
+      page: 0,
+      size: this.totalElements,
+      sortBy: this.sortColumn || 'id',
+      sortDir: this.sortDirection,
+      searchText: this.searchText,
+      filters: {
+        'user.id': this.userId.toString(),
+        ...(this.fromDate ? { 'invoiceDate.from': this.fromDate } : {}),
+        ...(this.toDate   ? { 'invoiceDate.to':   this.toDate   } : {})
+      }
+    }).subscribe({
+      next: (data: any) => onDone(data.content.map((b: any) => b.id)),
+      error: onError
+    });
+  }
+
+  private buildPdfFilename(id: number): string {
+    const bill = this.bills.find(b => b.id === id);
+    return bill
+      ? `Invoice-${this.sanitizeFilename(bill.purchaserName)}-${this.datePipe.transform(bill.invoiceDate, 'dd-MM-yyyy')}.pdf`
+      : `Invoice-${id}.pdf`;
+  }
+
+  private shareBills(ids: number[]): void {
+    if (ids.length === 0) { this.isSharing = false; return; }
+
+    if (ids.length === 1) {
+      const id = ids[0];
+      this.authService.getPdfBlob(id).subscribe({
+        next: blob => this.shareBlob(blob, this.buildPdfFilename(id), 'application/pdf', 'Invoice'),
+        error: () => {
+          this.isSharing = false;
+          this.alertService.error(`Failed to prepare bill ID ${id} for sharing.`);
+        }
+      });
+    } else {
+      this.authService.downloadBillsZip(ids).subscribe({
+        next: blob => this.shareBlob(blob, `Invoices-${this.today()}.zip`, 'application/zip', `${ids.length} Invoices`),
+        error: () => {
+          this.isSharing = false;
+          this.alertService.error('Failed to prepare bills for sharing.');
+        }
+      });
+    }
+  }
+
+  private async shareBlob(blob: Blob, filename: string, mime: string, title: string): Promise<void> {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const base64Data = await this.blobToBase64(blob);
+        // Cache dir: temporary file, doesn't clutter the user's Documents
+        const { uri } = await Filesystem.writeFile({
+          path: filename,
+          data: base64Data,
+          directory: Directory.Cache,
+          recursive: true
+        });
+        await Share.share({ title, url: uri, dialogTitle: 'Share' });
+      } else {
+        const file = new File([blob], filename, { type: mime });
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title });
+        } else {
+          await this.triggerDownload(blob, filename);
+          this.alertService.info('Sharing isn’t supported in this browser, so the file was downloaded instead.');
+        }
+      }
+    } catch (err: any) {
+      const cancelled = err?.name === 'AbortError' || err?.message === 'Share canceled';
+      if (!cancelled) {
+        console.error('Share failed:', err);
+        this.alertService.error('Failed to share.');
+      }
+    } finally {
+      this.isSharing = false;
+    }
   }
 }

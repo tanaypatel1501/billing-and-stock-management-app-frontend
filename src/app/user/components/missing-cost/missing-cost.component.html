@@ -3,17 +3,19 @@
 <div class="bills-wrapper" *ngIf="initialLoaded">
   <div class="main-content">
 
-    <div class="modern-header">
-      <div class="header-left">
-        <button class="back-btn" (click)="goToSales()" title="Back to Sales">
-          <fa-icon [icon]="faArrowLeft"></fa-icon>
-        </button>
-        <div class="header-title-wrapper">
-          <h1 class="header-title">
-            <span class="title-text">Missing Cost</span>
-            <fa-icon [icon]="faCoins" class="title-icon"></fa-icon>
-          </h1>
-          <span class="bill-count">{{ totalElements }} {{ totalElements === 1 ? 'batch' : 'batches' }} without a cost</span>
+    <div class="gstm-sticky-wrap" appCollapsibleHeader>
+      <div class="modern-header">
+        <div class="header-left">
+          <button class="back-btn" (click)="goToSales()" title="Back to Sales">
+            <fa-icon [icon]="faArrowLeft"></fa-icon>
+          </button>
+          <div class="header-title-wrapper">
+            <h1 class="header-title">
+              <span class="title-text">Missing Cost</span>
+              <fa-icon [icon]="faCoins" class="title-icon"></fa-icon>
+            </h1>
+            <span class="bill-count">{{ totalElements }} {{ totalElements === 1 ? 'batch' : 'batches' }} without a cost</span>
+          </div>
         </div>
       </div>
     </div>

@@ -7,41 +7,43 @@
   <ng-container *ngIf="!isLoading || filteredLogs.length > 0">
 
     <!-- Header -->
-    <div class="logs-header">
-      <div class="header-left">
-        <button class="back-btn" (click)="resetView()" title="Reset Filters & Search"
-          *ngIf="searchText.length > 0">
-          <fa-icon [icon]="faArrowLeft"></fa-icon>
-        </button>
-        <div class="header-title-wrapper">
-          <h1 class="header-title">
-            <span class="title-text">Stock History</span>
-            <fa-icon [icon]="faClockRotateLeft" class="title-icon"></fa-icon>
-          </h1>
-          <span class="stock-count">
-            {{ totalElements }} {{ isSearchActive || selectedAction ? 'item(s) found' : 'item(s)' }}
-          </span>
+    <div class="gstm-sticky-wrap" appCollapsibleHeader>
+      <div class="logs-header">
+        <div class="header-left">
+          <button class="back-btn" (click)="resetView()" title="Reset Filters & Search"
+            *ngIf="searchText.length > 0">
+            <fa-icon [icon]="faArrowLeft"></fa-icon>
+          </button>
+          <div class="header-title-wrapper">
+            <h1 class="header-title">
+              <span class="title-text">Stock History</span>
+              <fa-icon [icon]="faClockRotateLeft" class="title-icon"></fa-icon>
+            </h1>
+            <span class="stock-count">
+              {{ totalElements }} {{ isSearchActive || selectedAction ? 'item(s) found' : 'item(s)' }}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <!-- Search & Filter Bar -->
-      <div class="header-right">
-        <app-search-bar
-          [suggestions]="suggestions"
-          [isLoading]="isSuggestionLoading"
-          [labelKey]="'product.name'"
-          [subLabelKey]="'product.packing'"
-          (onType)="handleTyping($event)"
-          (onSelect)="handleSearch($event)"
-          (onSearch)="handleSearch($event)"
-          notFoundText="logs">
-        </app-search-bar>
-        <app-filter-button
-          [showSort]="false"
-          [availableActions]="availableActions"
-          [currentAction]="selectedAction"
-          (onApplySort)="handleFilterSort($any($event))">
-        </app-filter-button>
+        <!-- Search & Filter Bar -->
+        <div class="header-right">
+          <app-search-bar
+            [suggestions]="suggestions"
+            [isLoading]="isSuggestionLoading"
+            [labelKey]="'product.name'"
+            [subLabelKey]="'product.packing'"
+            (onType)="handleTyping($event)"
+            (onSelect)="handleSearch($event)"
+            (onSearch)="handleSearch($event)"
+            notFoundText="logs">
+          </app-search-bar>
+          <app-filter-button
+            [showSort]="false"
+            [availableActions]="availableActions"
+            [currentAction]="selectedAction"
+            (onApplySort)="handleFilterSort($any($event))">
+          </app-filter-button>
+        </div>
       </div>
     </div>
 

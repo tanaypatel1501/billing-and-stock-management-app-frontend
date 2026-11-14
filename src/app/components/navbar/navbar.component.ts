@@ -29,6 +29,7 @@ import {
   faUsers,
   faTruck,
   faTruckRampBox,
+  faCartPlus,
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -65,6 +66,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   faUsers = faUsers;
   faTruck = faTruck;
   faTruckRampBox = faTruckRampBox;
+  faCartPlus = faCartPlus;
   faChevronRight = faChevronRight;
 
   pendingRequestCount = 0;

@@ -17,71 +17,79 @@
       <div class="main-content">
         
         <!-- Modern Header -->
-        <div class="modern-header">
-          <div class="header-left">
-            <button
-              class="back-btn"
-              (click)="goBack()"
-              title="Reset Filters & Search"
-              *ngIf="isSearchActive || sortColumn || isDateFilterActive">
-              <fa-icon [icon]="faArrowLeft"></fa-icon>
-            </button>
-            
-            <div class="header-title-wrapper">
-              <h1 class="header-title">
-                <span class="title-text">Bills</span>
-                <fa-icon [icon]="faMoneyBillTrendUp" class="title-icon"></fa-icon>
-              </h1>
-              <span class="bill-count">{{ totalElements }} {{ isSearchActive ? ' bill(s) found' : ' bill(s)' }}</span>
+        <div class="gstm-sticky-wrap" appCollapsibleHeader>
+          <div class="modern-header">
+            <div class="header-left">
+              <button
+                class="back-btn"
+                (click)="goBack()"
+                title="Reset Filters & Search"
+                *ngIf="isSearchActive || sortColumn || isDateFilterActive">
+                <fa-icon [icon]="faArrowLeft"></fa-icon>
+              </button>
+              
+              <div class="header-title-wrapper">
+                <h1 class="header-title">
+                  <span class="title-text">Bills</span>
+                  <fa-icon [icon]="faMoneyBillTrendUp" class="title-icon"></fa-icon>
+                </h1>
+                <span class="bill-count">{{ totalElements }} {{ isSearchActive ? ' bill(s) found' : ' bill(s)' }}</span>
+              </div>
+            </div>
+
+            <div class="header-right">
+              <app-search-bar 
+                [suggestions]="suggestions" 
+                [isLoading]="isSuggestionLoading"
+                [labelKey]="'purchaserName'" 
+                [subLabelKey]="'invoiceDateFormatted'"
+                (onType)="handleTyping($event)" 
+                (onSelect)="handleSearch($event)" 
+                (onSearch)="handleSearch($event)"
+                notFoundText="bills">
+              </app-search-bar>
+              <app-filter-button 
+                [columns]="filterColumns" 
+                [currentSortBy]="sortColumn" 
+                [currentDirection]="sortDirection"
+                [showDateFilter]="true"   
+                [currentFromDate]="fromDate"
+                [currentToDate]="toDate"
+                (onApplySort)="handleFilterSort($any($event))">
+              </app-filter-button>
             </div>
           </div>
-
-          <div class="header-right">
-            <app-search-bar 
-              [suggestions]="suggestions" 
-              [isLoading]="isSuggestionLoading"
-              [labelKey]="'purchaserName'" 
-              [subLabelKey]="'invoiceDateFormatted'"
-              (onType)="handleTyping($event)" 
-              (onSelect)="handleSearch($event)" 
-              (onSearch)="handleSearch($event)"
-              notFoundText="bills">
-            </app-search-bar>
-            <app-filter-button 
-              [columns]="filterColumns" 
-              [currentSortBy]="sortColumn" 
-              [currentDirection]="sortDirection"
-              [showDateFilter]="true"   
-              [currentFromDate]="fromDate"
-              [currentToDate]="toDate"
-              (onApplySort)="handleFilterSort($any($event))">
-            </app-filter-button>
-          </div>
         </div>
-        <div class="export-toolbar" *ngIf="selectedBillIds.size > 0 || selectAllPages">
-          <div class="select-all-wrapper">
-            <input type="checkbox" id="selectAll"
-              [checked]="selectAllPages || allCurrentPageSelected"
-              (change)="toggleSelectAll()" />
-            <label for="selectAll">
-              <ng-container *ngIf="selectAllPages">
-                All {{ totalElements }} bills selected
-              </ng-container>
-              <ng-container *ngIf="!selectAllPages">
-                {{ selectedBillIds.size }} selected
-              </ng-container>
-            </label>
+                <!-- Floating selection bar: always visible while bills are selected -->
+        <div class="selection-bar" *ngIf="selectedBillIds.size > 0 || selectAllPages"
+             role="toolbar" aria-label="Actions for selected bills">
+          <button type="button" class="sel-close" (click)="clearSelection()" title="Clear selection">
+            <fa-icon [icon]="faTimes"></fa-icon>
+          </button>
+
+          <div class="sel-info">
+            <span class="sel-count">
+              {{ selectAllPages ? totalElements : selectedBillIds.size }} selected
+            </span>
+            <button type="button" class="sel-all"
+                    *ngIf="!selectAllPages && totalElements > selectedBillIds.size"
+                    (click)="selectAllBills()">
+              Select all {{ totalElements }}
+            </button>
           </div>
 
-          <div class="toolbar-actions">
-            <button class="revert-btn"
-                  *ngIf="selectedBillIds.size === 1 && !selectAllPages"
-                  [disabled]="isReverting"
-                  (click)="confirmRevertBill()">
+          <div class="sel-actions">
+            <button type="button" class="sel-btn revert"
+                    *ngIf="selectedBillIds.size === 1 && !selectAllPages"
+                    [disabled]="isReverting"
+                    (click)="confirmRevertBill()"
+                    aria-label="Revert bill">
               <fa-icon [icon]="isReverting ? faSpinner : faRotateLeft"></fa-icon>
-              <span>{{ isReverting ? 'Reverting...' : 'Revert Bill' }}</span>
+              <span>{{ isReverting ? 'Reverting...' : 'Revert' }}</span>
             </button>
-            <button class="export-btn" [disabled]="isExporting" (click)="exportSelectedAsPdf()">
+            <button type="button" class="sel-btn export"
+                    [disabled]="isExporting"
+                    (click)="exportSelectedAsPdf()">
               <fa-icon [icon]="isExporting ? faSpinner : faDownload"></fa-icon>
               <span>{{ isExporting ? 'Exporting...' : 'Export PDF' }}</span>
             </button>

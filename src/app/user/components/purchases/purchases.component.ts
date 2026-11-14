@@ -16,6 +16,7 @@ import { SuppressDockDirective } from 'src/app/shared/suppress-dock/suppress-doc
 import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
 import { ScrollThrottle } from 'src/app/shared/utils/scroll-throttle';
 import { Purchase, Supplier, TaxMode } from 'src/app/models/purchase.model';
+import { CollapsibleHeaderDirective } from 'src/app/shared/collapsible-header/collapsible-header.directive';
 
 @Component({
   selector: 'app-purchases',
@@ -26,7 +27,8 @@ import { Purchase, Supplier, TaxMode } from 'src/app/models/purchase.model';
     SearchBarComponent,
     FilterButtonComponent,
     LoadingSpinnerComponent,
-    SuppressDockDirective
+    SuppressDockDirective,
+    CollapsibleHeaderDirective
   ],
   templateUrl: './purchases.component.html',
   styleUrls: ['../bills/bills.component.scss', './purchases.component.scss']

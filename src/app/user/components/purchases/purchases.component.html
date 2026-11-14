@@ -19,44 +19,46 @@
     <div class="main-content">
 
       <!-- Header -->
-      <div class="modern-header">
-        <div class="header-left">
-          <button class="back-btn" (click)="goBack()" title="Reset search and filters"
-            *ngIf="isSearchActive || isDateFilterActive">
-            <fa-icon [icon]="faArrowLeft"></fa-icon>
-          </button>
+      <div class="gstm-sticky-wrap" appCollapsibleHeader>
+        <div class="modern-header">
+          <div class="header-left">
+            <button class="back-btn" (click)="goBack()" title="Reset search and filters"
+              *ngIf="isSearchActive || isDateFilterActive">
+              <fa-icon [icon]="faArrowLeft"></fa-icon>
+            </button>
 
-          <div class="header-title-wrapper">
-            <h1 class="header-title">
-              <span class="title-text">Purchases</span>
-              <fa-icon [icon]="faTruckRampBox" class="title-icon"></fa-icon>
-            </h1>
-            <span class="bill-count">{{ totalElements }} {{ (isSearchActive || isDateFilterActive) ? ' purchase(s) found' : ' purchase(s)' }}</span>
+            <div class="header-title-wrapper">
+              <h1 class="header-title">
+                <span class="title-text">Purchases</span>
+                <fa-icon [icon]="faTruckRampBox" class="title-icon"></fa-icon>
+              </h1>
+              <span class="bill-count">{{ totalElements }} {{ (isSearchActive || isDateFilterActive) ? ' purchase(s) found' : ' purchase(s)' }}</span>
+            </div>
           </div>
-        </div>
 
-        <div class="header-right">
-          <app-search-bar
-            [suggestions]="suggestions"
-            [isLoading]="isSuggestionLoading"
-            [labelKey]="'name'"
-            (onType)="handleTyping($event)"
-            (onSelect)="handleSearch($event)"
-            (onSearch)="handleSearch($event)"
-            notFoundText="suppliers">
-          </app-search-bar>
-          <app-filter-button
-            [columns]="[]"
-            [showSort]="false"
-            [showDateFilter]="true"
-            [currentFromDate]="fromDate"
-            [currentToDate]="toDate"
-            (onApplySort)="handleFilterSort($any($event))">
-          </app-filter-button>
-          <button class="new-btn" (click)="newPurchase()" title="New purchase">
-            <fa-icon [icon]="faPlus"></fa-icon>
-            <span>New Purchase</span>
-          </button>
+          <div class="header-right">
+            <app-search-bar
+              [suggestions]="suggestions"
+              [isLoading]="isSuggestionLoading"
+              [labelKey]="'name'"
+              (onType)="handleTyping($event)"
+              (onSelect)="handleSearch($event)"
+              (onSearch)="handleSearch($event)"
+              notFoundText="suppliers">
+            </app-search-bar>
+            <app-filter-button
+              [columns]="[]"
+              [showSort]="false"
+              [showDateFilter]="true"
+              [currentFromDate]="fromDate"
+              [currentToDate]="toDate"
+              (onApplySort)="handleFilterSort($any($event))">
+            </app-filter-button>
+            <button class="new-btn" (click)="newPurchase()" title="New purchase">
+              <fa-icon [icon]="faPlus"></fa-icon>
+              <span>New Purchase</span>
+            </button>
+          </div>
         </div>
       </div>
 

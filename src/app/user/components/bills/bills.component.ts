@@ -20,11 +20,12 @@ import { AlertService } from 'src/app/services/alert-service/alert.service';
 import { AppStateService } from 'src/app/services/app-state.service';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { CollapsibleHeaderDirective } from 'src/app/shared/collapsible-header/collapsible-header.directive';
 
 @Component({
   selector: 'app-bills',
   standalone: true,
-  imports: [CommonModule, SearchBarComponent, FilterButtonComponent, FontAwesomeModule, LoadingSpinnerComponent],
+  imports: [CommonModule, SearchBarComponent, FilterButtonComponent, FontAwesomeModule, LoadingSpinnerComponent, CollapsibleHeaderDirective],
   providers: [DatePipe],
   templateUrl: './bills.component.html',
   styleUrls: ['./bills.component.scss']
@@ -439,6 +440,23 @@ export class BillsComponent implements OnInit, OnDestroy {
       // Select everything across all pages in one click
       this.selectAllPages = true;
       this.bills.forEach(b => this.selectedBillIds.add(b.id)); // keep current page's ids too, for immediate UI feedback
+    }
+  }
+
+    clearSelection(): void {
+    this.selectAllPages = false;
+    this.selectedBillIds.clear();
+  }
+
+  selectAllBills(): void {
+    this.selectAllPages = true;
+    this.bills.forEach(b => this.selectedBillIds.add(b.id));
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.selectedBillIds.size > 0 || this.selectAllPages) {
+      this.clearSelection();
     }
   }
 

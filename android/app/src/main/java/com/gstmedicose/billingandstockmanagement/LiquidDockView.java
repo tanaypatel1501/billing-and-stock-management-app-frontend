@@ -34,7 +34,7 @@ import java.util.List;
 public class LiquidDockView extends View {
 
     /** Set to false to see the plain frosted fallback (no WebView capture). */
-    private static final boolean ENABLE_BACKDROP = true;
+    private static final boolean ENABLE_BACKDROP = false;
     private static final float BACKDROP_SATURATION = 0.7f;
     private static final int WASH_LIGHT = 0x66F2F2F7;
     private static final int WASH_DARK  = 0x66141416;

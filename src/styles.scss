@@ -50,6 +50,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 /* Add global styles to this file, and also import other style files */
@@ -205,11 +206,12 @@ body {
   &::before {
     content: '';
     position: absolute;
-    left: -16px;
-    right: -16px;
+    left: 0;
+    right: 0;
     top: -6px;
     height: 6px;
     background: var(--gstm-bg);
+    box-shadow: -16px 0 0 var(--gstm-bg), 16px 0 0 var(--gstm-bg);
     pointer-events: none;
   }
 

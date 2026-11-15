@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject, Subscription, of } from 'rxjs';
+import { catchError, debounceTime, map, switchMap } from 'rxjs/operators';
 import { AlertService } from 'src/app/services/alert-service/alert.service';
 import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 
@@ -61,6 +61,11 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   private lastStockSearch = '';
   private purchaserSearchTimeout: any;
   isLastStockPage = false;
+  isBatchesLoading = false;
+  private batchLoadToken = 0;
+  private readonly STOCK_PAGE_SIZE = 20;
+  private readonly BATCH_PAGE_SIZE = 100;
+  private readonly MAX_BATCH_PAGES = 50;
 
   constructor(
     private fb: FormBuilder,
@@ -98,10 +103,23 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.billForm2.valueChanges.subscribe(() => this.calculateAmount()),
     
+      // switchMap cancels any in-flight request, so a slow response for an older
+      // search can never overwrite the results of the latest one.
+      // (distinctUntilChanged was removed: after clearing the input, re-typing the
+      // same text was silently ignored and left the dropdown empty.)
       this.searchSubject.pipe(
         debounceTime(200),
-        distinctUntilChanged()
-      ).subscribe(searchText => this.searchStockPaged(searchText, false))
+        switchMap(searchText =>
+          this.authService.searchStock({
+            searchText,
+            page: 0,
+            size: this.STOCK_PAGE_SIZE
+          }).pipe(
+            map((res: any) => ({ res, ok: true })),
+            catchError(() => of({ res: null, ok: false }))
+          )
+        )
+      ).subscribe(({ res, ok }) => this.applyStockResult(res, ok, false))
     );
   }
 
@@ -132,6 +150,8 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   }
 
   openDropdown(): void {
+    // only one dropdown may be open at a time
+    this.showBatchDropdown = false;
     if (this.products.length > 0) {
       this.showDropdown = true;
     }
@@ -156,9 +176,15 @@ export class CreateBillComponent implements OnInit, OnDestroy {
   }
 
   toggleBatchDropdown(): void {
-    if (this.filteredStock.length > 0) {
+    if (this.filteredStock.length > 0 || this.isBatchesLoading) {
       this.showBatchDropdown = !this.showBatchDropdown;
+      if (this.showBatchDropdown) this.showDropdown = false;
     }
+  }
+
+  onBatchBlur(): void {
+    // delay so a click on a batch (mousedown) is registered before the list closes
+    setTimeout(() => (this.showBatchDropdown = false), 200);
   }
 
   selectBatch(item: any): void {
@@ -180,6 +206,24 @@ export class CreateBillComponent implements OnInit, OnDestroy {
 
   onProductSearch(): void {
     this.displayProductName = '';
+
+    // Typing a new product name invalidates the previous product's batch:
+    // close the batch list and clear the stale batch / stock selection.
+    this.showBatchDropdown = false;
+    this.batchLoadToken++;
+    this.isBatchesLoading = false;
+    this.filteredStock = [];
+    this.selectedBatchDisplay = '';
+    this.selectedExpiryRaw = '';
+    this.selectedMrp = null;
+    this.selectedPacking = null;
+    this.quantityPlaceholder = 'Quantity';
+    this.billForm2.patchValue({
+      productId: null,
+      stockId: null,
+      batchNo: null,
+      expiryDate: null
+    }, { emitEvent: false });
     const searchText = this.billForm2.get('productName')?.value?.trim();
 
     if (!searchText || searchText.length < 2) {
@@ -193,42 +237,116 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     this.searchSubject.next(searchText);   
   }
 
+  /** Loads the next page of product-search results (called when the dropdown is scrolled to the end). */
   searchStockPaged(searchText: string, isNextPage: boolean): void {
-    const page = isNextPage ? Math.ceil(this.stock.length / 20) : 0;
+    const page = isNextPage ? Math.ceil(this.stock.length / this.STOCK_PAGE_SIZE) : 0;
 
     this.authService.searchStock({
       searchText: searchText,
       page: page,
-      size: 20,
+      size: this.STOCK_PAGE_SIZE,
     }).subscribe({
       next: (res: any) => {
-        const list = res?.content ?? res ?? [];
-
-        // Accumulate all stock batches across pages
-        this.stock = isNextPage ? [...this.stock, ...list] : list;
-        this.isLastStockPage = res?.last ?? true;
-
-        // Dropdown shows only unique product names
-        const seen = new Set<string>();
-        this.products = this.stock
-          .filter((i: any) => {
-            const key = `${i.product.name}|${i.product.packing ?? ''}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          })
-          .map((i: any) => ({
-            name: i.product.name,
-            packing: i.product.packing
-          }));
-
-        this.showDropdown = this.products.length > 0;
+        // user kept typing while this page was loading -> result is stale
+        if (searchText !== this.lastStockSearch) return;
+        this.applyStockResult(res, true, isNextPage);
       },
-      error: () => {
+      error: () => this.applyStockResult(null, false, isNextPage)
+    });
+  }
+
+  onProductDropdownScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
+    if (nearBottom && !this.isLastStockPage && this.lastStockSearch) {
+      this.searchStockPaged(this.lastStockSearch, true);
+    }
+  }
+
+  private applyStockResult(res: any, ok: boolean, isNextPage: boolean): void {
+    if (!ok) {
+      if (!isNextPage) {
         this.products = [];
         this.stock = [];
         this.showDropdown = false;
       }
+      return;
+    }
+
+    const list = res?.content ?? res ?? [];
+
+    // Accumulate all stock batches across pages
+    this.stock = isNextPage ? [...this.stock, ...list] : list;
+    this.isLastStockPage = res?.last ?? true;
+
+    // Dropdown shows only unique product names
+    const seen = new Set<string>();
+    this.products = this.stock
+      .filter((i: any) => {
+        const key = `${i.product.name}|${i.product.packing ?? ''}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((i: any) => ({
+        name: i.product.name,
+        packing: i.product.packing
+      }));
+
+    this.showDropdown = this.products.length > 0;
+  }
+
+  /**
+   * The product search is paged by *batch rows* (20 per page), so the rows we
+   * already hold may contain only some of a product's batches. After a product is
+   * selected we therefore fetch every batch of that product explicitly.
+   */
+  private loadAllBatches(p: any): void {
+    const token = ++this.batchLoadToken;
+    this.isBatchesLoading = true;
+
+    const fetchPage = (page: number, acc: any[]): void => {
+      this.authService.searchStock({
+        searchText: p.name,
+        page,
+        size: this.BATCH_PAGE_SIZE
+      }).subscribe({
+        next: (res: any) => {
+          if (token !== this.batchLoadToken) return;   // another product was picked meanwhile
+
+          const list = res?.content ?? res ?? [];
+          const all = [...acc, ...list];
+          const isLast = res?.last ?? true;
+
+          if (!isLast && list.length > 0 && page + 1 < this.MAX_BATCH_PAGES) {
+            fetchPage(page + 1, all);
+            return;
+          }
+
+          this.isBatchesLoading = false;
+          this.filteredStock = this.buildBatchList(all, p);
+        },
+        error: () => {
+          if (token !== this.batchLoadToken) return;
+          this.isBatchesLoading = false;   // keep the batches we already have from the search results
+        }
+      });
+    };
+
+    fetchPage(0, []);
+  }
+
+  private buildBatchList(rows: any[], p: any): any[] {
+    const seenIds = new Set<number>();
+    return rows.filter(s => {
+      if (s.product.name !== p.name) return false;
+      if ((s.product.packing ?? '') !== (p.packing ?? '')) return false;
+      if (seenIds.has(s.id)) return false;
+      seenIds.add(s.id);
+      const used = this.step2Data
+        .filter(i => i.stockId === s.id)
+        .reduce((sum, i) => sum + Number(i.quantity) + Number(i.free), 0);
+      return (Number(s.quantity) - used) > 0;
     });
   }
 
@@ -240,14 +358,9 @@ export class CreateBillComponent implements OnInit, OnDestroy {
     });
     this.selectedPacking = p.packing ?? null;
 
-    this.filteredStock = this.stock.filter(s => {
-      if (s.product.name !== p.name) return false;
-      if ((s.product.packing ?? '') !== (p.packing ?? '')) return false;
-      const used = this.step2Data
-        .filter(i => i.stockId === s.id)
-        .reduce((sum, i) => sum + i.quantity + i.free, 0);
-      return (s.quantity - used) > 0;
-    });
+    // show what we already have immediately, then complete the list from the server
+    this.filteredStock = this.buildBatchList(this.stock, p);
+    this.loadAllBatches(p);
 
     this.selectedMrp = null;
     this.selectedExpiryRaw = ''; 
@@ -361,6 +474,8 @@ export class CreateBillComponent implements OnInit, OnDestroy {
       this.billForm2.markAsPristine(); 
       this.billForm2.markAsUntouched();
       this.displayProductName = '';
+      this.batchLoadToken++;
+      this.isBatchesLoading = false;
       this.filteredStock = [];
       this.selectedMrp = null;
       this.selectedExpiryRaw = '';

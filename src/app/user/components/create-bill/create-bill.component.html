@@ -211,7 +211,7 @@
                 autocomplete="off"
                 [class.error]="billForm2.get('productName')?.invalid && billForm2.get('productName')?.touched" />
 
-              <ul class="suggestion-dropdown" *ngIf="showDropdown && products.length > 0">
+              <ul class="suggestion-dropdown" *ngIf="showDropdown && products.length > 0" (scroll)="onProductDropdownScroll($event)">
                 <li *ngFor="let p of products; let i = index"
                     [class.active]="highlightedIndex === i"
                     (mousedown)="selectProduct(p)">
@@ -240,8 +240,12 @@
                   placeholder="Select a batch"
                   readonly
                   (click)="toggleBatchDropdown()"
+                  (blur)="onBatchBlur()"
                   [class.error]="billForm2.get('stockId')?.invalid && billForm2.get('stockId')?.touched" />
 
+                <ul class="suggestion-dropdown" *ngIf="showBatchDropdown && isBatchesLoading && filteredStock.length === 0">
+                  <li class="no-results">Loading batches...</li>
+                </ul>
                 <ul class="suggestion-dropdown" *ngIf="showBatchDropdown && filteredStock.length > 0">
                   <li *ngFor="let item of filteredStock"
                       (mousedown)="selectBatch(item)">

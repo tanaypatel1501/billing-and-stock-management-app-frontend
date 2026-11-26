@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { faChartBar, faToggleOn, faToggleOff, faArrowTrendUp } from '@fortawesome/free-solid-svg-icons';
+import { faChartBar, faToggleOn, faToggleOff, faArrowTrendUp, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import { Observable, of } from 'rxjs';
@@ -24,6 +24,7 @@ export class SalesComponent implements OnInit {
   faToggleOn = faToggleOn;
   faToggleOff = faToggleOff;
   faArrowTrendUp = faArrowTrendUp;
+  faFileInvoiceDollar = faFileInvoiceDollar;
 
   userId: any;
   isLoading = true;
@@ -185,6 +186,10 @@ export class SalesComponent implements OnInit {
 
   goToMissingCost(): void {
     this.router.navigate(['/user/missing-cost']);
+  }
+
+  goToGstSummary(): void {
+    this.router.navigate(['/user/gst-summary']);
   }
 
   formatCurrency(val: number): string {

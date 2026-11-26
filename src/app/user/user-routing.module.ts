@@ -16,6 +16,7 @@ import { SuppliersComponent } from './components/suppliers/suppliers.component';
 import { PurchasesComponent } from './components/purchases/purchases.component';
 import { CreatePurchaseComponent } from './components/create-purchase/create-purchase.component';
 import { MissingCostComponent } from './components/missing-cost/missing-cost.component';
+import { GstSummaryComponent } from './components/gst-summary/gst-summary.component';
 
 const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent ,canActivate:[UserGuard],title: 'Dashboard | GST Medicose'},
@@ -33,6 +34,7 @@ const routes: Routes = [
   { path: 'purchases', component: PurchasesComponent, canActivate: [UserGuard], title: 'Purchases | GST Medicose' },
   { path: 'create-purchase', component: CreatePurchaseComponent, canActivate: [UserGuard], title: 'Create Purchase | GST Medicose' },
   { path: 'missing-cost', component: MissingCostComponent, canActivate: [UserGuard], title: 'Missing Cost | GST Medicose' },
+  { path: 'gst-summary', component: GstSummaryComponent, canActivate: [UserGuard], title: 'GST Summary | GST Medicose' },
 ];
 
 @NgModule({

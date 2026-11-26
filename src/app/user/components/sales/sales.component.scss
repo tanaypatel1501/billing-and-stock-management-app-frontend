@@ -519,3 +519,23 @@
   .profit-grid { grid-template-columns: repeat(2, 1fr); }
   .profit-stat .profit-value { font-size: 1.15rem; }
 }
+.header-right {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.gst-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--gstm-primary-color);
+  color: #000;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover { background: var(--gstm-primary-hover); }
+}

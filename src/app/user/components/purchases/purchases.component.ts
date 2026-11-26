@@ -245,7 +245,7 @@ export class PurchasesComponent implements OnInit, OnDestroy {
     this.isReverting = true;
     this.authService.revertPurchase(p.id!).subscribe({
       next: () => {
-        this.requestCache.invalidateMany(['purchases:', 'stock:', 'inventory-value:', 'stockLogs:']);
+        this.requestCache.invalidateMany(['purchases:', 'stock:', 'inventory-value:', 'stockLogs:', 'sales:gst:']);
         this.alertService.success('Purchase reverted. Stock has been updated.');
         this.isReverting = false;
         this.closeDetail();

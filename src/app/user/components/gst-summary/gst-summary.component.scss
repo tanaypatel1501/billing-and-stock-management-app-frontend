@@ -1,0 +1,211 @@
+/* Extra styles for the GST Summary. Header and layout come from bills.component.scss. */
+
+.fy-select {
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-main);
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+
+  &:focus { border-color: var(--gstm-primary-color); }
+}
+
+.dim { opacity: 0.55; transition: opacity 0.15s ease; }
+.muted { color: var(--gstm-text-muted); }
+
+.gst-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--gstm-input-border);
+  border-left: 3px solid var(--gstm-primary-color);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-main);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.gst-banner-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--gstm-primary-color);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover { background: var(--gstm-primary-hover); }
+}
+
+/* ── Summary cards ── */
+.gst-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.gst-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--gstm-card-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+
+  .gst-stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gstm-text-muted);
+  }
+
+  .gst-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gstm-text-main);
+  }
+
+  .gst-stat-sub { font-size: 0.78rem; color: var(--gstm-text-muted); }
+
+  &.main {
+    border: 1px solid var(--gstm-primary-color);
+    &.credit { border-color: var(--gstm-success-text); .gst-stat-value { color: var(--gstm-success-text); } }
+  }
+}
+
+.gst-stat-value.muted { font-size: 1.1rem; }
+
+/* ── Table ── */
+.gst-table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+  background: var(--gstm-card-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.gst-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  color: var(--gstm-text-main);
+
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--gstm-input-border);
+    vertical-align: top;
+  }
+
+  th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gstm-text-muted);
+    background: var(--gstm-input-bg);
+  }
+
+  .num { text-align: right; white-space: nowrap; }
+  .month { font-weight: 600; }
+  tr.future td { opacity: 0.5; }
+
+  tfoot td {
+    font-weight: 700;
+    border-top: 2px solid var(--gstm-input-border);
+    border-bottom: none;
+  }
+}
+
+.split {
+  margin-top: 2px;
+  font-size: 0.72rem;
+  color: var(--gstm-text-muted);
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+
+  &.credit {
+    background: rgba(81, 207, 102, 0.12);
+    color: var(--gstm-success-text);
+  }
+}
+
+/* ── Mobile month cards ── */
+.gst-month-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gst-month {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--gstm-card-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  color: var(--gstm-text-main);
+  font-size: 0.88rem;
+
+  &.future { opacity: 0.5; }
+  &.total { border: 1px solid var(--gstm-primary-color); }
+
+  .gst-month-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .line {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+
+    &.net { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--gstm-input-border); font-weight: 700; }
+  }
+}
+
+.gst-foot {
+  margin: 12px 4px 0;
+  font-size: 0.78rem;
+  color: var(--gstm-text-muted);
+}
+
+.gst-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+
+  fa-icon { margin-top: 3px; color: var(--gstm-primary-color); }
+  p { margin: 0; }
+}
+
+@media (max-width: 768px) {
+  .gst-cards-grid { grid-template-columns: 1fr; }
+  .fy-select { width: 100%; }
+}

@@ -8,6 +8,7 @@ import { RequestCacheService } from '../cache/request-cache.service';
 import { Capacitor } from '@capacitor/core';
 import { MobileSessionService } from '../mobile-session/mobile-session.service';
 import { Purchase, Supplier } from '../../models/purchase.model';
+import { GstSummary } from '../../models/gst-summary.model';
 
 const AUTH_HEADER = 'authorization';
 
@@ -506,6 +507,12 @@ export class AuthService {
     if (toDate) url += `&toDate=${toDate}`;
     const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get(url, { headers });
+  }
+
+  getGstSummary(fy?: number): Observable<GstSummary> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    const query = fy != null ? `?fy=${fy}` : '';
+    return this.http.get<GstSummary>(`${this.baseUrl}api/sales/user/gst-summary${query}`, { headers });
   }
 
   getMissingCostStock(page: number = 0, size: number = 15): Observable<PageResponse<any>> {

@@ -462,7 +462,7 @@ export class CreatePurchaseComponent implements OnInit, OnDestroy {
     this.submitting = true;
     this.authService.createPurchase(payload).subscribe({
       next: () => {
-        this.requestCache.invalidateMany(['purchases:', 'suppliers:', 'stock:', 'inventory-value:', 'stockLogs:']);
+        this.requestCache.invalidateMany(['purchases:', 'suppliers:', 'stock:', 'inventory-value:', 'stockLogs:', 'sales:gst:']);
         this.alertService.success('Purchase saved and stock updated.');
         this.router.navigate(['/user/purchases']);
       },

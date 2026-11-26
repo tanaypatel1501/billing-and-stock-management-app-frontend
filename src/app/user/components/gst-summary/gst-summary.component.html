@@ -1,0 +1,201 @@
+<app-loading-spinner *ngIf="!data && isLoading" text="Loading GST Summary" skeleton="sales" [skeletonPadded]="true"></app-loading-spinner>
+
+<div class="bills-wrapper" *ngIf="data as d">
+  <div class="main-content">
+
+    <div class="gstm-sticky-wrap" appCollapsibleHeader>
+      <div class="modern-header">
+        <div class="header-left">
+          <button class="back-btn" (click)="goBack()" title="Back to Sales">
+            <fa-icon [icon]="faArrowLeft"></fa-icon>
+          </button>
+          <div class="header-title-wrapper">
+            <h1 class="header-title">
+              <span class="title-text">GST Summary</span>
+              <fa-icon [icon]="faFileInvoiceDollar" class="title-icon"></fa-icon>
+            </h1>
+            <span class="bill-count">GST collected against input credit, month by month</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <select class="fy-select" [ngModel]="selectedFy" (ngModelChange)="onFyChange($event)" aria-label="Financial year">
+            <option *ngFor="let o of fyOptions" [ngValue]="o.value">{{ o.label }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nothing to summarise -->
+    <div class="empty-state-wrapper" *ngIf="!d.firstBillDate && !d.firstPurchaseDate">
+      <div class="empty-state-card">
+        <div class="empty-state-icon">🧾</div>
+        <h2>Nothing to summarise yet</h2>
+        <p>Make a bill or record a purchase and this page will show your GST month by month.</p>
+      </div>
+    </div>
+
+    <ng-container *ngIf="d.firstBillDate || d.firstPurchaseDate">
+
+      <!-- Honest notes about what is and is not recorded -->
+      <div class="gst-banner" *ngIf="!d.firstPurchaseDate">
+        <span>No purchases are recorded yet, so input GST can't be calculated. Record your purchase invoices to see it.</span>
+        <button type="button" class="gst-banner-btn" (click)="goToPurchase()">New Purchase</button>
+      </div>
+      <div class="gst-banner" *ngIf="showPartialBanner(d)">
+        <span>
+          Input GST is available from <strong>{{ monthLabel(firstPurchaseMonth(d)) }}</strong>, the month of your first recorded purchase.
+          Earlier months show n/a instead of zero<ng-container *ngIf="firstMonthInFy(d)">, and that first month may be incomplete if you started mid-month</ng-container>.
+        </span>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="gst-cards-grid" [class.dim]="isLoading">
+        <div class="gst-stat">
+          <span class="gst-stat-label">GST collected</span>
+          <span class="gst-stat-value">₹{{ d.totals.salesGst | number:'1.2-2' }}</span>
+          <span class="gst-stat-sub">on sales of ₹{{ d.totals.salesTaxable | number:'1.2-2' }} (excl. GST)</span>
+        </div>
+
+        <div class="gst-stat">
+          <span class="gst-stat-label">Input GST (credit)</span>
+          <ng-container *ngIf="d.totals.inputTracked; else notRecorded">
+            <span class="gst-stat-value">₹{{ d.totals.inputGst | number:'1.2-2' }}</span>
+            <span class="gst-stat-sub">
+              CGST ₹{{ d.totals.inputCgst | number:'1.2-2' }} · SGST ₹{{ d.totals.inputSgst | number:'1.2-2' }} · IGST ₹{{ d.totals.inputIgst | number:'1.2-2' }}
+            </span>
+          </ng-container>
+        </div>
+
+        <div class="gst-stat main" [class.credit]="isCredit(d.totals)">
+          <span class="gst-stat-label">
+            {{ !d.totals.inputTracked ? 'Net GST' : (isCredit(d.totals) ? 'Credit to carry forward' : 'Net GST payable') }}
+          </span>
+          <ng-container *ngIf="d.totals.inputTracked; else notRecorded">
+            <span class="gst-stat-value">₹{{ absNet(d.totals) | number:'1.2-2' }}</span>
+            <span class="gst-stat-sub">over the {{ d.trackedMonths }} month(s) with purchase records</span>
+          </ng-container>
+        </div>
+      </div>
+
+      <ng-template #notRecorded>
+        <span class="gst-stat-value muted">Not recorded</span>
+        <span class="gst-stat-sub">no purchases recorded in this period</span>
+      </ng-template>
+
+      <!-- Desktop: table -->
+      <div class="gst-table-wrap d-none d-md-block" [class.dim]="isLoading">
+        <table class="gst-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th class="num">Sales (excl. GST)</th>
+              <th class="num">GST collected</th>
+              <th class="num">Input GST</th>
+              <th class="num">Net GST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of d.months" [class.future]="isFuture(m)">
+              <td class="month">{{ monthLabel(m.month) }}</td>
+
+              <ng-container *ngIf="!isFuture(m); else futureCells">
+                <td class="num">₹{{ m.salesTaxable | number:'1.2-2' }}</td>
+                <td class="num">₹{{ m.salesGst | number:'1.2-2' }}</td>
+                <td class="num">
+                  <ng-container *ngIf="m.inputTracked; else na">
+                    ₹{{ m.inputGst | number:'1.2-2' }}
+                    <div class="split">C {{ m.inputCgst | number:'1.2-2' }} · S {{ m.inputSgst | number:'1.2-2' }} · I {{ m.inputIgst | number:'1.2-2' }}</div>
+                  </ng-container>
+                </td>
+                <td class="num">
+                  <ng-container *ngIf="m.inputTracked; else na">
+                    ₹{{ absNet(m) | number:'1.2-2' }}
+                    <span class="tag" [class.credit]="isCredit(m)">{{ isCredit(m) ? 'credit' : 'payable' }}</span>
+                  </ng-container>
+                </td>
+              </ng-container>
+
+              <ng-template #futureCells><td class="num muted" colspan="4">-</td></ng-template>
+              <ng-template #na><span class="muted">n/a</span></ng-template>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td class="month">Total</td>
+              <td class="num">₹{{ d.totals.salesTaxable | number:'1.2-2' }}</td>
+              <td class="num">₹{{ d.totals.salesGst | number:'1.2-2' }}</td>
+              <td class="num">
+                <ng-container *ngIf="d.totals.inputTracked; else naTotal">₹{{ d.totals.inputGst | number:'1.2-2' }}</ng-container>
+              </td>
+              <td class="num">
+                <ng-container *ngIf="d.totals.inputTracked; else naTotal">
+                  ₹{{ absNet(d.totals) | number:'1.2-2' }}
+                  <span class="tag" [class.credit]="isCredit(d.totals)">{{ isCredit(d.totals) ? 'credit' : 'payable' }}</span>
+                </ng-container>
+              </td>
+              <ng-template #naTotal><span class="muted">n/a</span></ng-template>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Mobile: one card per month -->
+      <div class="gst-month-list d-md-none" [class.dim]="isLoading">
+        <div class="gst-month" *ngFor="let m of d.months" [class.future]="isFuture(m)">
+          <div class="gst-month-head">
+            <strong>{{ monthLabel(m.month) }}</strong>
+            <span class="tag" *ngIf="!isFuture(m) && m.inputTracked" [class.credit]="isCredit(m)">
+              {{ isCredit(m) ? 'credit' : 'payable' }}
+            </span>
+          </div>
+
+          <ng-container *ngIf="!isFuture(m); else mFuture">
+            <div class="line"><span>Sales (excl. GST)</span><span>₹{{ m.salesTaxable | number:'1.2-2' }}</span></div>
+            <div class="line"><span>GST collected</span><span>₹{{ m.salesGst | number:'1.2-2' }}</span></div>
+            <div class="line">
+              <span>Input GST</span>
+              <span *ngIf="m.inputTracked">₹{{ m.inputGst | number:'1.2-2' }}</span>
+              <span *ngIf="!m.inputTracked" class="muted">n/a</span>
+            </div>
+            <div class="split" *ngIf="m.inputTracked">
+              C {{ m.inputCgst | number:'1.2-2' }} · S {{ m.inputSgst | number:'1.2-2' }} · I {{ m.inputIgst | number:'1.2-2' }}
+            </div>
+            <div class="line net">
+              <span>Net GST</span>
+              <span *ngIf="m.inputTracked">₹{{ absNet(m) | number:'1.2-2' }}</span>
+              <span *ngIf="!m.inputTracked" class="muted">n/a</span>
+            </div>
+          </ng-container>
+          <ng-template #mFuture><div class="muted">-</div></ng-template>
+        </div>
+
+        <div class="gst-month total">
+          <div class="gst-month-head"><strong>Total</strong></div>
+          <div class="line"><span>GST collected</span><span>₹{{ d.totals.salesGst | number:'1.2-2' }}</span></div>
+          <div class="line">
+            <span>Input GST</span>
+            <span *ngIf="d.totals.inputTracked">₹{{ d.totals.inputGst | number:'1.2-2' }}</span>
+            <span *ngIf="!d.totals.inputTracked" class="muted">n/a</span>
+          </div>
+          <div class="line net">
+            <span>Net GST</span>
+            <span *ngIf="d.totals.inputTracked">₹{{ absNet(d.totals) | number:'1.2-2' }}</span>
+            <span *ngIf="!d.totals.inputTracked" class="muted">n/a</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="gst-foot">Input and net totals count only the months that have purchase records. Sales totals cover the whole year.</p>
+
+      <div class="gst-note">
+        <fa-icon [icon]="faCircleInfo"></fa-icon>
+        <p>
+          This is an estimate to help you plan, not a GST return. GST collected is shown as one total because past bills
+          do not record whether they were intra-state or inter-state. Eligibility of input credit, blocked credits and the
+          order of set-off between CGST, SGST and IGST are not applied. Please confirm the figures with your CA before filing.
+        </p>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

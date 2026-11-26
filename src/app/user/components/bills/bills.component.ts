@@ -6,7 +6,8 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { UserStorageService } from 'src/app/services/storage/user-storage.service';
 import {
   faArrowLeft, faMoneyBillTrendUp, faFileInvoice, faCalendar,
-  faArrowRight, faCircleCheck, faCircle, faCheckSquare, faDownload, faSpinner, faTimes, faRotateLeft, faShare
+  faArrowRight, faCircleCheck, faCircle, faCheckSquare, faDownload, faSpinner, faTimes, faRotateLeft, faShare,
+  faTrashCan, faCircleHalfStroke
 } from '@fortawesome/free-solid-svg-icons';
 import { CommonModule, DatePipe } from '@angular/common';
 import { SearchBarComponent } from '../../../shared/search-bar/search-bar.component';
@@ -22,14 +23,19 @@ import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CollapsibleHeaderDirective } from 'src/app/shared/collapsible-header/collapsible-header.directive';
+import { FormsModule } from '@angular/forms';
+import { SuppressDockDirective } from 'src/app/shared/suppress-dock/suppress-dock.directive';
+import {
+  BillBalance, BillPayment, BillPaymentStatus, PAYMENT_MODES, PaymentMode, paymentModeLabel
+} from 'src/app/models/bill-payment.model';
 
 @Component({
   selector: 'app-bills',
   standalone: true,
-  imports: [CommonModule, SearchBarComponent, FilterButtonComponent, FontAwesomeModule, LoadingSpinnerComponent, CollapsibleHeaderDirective],
+  imports: [CommonModule, FormsModule, SearchBarComponent, FilterButtonComponent, FontAwesomeModule, LoadingSpinnerComponent, CollapsibleHeaderDirective, SuppressDockDirective],
   providers: [DatePipe],
   templateUrl: './bills.component.html',
-  styleUrls: ['./bills.component.scss']
+  styleUrls: ['./bills.component.scss', './bill-payments.scss']
 })
 export class BillsComponent implements OnInit, OnDestroy {
   bills: any[] = [];
@@ -51,6 +57,8 @@ export class BillsComponent implements OnInit, OnDestroy {
   faTimes = faTimes;
   faRotateLeft = faRotateLeft;
   faShare = faShare;
+  faTrashCan = faTrashCan;
+  faCircleHalfStroke = faCircleHalfStroke;
 
   isSearchActive: boolean = false;
   currentPage: number = 0;
@@ -82,6 +90,20 @@ export class BillsComponent implements OnInit, OnDestroy {
   isSharing = false;
 
   cameFromPurchaser: boolean = false;
+  backTo: string | null = null;
+  // Payments
+  balances: Record<number, BillBalance> = {};
+  paymentModes = PAYMENT_MODES;
+  paymentModeLabel = paymentModeLabel;
+  paymentBill: any | null = null;          // the bill whose popup is open
+  paymentBalance: BillBalance | null = null;
+  isPaymentLoading = false;
+  isSavingPayment = false;
+  deletingPaymentId: number | null = null;
+  maxPaymentDate = '';
+  payForm: { amount: number | null; paymentDate: string; mode: PaymentMode; reference: string; notes: string } = {
+    amount: null, paymentDate: '', mode: 'CASH', reference: '', notes: ''
+  };
 
   private debouncedSearch = new DebouncedSearch(text => this.performSuggestionSearch(text), 250);
   private scrollThrottle = new ScrollThrottle(() => this.checkScrollPosition(), 150);
@@ -106,6 +128,7 @@ export class BillsComponent implements OnInit, OnDestroy {
     const paramPurchaserName = this.route.snapshot.queryParamMap.get('purchaserName');
     const paramSearch = this.route.snapshot.queryParamMap.get('searchText');
     const savedState = this.appState.consumeBillsListState();
+    this.backTo = this.route.snapshot.queryParamMap.get('from') === 'outstanding' ? '/user/outstanding' : null;
 
     if (paramPurchaserId) {
       this.purchaserId   = +paramPurchaserId;
@@ -129,7 +152,7 @@ export class BillsComponent implements OnInit, OnDestroy {
       this.purchaserId       = savedState.purchaserId;
       this.purchaserName     = savedState.purchaserName;
       this.cameFromPurchaser = savedState.cameFromPurchaser;
-
+      this.backTo            = savedState.backTo ?? null;
       this.bills = [];
       this.isLastPage = false;
       if (window.innerWidth < 768) {
@@ -170,6 +193,10 @@ export class BillsComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
+    if (this.backTo) {
+      this.router.navigate([this.backTo]);
+      return;
+    }
     if (this.cameFromPurchaser) {
       this.router.navigate(['/user/purchasers']);
     } else {
@@ -270,6 +297,7 @@ export class BillsComponent implements OnInit, OnDestroy {
     this.isLoadingMore = false; 
     this.initialLoadComplete = true;
     this.suggestions = [];
+    this.loadBalances(data.content.map((b: any) => b.id));
   }
 
   handleTyping(text: string) {
@@ -371,22 +399,153 @@ export class BillsComponent implements OnInit, OnDestroy {
     this.loadInitialData();
   }
 
-  togglePaid(bill: any, event: Event): void {
+  // ── Payments ──
+  private loadBalances(ids: number[]): void {
+    if (!ids || ids.length === 0) return;
+    this.authService.getBillBalances(ids).subscribe({
+      next: (list) => list.forEach(b => { this.balances[b.billId] = b; }),
+      error: () => { /* chips fall back to the bill.paid flag */ }
+    });
+  }
+
+  paymentStatus(bill: any): BillPaymentStatus {
+    const b = this.balances[bill.id];
+    if (b) return b.status;
+    return bill.paid ? 'PAID' : 'UNPAID';
+  }
+
+  chipLabel(bill: any): string {
+    const b = this.balances[bill.id];
+    if (b && b.status === 'PARTIAL') {
+      return `₹${this.formatInr(b.paidAmount)} paid · ₹${this.formatInr(b.outstandingAmount)} due`;
+    }
+    return this.paymentStatus(bill) === 'PAID' ? 'Paid' : 'Record payment';
+  }
+
+  formatInr(n: number): string {
+    return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+  }
+
+  private todayStr(): string {
+    return this.datePipe.transform(new Date(), 'yyyy-MM-dd') ?? '';
+  }
+
+  openPayments(bill: any, event: Event): void {
     event.stopPropagation();
     event.preventDefault();
-    const newStatus = !bill.paid;
-    bill.paid = newStatus;
-    bill._reqId = (bill._reqId || 0) + 1;
-    const reqId = bill._reqId;
-    this.authService.updateBillPaidStatus(bill.id, newStatus).subscribe({
-      next: () => {
-         this.requestCache.invalidateMany(['sales:', 'bills:']);
+    this.paymentBill = bill;
+    this.paymentBalance = this.balances[bill.id] ?? null;   // summary shows at once; the payment list follows
+    this.maxPaymentDate = this.todayStr();
+    this.resetPayForm(this.paymentBalance);
+    this.isPaymentLoading = true;
+    this.authService.getBillBalance(bill.id).subscribe({
+      next: (b) => {
+        this.isPaymentLoading = false;
+        this.applyBalance(bill.id, b);
       },
-      error: () => {
-        if (bill._reqId === reqId) {
-          bill.paid = !newStatus;
-          alert('Failed to update payment status');
-        }
+      error: (err) => {
+        this.isPaymentLoading = false;
+        this.closePayments();
+        this.alertService.error(err?.error?.message || 'Failed to load payments.');
+      }
+    });
+  }
+
+  closePayments(): void {
+    this.paymentBill = null;
+    this.paymentBalance = null;
+    this.isSavingPayment = false;
+    this.deletingPaymentId = null;
+  }
+
+  private applyBalance(billId: number, b: BillBalance): void {
+    this.balances[billId] = b;
+    const bill = this.bills.find(x => x.id === billId);
+    if (bill) bill.paid = b.status === 'PAID';
+    if (this.paymentBill?.id === billId) {
+      this.paymentBalance = b;
+      this.resetPayForm(b);
+    }
+  }
+
+  private resetPayForm(b: BillBalance | null): void {
+    this.payForm = {
+      amount: b && b.outstandingAmount > 0 ? b.outstandingAmount : null,
+      paymentDate: this.todayStr(),
+      mode: 'CASH',
+      reference: '',
+      notes: ''
+    };
+  }
+
+  payFullBalance(): void {
+    if (this.paymentBalance && this.paymentBalance.outstandingAmount > 0) {
+      this.payForm.amount = this.paymentBalance.outstandingAmount;
+    }
+  }
+
+  savePayment(): void {
+    if (!this.paymentBill || !this.paymentBalance || this.isSavingPayment) return;
+
+    const amount = Number(this.payForm.amount);
+    if (!amount || amount <= 0) {
+      this.alertService.error('Enter an amount greater than 0.');
+      return;
+    }
+    if (amount > this.paymentBalance.outstandingAmount + 0.005) {
+      this.alertService.error(`Amount cannot exceed the outstanding ₹${this.formatInr(this.paymentBalance.outstandingAmount)}.`);
+      return;
+    }
+    if (!this.payForm.paymentDate) {
+      this.alertService.error('Choose the payment date.');
+      return;
+    }
+
+    const billId = this.paymentBill.id;
+    this.isSavingPayment = true;
+    this.authService.addBillPayment(billId, {
+      amount,
+      paymentDate: this.payForm.paymentDate,
+      mode: this.payForm.mode,
+      reference: this.payForm.reference.trim() || undefined,
+      notes: this.payForm.notes.trim() || undefined
+    }).subscribe({
+      next: (b) => {
+        this.isSavingPayment = false;
+        this.applyBalance(billId, b);
+        this.requestCache.invalidateMany(['sales:', 'bills:']);
+        this.alertService.success('Payment recorded.');
+      },
+      error: (err) => {
+        this.isSavingPayment = false;
+        this.alertService.error(err?.error?.message || 'Failed to record payment.');
+      }
+    });
+  }
+
+  confirmDeletePayment(p: BillPayment): void {
+    this.alertService.confirm(
+      `Remove the ₹${this.formatInr(p.amount)} payment (${paymentModeLabel(p.mode)}, ${this.datePipe.transform(p.paymentDate, 'dd MMM yyyy')})?`,
+      () => this.deletePayment(p),
+      'Remove Payment',
+      () => {},
+      'error'
+    );
+  }
+
+  private deletePayment(p: BillPayment): void {
+    if (!this.paymentBill) return;
+    const billId = this.paymentBill.id;
+    this.deletingPaymentId = p.id;
+    this.authService.deleteBillPayment(billId, p.id).subscribe({
+      next: (b) => {
+        this.deletingPaymentId = null;
+        this.applyBalance(billId, b);
+        this.requestCache.invalidateMany(['sales:', 'bills:']);
+      },
+      error: (err) => {
+        this.deletingPaymentId = null;
+        this.alertService.error(err?.error?.message || 'Failed to remove payment.');
       }
     });
   }
@@ -403,7 +562,8 @@ export class BillsComponent implements OnInit, OnDestroy {
       toDate: this.toDate,
       purchaserId: this.purchaserId,
       purchaserName: this.purchaserName,
-      cameFromPurchaser: this.cameFromPurchaser
+      cameFromPurchaser: this.cameFromPurchaser,
+      backTo: this.backTo
     });
     this.userStorageService.saveBillId(billId);
     this.router.navigate(['user/bill-preview']);
@@ -462,6 +622,10 @@ export class BillsComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    if (this.paymentBill) {
+      this.closePayments();
+      return;
+    }
     if (this.selectedBillIds.size > 0 || this.selectAllPages) {
       this.clearSelection();
     }

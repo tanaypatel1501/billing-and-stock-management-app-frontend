@@ -1,0 +1,205 @@
+/* Extra styles for the Outstanding page. Header and layout come from bills.component.scss. */
+
+.muted { color: var(--gstm-text-muted); }
+
+/* age colours (the legend shows the labels, so colour is never the only signal) */
+.b0 { background: var(--gstm-success-text); }
+.b1 { background: var(--gstm-warning); }
+.b2 { background: #fd7e14; }
+.b3 { background: var(--gstm-error); }
+
+/* ── Summary cards ── */
+.os-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.os-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--gstm-card-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  min-width: 0;
+
+  &.main { border: 1px solid var(--gstm-primary-color); }
+
+  .os-stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gstm-text-muted);
+  }
+  .os-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gstm-text-main);
+    overflow-wrap: anywhere;
+    &.warn { color: var(--gstm-error); }
+  }
+  .os-stat-sub { font-size: 0.78rem; color: var(--gstm-text-muted); overflow-wrap: anywhere; }
+}
+
+/* ── Age bar ── */
+.os-panel {
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  background: var(--gstm-card-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.os-panel-title {
+  font: 700 0.8rem sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gstm-text-muted);
+  margin-bottom: 10px;
+}
+
+.os-bar {
+  display: flex;
+  height: 14px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--gstm-input-bg);
+}
+
+.os-seg { display: block; height: 100%; }
+
+.os-legend {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.os-key {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+  color: var(--gstm-text-muted);
+  min-width: 0;
+
+  strong { color: var(--gstm-text-main); font-size: 0.95rem; overflow-wrap: anywhere; }
+}
+
+.os-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+/* ── Customer table ── */
+.os-table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+  background: var(--gstm-card-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.os-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  color: var(--gstm-text-main);
+
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--gstm-input-border);
+    vertical-align: middle;
+  }
+  th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gstm-text-muted);
+    background: var(--gstm-input-bg);
+  }
+  .num { text-align: right; white-space: nowrap; }
+  .strong { font-weight: 700; }
+
+  tbody tr.os-row {
+    cursor: pointer;
+    &:hover, &:focus { background: var(--gstm-input-bg); outline: none; }
+  }
+
+  tfoot td {
+    font-weight: 700;
+    border-top: 2px solid var(--gstm-input-border);
+    border-bottom: none;
+  }
+}
+
+.os-name { font-weight: 600; color: var(--gstm-text-main); overflow-wrap: anywhere; }
+
+.os-mini {
+  display: flex;
+  height: 5px;
+  margin-top: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--gstm-input-bg);
+  min-width: 80px;
+}
+
+/* ── Mobile cards ── */
+.os-list { display: flex; flex-direction: column; gap: 10px; }
+
+.os-card {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--gstm-card-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  &:focus { outline: 2px solid var(--gstm-primary-color); }
+}
+
+.os-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--gstm-text-main);
+}
+
+.os-card-meta { margin-top: 8px; font-size: 0.8rem; color: var(--gstm-text-muted); }
+
+.os-card-buckets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+.os-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--gstm-input-border);
+  font-size: 0.72rem;
+  color: var(--gstm-text-main);
+}
+
+.os-note {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  p { margin: 0; }
+}
+
+@media (max-width: 768px) {
+  .os-cards { grid-template-columns: 1fr; }
+  .os-legend { grid-template-columns: repeat(2, 1fr); }
+}

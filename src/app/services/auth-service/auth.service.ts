@@ -9,6 +9,8 @@ import { Capacitor } from '@capacitor/core';
 import { MobileSessionService } from '../mobile-session/mobile-session.service';
 import { Purchase, Supplier } from '../../models/purchase.model';
 import { GstSummary } from '../../models/gst-summary.model';
+import { BillBalance, BillPaymentRequest } from '../../models/bill-payment.model';
+import { OutstandingReport } from '../../models/outstanding.model';
 
 const AUTH_HEADER = 'authorization';
 
@@ -380,10 +382,25 @@ export class AuthService {
     const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.post<PageResponse<any>>(`${this.baseUrl}api/bill/search`, params, { headers });
   }
-
-  updateBillPaidStatus(billId: number, paid: boolean): Observable<any> {
+    
+  getBillBalance(billId: number): Observable<BillBalance> {
     const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
-    return this.http.patch(`${this.baseUrl}api/bill/${billId}/paid?paid=${paid}`, null, { headers });
+    return this.http.get<BillBalance>(`${this.baseUrl}api/bill/${billId}/balance`, { headers });
+  }
+
+  getBillBalances(billIds: number[]): Observable<BillBalance[]> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post<BillBalance[]>(`${this.baseUrl}api/bill/balances`, { billIds }, { headers });
+  }
+
+  addBillPayment(billId: number, payment: BillPaymentRequest): Observable<BillBalance> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post<BillBalance>(`${this.baseUrl}api/bill/${billId}/payments`, payment, { headers });
+  }
+
+  deleteBillPayment(billId: number, paymentId: number): Observable<BillBalance> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.delete<BillBalance>(`${this.baseUrl}api/bill/${billId}/payments/${paymentId}`, { headers });
   }
 
   getPdfBlob(billId: number): Observable<Blob> {
@@ -513,6 +530,11 @@ export class AuthService {
     const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     const query = fy != null ? `?fy=${fy}` : '';
     return this.http.get<GstSummary>(`${this.baseUrl}api/sales/user/gst-summary${query}`, { headers });
+  }
+
+  getOutstandingReport(): Observable<OutstandingReport> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<OutstandingReport>(`${this.baseUrl}api/sales/user/outstanding`, { headers });
   }
 
   getMissingCostStock(page: number = 0, size: number = 15): Observable<PageResponse<any>> {

@@ -15,6 +15,7 @@ export interface BillsListState {
   purchaserId: number | null;
   purchaserName: string;
   cameFromPurchaser: boolean;
+  backTo?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

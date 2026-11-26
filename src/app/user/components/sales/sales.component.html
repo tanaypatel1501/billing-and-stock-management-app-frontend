@@ -50,6 +50,10 @@
               <fa-icon [icon]="faFileInvoiceDollar"></fa-icon>
               <span>GST Summary</span>
             </button>
+            <button class="gst-link" type="button" (click)="goToOutstanding()">
+              <fa-icon [icon]="faHandHoldingDollar"></fa-icon>
+              <span>Outstanding</span>
+            </button>
             <button class="paid-toggle" (click)="onTogglePaid()">
               <fa-icon [icon]="paidOnly ? faToggleOn : faToggleOff" class="toggle-icon" [class.active]="paidOnly"></fa-icon>
               <span>{{ paidOnly ? 'Paid Bills Only' : 'All Bills' }}</span>

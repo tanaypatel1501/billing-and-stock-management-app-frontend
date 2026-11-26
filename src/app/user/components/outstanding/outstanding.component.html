@@ -1,0 +1,157 @@
+<app-loading-spinner *ngIf="!data && isLoading" text="Loading Outstanding" skeleton="sales" [skeletonPadded]="true"></app-loading-spinner>
+
+<div class="bills-wrapper" *ngIf="data as d">
+  <div class="main-content">
+
+    <div class="gstm-sticky-wrap" appCollapsibleHeader>
+      <div class="modern-header">
+        <div class="header-left">
+          <button class="back-btn" (click)="goBack()" title="Back to Sales">
+            <fa-icon [icon]="faArrowLeft"></fa-icon>
+          </button>
+          <div class="header-title-wrapper">
+            <h1 class="header-title">
+              <span class="title-text">Outstanding</span>
+              <fa-icon [icon]="faHandHoldingDollar" class="title-icon"></fa-icon>
+            </h1>
+            <span class="bill-count">Money still to collect, by customer and age · as of {{ d.asOf | date:'dd MMM yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Everything collected -->
+    <div class="empty-state-wrapper" *ngIf="d.openBills === 0">
+      <div class="empty-state-card">
+        <div class="empty-state-icon">✅</div>
+        <h2>Nothing outstanding</h2>
+        <p>Every bill is fully paid.</p>
+      </div>
+    </div>
+
+    <ng-container *ngIf="d.openBills > 0">
+
+      <!-- Summary cards -->
+      <div class="os-cards">
+        <div class="os-stat main">
+          <span class="os-stat-label">Total outstanding</span>
+          <span class="os-stat-value">₹{{ d.totalOutstanding | number:'1.2-2' }}</span>
+          <span class="os-stat-sub">{{ d.openBills }} open bill{{ d.openBills === 1 ? '' : 's' }} · {{ d.customerCount }} customer{{ d.customerCount === 1 ? '' : 's' }}</span>
+        </div>
+        <div class="os-stat">
+          <span class="os-stat-label">Older than 60 days</span>
+          <span class="os-stat-value" [class.warn]="over60(d) > 0">₹{{ over60(d) | number:'1.2-2' }}</span>
+          <span class="os-stat-sub">{{ over60Percent(d) | number:'1.0-0' }}% of the outstanding amount</span>
+        </div>
+        <div class="os-stat">
+          <span class="os-stat-label">Oldest unpaid bill</span>
+          <span class="os-stat-value">{{ oldestDays(d) }} days</span>
+          <span class="os-stat-sub">{{ oldestName(d) }}</span>
+        </div>
+      </div>
+
+      <!-- Age buckets -->
+      <div class="os-panel">
+        <div class="os-panel-title">Outstanding by age of invoice</div>
+        <div class="os-bar" role="img" aria-label="Outstanding amount split by age of invoice">
+          <ng-container *ngFor="let b of buckets">
+            <div class="os-seg" [ngClass]="b.cls" [style.width.%]="pct(d, b.key)"></div>
+          </ng-container>
+        </div>
+        <div class="os-legend">
+          <div class="os-key" *ngFor="let b of buckets">
+            <span class="os-dot" [ngClass]="b.cls"></span>
+            <span class="os-key-label">{{ b.label }}</span>
+            <strong>₹{{ value(d, b.key) | number:'1.2-2' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop: table -->
+      <div class="os-table-wrap d-none d-md-block">
+        <table class="os-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th class="num">Bills</th>
+              <th class="num">0–30</th>
+              <th class="num">31–60</th>
+              <th class="num">61–90</th>
+              <th class="num">90+</th>
+              <th class="num">Outstanding</th>
+              <th class="num">Oldest</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of d.customers; trackBy: trackByCustomer" class="os-row"
+                tabindex="0" (click)="openCustomer(c)" (keydown.enter)="openCustomer(c)">
+              <td>
+                <div class="os-name">{{ c.name }}</div>
+                <div class="os-mini">
+                  <ng-container *ngFor="let b of buckets">
+                    <span class="os-seg" [ngClass]="b.cls" [style.width.%]="pct(c, b.key)"></span>
+                  </ng-container>
+                </div>
+              </td>
+              <td class="num">{{ c.billCount }}</td>
+              <td class="num"><ng-container *ngIf="c.age0to30 > 0; else dash">₹{{ c.age0to30 | number:'1.2-2' }}</ng-container></td>
+              <td class="num"><ng-container *ngIf="c.age31to60 > 0; else dash">₹{{ c.age31to60 | number:'1.2-2' }}</ng-container></td>
+              <td class="num"><ng-container *ngIf="c.age61to90 > 0; else dash">₹{{ c.age61to90 | number:'1.2-2' }}</ng-container></td>
+              <td class="num"><ng-container *ngIf="c.ageOver90 > 0; else dash">₹{{ c.ageOver90 | number:'1.2-2' }}</ng-container></td>
+              <td class="num strong">₹{{ c.outstanding | number:'1.2-2' }}</td>
+              <td class="num">{{ c.oldestAgeDays }} d</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total</td>
+              <td class="num">{{ d.openBills }}</td>
+              <td class="num">₹{{ d.age0to30 | number:'1.2-2' }}</td>
+              <td class="num">₹{{ d.age31to60 | number:'1.2-2' }}</td>
+              <td class="num">₹{{ d.age61to90 | number:'1.2-2' }}</td>
+              <td class="num">₹{{ d.ageOver90 | number:'1.2-2' }}</td>
+              <td class="num strong">₹{{ d.totalOutstanding | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+        <ng-template #dash><span class="muted">-</span></ng-template>
+      </div>
+
+      <!-- Mobile: one card per customer -->
+      <div class="os-list d-md-none">
+        <div class="os-card" *ngFor="let c of d.customers; trackBy: trackByCustomer"
+             tabindex="0" (click)="openCustomer(c)" (keydown.enter)="openCustomer(c)">
+          <div class="os-card-top">
+            <span class="os-name">{{ c.name }}</span>
+            <strong>₹{{ c.outstanding | number:'1.2-2' }}</strong>
+          </div>
+          <div class="os-mini">
+            <ng-container *ngFor="let b of buckets">
+              <span class="os-seg" [ngClass]="b.cls" [style.width.%]="pct(c, b.key)"></span>
+            </ng-container>
+          </div>
+          <div class="os-card-meta">
+            {{ c.billCount }} bill{{ c.billCount === 1 ? '' : 's' }} · oldest {{ c.oldestAgeDays }} days
+          </div>
+          <div class="os-card-buckets">
+            <ng-container *ngFor="let b of buckets">
+              <span *ngIf="value(c, b.key) > 0" class="os-chip">
+                <span class="os-dot" [ngClass]="b.cls"></span>{{ b.label }}: ₹{{ value(c, b.key) | number:'1.0-2' }}
+              </span>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <div class="os-note">
+        <fa-icon [icon]="faCircleInfo"></fa-icon>
+        <p>
+          Age is counted in days from the invoice date; there are no credit terms or due dates yet.
+          A partly paid bill counts only the part still unpaid. Tap a customer to see their bills and record payments.
+        </p>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

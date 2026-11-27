@@ -15,7 +15,7 @@ export const AGE_BUCKETS: { key: AgeKey; label: string; cls: string }[] = [
 ];
 
 export interface OutstandingCustomer extends AgeFields {
-  purchaserId: number | null;      // null when the bills are not linked to a saved customer
+  partyId: number | null;          // customer id (bills) or supplier id (purchases); null when not linked to a saved record
   name: string;
   billCount: number;
   outstanding: number;

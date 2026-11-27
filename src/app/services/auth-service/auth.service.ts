@@ -11,6 +11,7 @@ import { Purchase, Supplier } from '../../models/purchase.model';
 import { GstSummary } from '../../models/gst-summary.model';
 import { BillBalance, BillPaymentRequest } from '../../models/bill-payment.model';
 import { OutstandingReport } from '../../models/outstanding.model';
+import { PurchaseBalance, PurchasePaymentRequest } from '../../models/purchase-payment.model';
 
 const AUTH_HEADER = 'authorization';
 
@@ -490,6 +491,16 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}api/purchase/${purchaseId}/revert`, null, { headers });
   }
 
+  addPurchasePayment(purchaseId: number, payment: PurchasePaymentRequest): Observable<PurchaseBalance> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.post<PurchaseBalance>(`${this.baseUrl}api/purchase/${purchaseId}/payments`, payment, { headers });
+  }
+
+  deletePurchasePayment(purchaseId: number, paymentId: number): Observable<PurchaseBalance> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.delete<PurchaseBalance>(`${this.baseUrl}api/purchase/${purchaseId}/payments/${paymentId}`, { headers });
+  }
+
   /* ---------------------- SALES ---------------------- */
 
   getSalesSummary(userId: any, paidOnly: boolean = false): Observable<any> {
@@ -537,6 +548,11 @@ export class AuthService {
     return this.http.get<OutstandingReport>(`${this.baseUrl}api/sales/user/outstanding`, { headers });
   }
 
+  getPayablesReport(): Observable<OutstandingReport> {
+    const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
+    return this.http.get<OutstandingReport>(`${this.baseUrl}api/purchase/payables`, { headers });
+  }
+  
   getMissingCostStock(page: number = 0, size: number = 15): Observable<PageResponse<any>> {
     const headers = this.createAuthorizationHeader().set('X-Skip-Loader', 'true');
     return this.http.get<PageResponse<any>>(`${this.baseUrl}api/stock/user/missing-cost?page=${page}&size=${size}`, { headers });

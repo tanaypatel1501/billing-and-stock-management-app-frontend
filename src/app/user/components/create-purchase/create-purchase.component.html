@@ -380,6 +380,45 @@
           <p class="review-hint review-hint-mobile">Scroll up to view or remove individual items before saving.</p>
         </div>
 
+        <div class="review-section">
+          <div class="review-section-title">Payment to supplier</div>
+          <div class="tax-switch">
+            <button type="button" [class.active]="paidNow" (click)="paidNow = true">Already paid</button>
+            <button type="button" [class.active]="!paidNow" (click)="paidNow = false">Not paid yet</button>
+          </div>
+
+          <ng-container *ngIf="paidNow">
+            <div class="form-row pay-row">
+              <div class="form-group">
+                <label for="payDate">Payment date</label>
+                <input type="date" id="payDate" [max]="today"
+                       [ngModel]="payDate || form1.value.invoiceDate"
+                       (ngModelChange)="payDate = $event"
+                       [ngModelOptions]="{ standalone: true }">
+              </div>
+              <div class="form-group">
+                <label for="payMode">Mode</label>
+                <select id="payMode" class="pay-select" [(ngModel)]="payMode" [ngModelOptions]="{ standalone: true }">
+                  <option *ngFor="let m of paymentModes" [value]="m.value">{{ m.label }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="payRef">Reference (optional)</label>
+              <input type="text" id="payRef" maxlength="100" placeholder="UPI ref, cheque no."
+                     [(ngModel)]="payReference" [ngModelOptions]="{ standalone: true }">
+            </div>
+          </ng-container>
+
+          <div class="tax-hint" *ngIf="paidNow">
+            ₹{{ totals.total | number:'1.2-2' }} will be recorded as paid on
+            {{ (payDate || form1.value.invoiceDate) | date:'dd/MM/yyyy' }}. You can change payments later from the Purchases list.
+          </div>
+          <div class="tax-hint" *ngIf="!paidNow">
+            Saved as unpaid: ₹{{ totals.total | number:'1.2-2' }} will show under what you owe until you record payments.
+          </div>
+        </div>
+
         <div class="button-group-two">
           <button type="button" class="submit-btn secondary" (click)="prevStep()">← Previous</button>
           <button type="button" class="submit-btn primary" (click)="submit()" [disabled]="submitting">

@@ -203,3 +203,42 @@
   .os-cards { grid-template-columns: 1fr; }
   .os-legend { grid-template-columns: repeat(2, 1fr); }
 }
+
+
+/* ── To collect / To pay tabs ── */
+.os-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: var(--gstm-input-bg);
+  border: 1px solid var(--gstm-input-border);
+
+  button {
+    border: none;
+    background: transparent;
+    color: var(--gstm-text-muted);
+    font: 600 0.9rem sans-serif;
+    padding: 8px 18px;
+    border-radius: 9px;
+    cursor: pointer;
+
+    &.active { background: var(--gstm-primary-color); color: #fff; }
+  }
+}
+
+.os-retry {
+  border: none;
+  background: transparent;
+  color: var(--gstm-primary-color);
+  font: 600 0.8rem sans-serif;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+@media (max-width: 540px) {
+  .os-tabs { display: flex; }
+  .os-tabs button { flex: 1; }
+}

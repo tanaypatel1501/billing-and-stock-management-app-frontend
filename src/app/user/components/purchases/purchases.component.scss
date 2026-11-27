@@ -37,6 +37,55 @@
   }
 }
 
+/* ── Card footer: tax badge | payment chip | view link, kept on one row ── */
+.bill-footer {
+  justify-content: flex-start;
+  align-items: center;          /* stops the badge and chip stretching tall */
+  gap: 10px;
+
+  .tax-badge {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+
+  .paid-toggle {
+    flex: 0 1 auto;
+    min-width: 0;
+    padding: 6px 12px;
+    white-space: nowrap;
+
+    fa-icon { flex: 0 0 auto; }
+
+    .chip-text {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;  /* long "₹… paid · ₹… due" labels shorten instead of overflowing */
+    }
+  }
+
+  .view-link {
+    flex: 0 0 auto;
+    margin-left: auto;          /* pushes the link to the right edge */
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .bill-footer {
+    gap: 8px;
+
+    .paid-toggle {
+      flex: 1 1 auto;           /* chip takes the free space between badge and arrow */
+      justify-content: center;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+    }
+
+    .view-link .view-text { display: none; }   /* arrow only on phones */
+  }
+}
+
 /* ── Detail popup ── */
 .pd-overlay {
   position: fixed;
@@ -156,6 +205,7 @@
     font-weight: 700;
     font-size: 1.05rem;
   }
+  .pd-due span:last-child { color: var(--gstm-error); font-weight: 700; }
 }
 
 .pd-footer {

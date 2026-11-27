@@ -22,8 +22,9 @@
       <div class="gstm-sticky-wrap" appCollapsibleHeader>
         <div class="modern-header">
           <div class="header-left">
-            <button class="back-btn" (click)="goBack()" title="Reset search and filters"
-              *ngIf="isSearchActive || isDateFilterActive">
+            <button class="back-btn" (click)="goBack()"
+              [title]="backTo ? 'Back to Outstanding' : 'Reset search and filters'"
+              *ngIf="backTo || isSearchActive || isDateFilterActive">
               <fa-icon [icon]="faArrowLeft"></fa-icon>
             </button>
 
@@ -88,8 +89,16 @@
 
           <div class="bill-footer">
             <span class="tax-badge" [class.igst]="p.taxMode === 'IGST'">{{ taxLabel(p.taxMode) }}</span>
-            <span class="view-link">
-              View Details
+            <button type="button"
+              class="paid-toggle"
+              [class.paid]="paymentStatus(p) === 'PAID'"
+              [class.partial]="paymentStatus(p) === 'PARTIAL'"
+              (click)="openPayments(p, $event)">
+              <fa-icon [icon]="paymentStatus(p) === 'PAID' ? faCircleCheck : (paymentStatus(p) === 'PARTIAL' ? faCircleHalfStroke : faCircle)"></fa-icon>
+              <span class="chip-text">{{ chipLabel(p) }}</span>
+            </button>
+            <span class="view-link" title="View details">
+              <span class="view-text">View Details</span>
               <fa-icon [icon]="faArrowRight"></fa-icon>
             </span>
           </div>
@@ -197,6 +206,8 @@
           <div><span>SGST</span><span>₹{{ selected.sgstAmount | number:'1.2-2' }}</span></div>
         </ng-template>
         <div class="pd-total"><span>Total</span><span>₹{{ selected.totalAmount | number:'1.2-2' }}</span></div>
+        <div *ngIf="selected.paymentStatus"><span>Paid</span><span>₹{{ selected.paidAmount | number:'1.2-2' }}</span></div>
+        <div class="pd-due" *ngIf="(selected.outstandingAmount ?? 0) > 0"><span>Outstanding</span><span>₹{{ selected.outstandingAmount | number:'1.2-2' }}</span></div>
       </div>
     </div>
 
@@ -205,7 +216,103 @@
         <fa-icon [icon]="isReverting ? faSpinner : faRotateLeft"></fa-icon>
         <span>{{ isReverting ? 'Reverting...' : 'Revert Purchase' }}</span>
       </button>
+      <button class="pd-btn" (click)="openPayments(selected)" [disabled]="isDetailLoading">Payments</button>
       <button class="pd-btn" (click)="closeDetail()">Close</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Payments popup -->
+<div class="bp-overlay" *ngIf="paymentPurchase" appSuppressDock (click)="closePayments()">
+  <div class="bp-card" (click)="$event.stopPropagation()">
+
+    <div class="bp-header">
+      <div>
+        <h3>{{ paymentPurchase.supplierName }}</h3>
+        <div class="bp-sub">Invoice {{ paymentPurchase.supplierInvoiceNo }} · {{ paymentPurchase.invoiceDate | date:'dd MMM yyyy' }}</div>
+      </div>
+      <button type="button" class="bp-close" (click)="closePayments()" title="Close">
+        <fa-icon [icon]="faXmark"></fa-icon>
+      </button>
+    </div>
+
+    <div class="bp-body">
+      <ng-container *ngIf="paymentBalance as bal">
+        <div class="bp-summary">
+          <div><span>Total</span><strong>₹{{ bal.totalAmount | number:'1.2-2' }}</strong></div>
+          <div><span>Paid</span><strong class="paid">₹{{ bal.paidAmount | number:'1.2-2' }}</strong></div>
+          <div><span>Outstanding</span><strong [class.due]="bal.outstandingAmount > 0">₹{{ bal.outstandingAmount | number:'1.2-2' }}</strong></div>
+        </div>
+
+        <div class="bp-section-title">Payments</div>
+        <app-loading-spinner *ngIf="isPaymentLoading && !bal.payments" mode="inline" text="Loading payments"></app-loading-spinner>
+        <div class="bp-empty" *ngIf="bal.payments && bal.payments.length === 0">No payments recorded yet.</div>
+        <ul class="bp-list" *ngIf="bal.payments && bal.payments.length > 0">
+          <li *ngFor="let pay of bal.payments">
+            <div class="bp-pay-main">
+              <span class="bp-pay-amt">₹{{ pay.amount | number:'1.2-2' }}</span>
+              <span class="bp-pay-meta">
+                {{ pay.paymentDate | date:'dd MMM yyyy' }} · {{ paymentModeLabel(pay.mode) }}<ng-container *ngIf="pay.reference"> · {{ pay.reference }}</ng-container>
+              </span>
+              <span class="bp-pay-note" *ngIf="pay.notes">{{ pay.notes }}</span>
+            </div>
+            <button type="button" class="bp-del" title="Remove payment"
+                    [disabled]="deletingPaymentId === pay.id"
+                    (click)="confirmDeletePayment(pay)">
+              <fa-icon [icon]="deletingPaymentId === pay.id ? faSpinner : faTrashCan"></fa-icon>
+            </button>
+          </li>
+        </ul>
+
+        <div class="bp-paid-note" *ngIf="bal.outstandingAmount <= 0">
+          <fa-icon [icon]="faCircleCheck"></fa-icon> Fully paid
+        </div>
+
+        <ng-container *ngIf="bal.outstandingAmount > 0">
+          <div class="bp-section-title">Record a payment</div>
+          <div class="bp-form">
+            <label class="bp-field">
+              <span>Amount (₹)</span>
+              <input type="number" inputmode="decimal" min="0" step="0.01" [(ngModel)]="payForm.amount">
+            </label>
+            <button type="button" class="bp-link" (click)="payFullBalance()">Pay full balance</button>
+
+            <div class="bp-row">
+              <label class="bp-field">
+                <span>Date</span>
+                <input type="date" [max]="maxPaymentDate" [(ngModel)]="payForm.paymentDate">
+              </label>
+              <label class="bp-field">
+                <span>Mode</span>
+                <select [(ngModel)]="payForm.mode">
+                  <option *ngFor="let m of paymentModes" [value]="m.value">{{ m.label }}</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="bp-field">
+              <span>Reference (optional)</span>
+              <input type="text" maxlength="100" placeholder="UPI ref, cheque no." [(ngModel)]="payForm.reference">
+            </label>
+            <label class="bp-field">
+              <span>Notes (optional)</span>
+              <input type="text" maxlength="255" [(ngModel)]="payForm.notes">
+            </label>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+
+    <div class="bp-footer">
+      <button type="button" class="bp-btn" (click)="closePayments()">Close</button>
+      <button type="button" class="bp-btn primary"
+              *ngIf="paymentBalance && paymentBalance.outstandingAmount > 0"
+              [disabled]="isSavingPayment"
+              (click)="savePayment()">
+        <fa-icon *ngIf="isSavingPayment" [icon]="faSpinner"></fa-icon>
+        <span>{{ isSavingPayment ? 'Saving...' : 'Record payment' }}</span>
+      </button>
     </div>
 
   </div>

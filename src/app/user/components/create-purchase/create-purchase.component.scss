@@ -69,3 +69,18 @@
   font-weight: 600;
   color: var(--gstm-success-text);
 }
+
+.pay-row { margin-top: 12px; }
+
+.pay-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gstm-input-border);
+  background: var(--gstm-input-bg);
+  color: var(--gstm-text-main);
+  font: 0.95rem sans-serif;
+  outline: none;
+  &:focus { border-color: var(--gstm-primary-color); }
+}

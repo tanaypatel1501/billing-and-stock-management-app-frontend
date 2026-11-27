@@ -1,3 +1,5 @@
+import { PurchasePayment, PurchasePaymentRequest } from './purchase-payment.model';
+
 export type TaxMode = 'CGST_SGST' | 'IGST';
 
 export interface Supplier {
@@ -47,6 +49,15 @@ export interface Purchase {
   totalAmount?: number;
   reverted?: boolean;
   createdAt?: string;
+
+  // input on create only: omit or null = not paid yet
+  initialPayment?: PurchasePaymentRequest | null;
+
+  // output only, computed by the server
+  paidAmount?: number;
+  outstandingAmount?: number;
+  paymentStatus?: 'UNPAID' | 'PARTIAL' | 'PAID';
+  payments?: PurchasePayment[] | null;   // detail call only
 }
 
 /* ---------- Calculation helpers (same rules as the backend, used for the live preview) ---------- */

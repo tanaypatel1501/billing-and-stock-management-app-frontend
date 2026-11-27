@@ -136,12 +136,13 @@
             </div>
             
             <div class="bill-footer">
-              <button 
-                class="paid-toggle" 
-                [class.paid]="bill.paid"
-                (click)="togglePaid(bill, $event)">
-                <fa-icon [icon]="bill.paid ? faCircleCheck : faCircle"></fa-icon>
-                {{ bill.paid ? 'Paid' : 'Mark as Paid' }}
+              <button type="button"
+                class="paid-toggle"
+                [class.paid]="paymentStatus(bill) === 'PAID'"
+                [class.partial]="paymentStatus(bill) === 'PARTIAL'"
+                (click)="openPayments(bill, $event)">
+                <fa-icon [icon]="paymentStatus(bill) === 'PAID' ? faCircleCheck : (paymentStatus(bill) === 'PARTIAL' ? faCircleHalfStroke : faCircle)"></fa-icon>
+                {{ chipLabel(bill) }}
               </button>
 
               <span class="view-link">
@@ -206,3 +207,100 @@
 
   </ng-container>
 </ng-container>
+
+<!-- Payments popup -->
+<div class="bp-overlay" *ngIf="paymentBill" appSuppressDock (click)="closePayments()">
+  <div class="bp-card" (click)="$event.stopPropagation()">
+
+    <div class="bp-header">
+      <div>
+        <h3>{{ paymentBill.purchaserName }}</h3>
+        <div class="bp-sub">Invoice No: {{ paymentBill.id }} · {{ paymentBill.invoiceDate | date:'dd MMM yyyy' }}</div>
+      </div>
+      <button type="button" class="bp-close" (click)="closePayments()" title="Close">
+        <fa-icon [icon]="faTimes"></fa-icon>
+      </button>
+    </div>
+
+    <div class="bp-body">
+      <app-loading-spinner *ngIf="!paymentBalance" mode="inline" text="Loading payments"></app-loading-spinner>
+
+      <ng-container *ngIf="paymentBalance as bal">
+        <div class="bp-summary">
+          <div><span>Total</span><strong>₹{{ bal.totalAmount | number:'1.2-2' }}</strong></div>
+          <div><span>Paid</span><strong class="paid">₹{{ bal.paidAmount | number:'1.2-2' }}</strong></div>
+          <div><span>Outstanding</span><strong [class.due]="bal.outstandingAmount > 0">₹{{ bal.outstandingAmount | number:'1.2-2' }}</strong></div>
+        </div>
+
+        <div class="bp-section-title">Payments</div>
+        <app-loading-spinner *ngIf="isPaymentLoading && !bal.payments" mode="inline" text="Loading payments"></app-loading-spinner>
+        <div class="bp-empty" *ngIf="bal.payments && bal.payments.length === 0">No payments recorded yet.</div>
+        <ul class="bp-list" *ngIf="bal.payments && bal.payments.length > 0">
+          <li *ngFor="let p of bal.payments">
+            <div class="bp-pay-main">
+              <span class="bp-pay-amt">₹{{ p.amount | number:'1.2-2' }}</span>
+              <span class="bp-pay-meta">
+                {{ p.paymentDate | date:'dd MMM yyyy' }} · {{ paymentModeLabel(p.mode) }}<ng-container *ngIf="p.reference"> · {{ p.reference }}</ng-container>
+              </span>
+              <span class="bp-pay-note" *ngIf="p.notes">{{ p.notes }}</span>
+            </div>
+            <button type="button" class="bp-del" title="Remove payment"
+                    [disabled]="deletingPaymentId === p.id"
+                    (click)="confirmDeletePayment(p)">
+              <fa-icon [icon]="deletingPaymentId === p.id ? faSpinner : faTrashCan"></fa-icon>
+            </button>
+          </li>
+        </ul>
+
+        <div class="bp-paid-note" *ngIf="bal.outstandingAmount <= 0">
+          <fa-icon [icon]="faCircleCheck"></fa-icon> Fully paid
+        </div>
+
+        <ng-container *ngIf="bal.outstandingAmount > 0">
+          <div class="bp-section-title">Record a payment</div>
+          <div class="bp-form">
+            <label class="bp-field">
+              <span>Amount (₹)</span>
+              <input type="number" inputmode="decimal" min="0" step="0.01" [(ngModel)]="payForm.amount">
+            </label>
+            <button type="button" class="bp-link" (click)="payFullBalance()">Pay full balance</button>
+
+            <div class="bp-row">
+              <label class="bp-field">
+                <span>Date</span>
+                <input type="date" [max]="maxPaymentDate" [(ngModel)]="payForm.paymentDate">
+              </label>
+              <label class="bp-field">
+                <span>Mode</span>
+                <select [(ngModel)]="payForm.mode">
+                  <option *ngFor="let m of paymentModes" [value]="m.value">{{ m.label }}</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="bp-field">
+              <span>Reference (optional)</span>
+              <input type="text" maxlength="100" placeholder="UPI ref, cheque no." [(ngModel)]="payForm.reference">
+            </label>
+            <label class="bp-field">
+              <span>Notes (optional)</span>
+              <input type="text" maxlength="255" [(ngModel)]="payForm.notes">
+            </label>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+
+    <div class="bp-footer">
+      <button type="button" class="bp-btn" (click)="closePayments()">Close</button>
+      <button type="button" class="bp-btn primary"
+              *ngIf="paymentBalance && paymentBalance.outstandingAmount > 0"
+              [disabled]="isSavingPayment"
+              (click)="savePayment()">
+        <fa-icon *ngIf="isSavingPayment" [icon]="faSpinner"></fa-icon>
+        <span>{{ isSavingPayment ? 'Saving...' : 'Record payment' }}</span>
+      </button>
+    </div>
+
+  </div>
+</div>

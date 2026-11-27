@@ -8,6 +8,7 @@ import { AuthService } from 'src/app/services/auth-service/auth.service';
 import { AlertService } from 'src/app/services/alert-service/alert.service';
 import { RequestCacheService } from 'src/app/services/cache/request-cache.service';
 import { DebouncedSearch } from 'src/app/shared/utils/debounced-search';
+import { PAYMENT_MODES, PaymentMode } from 'src/app/models/bill-payment.model';
 import {
   Purchase, Supplier, TaxMode, PurchaseTotals, calcTotals, lineAmount
 } from 'src/app/models/purchase.model';
@@ -88,6 +89,13 @@ export class CreatePurchaseComponent implements OnInit, OnDestroy {
 
   previewAmount = 0;
   previewUnitCost = 0;
+
+  // ---- payment (most purchases are prepaid, so "already paid" is the default) ----
+  paidNow = true;
+  paymentModes = PAYMENT_MODES;
+  payMode: PaymentMode = 'CASH';
+  payDate = '';                 // empty = the invoice date
+  payReference = '';
 
   // ---- submit ----
   submitting = false;
@@ -442,6 +450,11 @@ export class CreatePurchaseComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.paidNow && this.payDate && this.payDate > todayLocal()) {
+      this.alertService.error('Payment date cannot be in the future.');
+      return;
+    }
+
     const payload: Purchase = {
       supplierId: this.supplier.id,
       supplierInvoiceNo: String(this.form1.value.invoiceNo).trim(),
@@ -456,14 +469,23 @@ export class CreatePurchaseComponent implements OnInit, OnDestroy {
         freeQuantity: i.freeQuantity,
         purchaseRate: i.purchaseRate,
         discountPercent: i.discountPercent
-      }))
+      })),
+      initialPayment: this.paidNow
+        ? {
+            mode: this.payMode,
+            paymentDate: this.payDate || undefined,
+            reference: this.payReference.trim() || undefined
+          }
+        : null
     };
 
     this.submitting = true;
     this.authService.createPurchase(payload).subscribe({
       next: () => {
         this.requestCache.invalidateMany(['purchases:', 'suppliers:', 'stock:', 'inventory-value:', 'stockLogs:', 'sales:gst:']);
-        this.alertService.success('Purchase saved and stock updated.');
+        this.alertService.success(this.paidNow
+          ? 'Purchase saved, stock updated and payment recorded.'
+          : 'Purchase saved and stock updated. It is marked as unpaid.');
         this.router.navigate(['/user/purchases']);
       },
       error: (err) => {

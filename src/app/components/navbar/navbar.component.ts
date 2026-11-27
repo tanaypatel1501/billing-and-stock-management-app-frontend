@@ -211,7 +211,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   isSalesSection(): boolean {
     const url = this.router.url.split('?')[0];
-    return ['/user/sales', '/user/gst-summary', '/user/missing-cost']
+    return ['/user/sales', '/user/gst-summary', '/user/missing-cost', '/user/outstanding']
       .some(p => url === p || url.startsWith(p + '/'));
   }
 
@@ -503,7 +503,7 @@ private syncNativeDock(): void {
   }
 
   // Menu stays highlighted on the Menu screen and on pages opened from it.
-  const menuPages = ['/menu', '/user/stock', '/user/bills', '/user/purchasers', '/user/purchases', '/user/suppliers', '/user/sales', '/user/gst-summary', '/user/missing-cost', '/user/details', '/settings'];
+  const menuPages = ['/menu', '/user/stock', '/user/bills', '/user/purchasers', '/user/purchases', '/user/suppliers', '/user/sales', '/user/gst-summary', '/user/outstanding', '/user/missing-cost', '/user/details', '/settings'];
   const activeId = routeActive || (menuPages.some(p => url.startsWith(p)) ? 'menu' : '');
 
   // The Menu screen is a flat page, so freeze the WebView capture there (avoids the Settings pop-up flicker).

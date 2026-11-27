@@ -15,7 +15,8 @@ import {
   faTruck,
   faTruckRampBox,
   faBoxes,
-  faFileInvoiceDollar
+  faFileInvoiceDollar,
+  faHandHoldingDollar
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -33,6 +34,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   faChevronRight = faChevronRight;
   faTruck = faTruck;
   faTruckRampBox = faTruckRampBox;
+  faHandHoldingDollar = faHandHoldingDollar;
   faBoxes = faBoxes;
   faFileInvoiceDollar = faFileInvoiceDollar;
 
